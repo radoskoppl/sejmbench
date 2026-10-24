@@ -201,17 +201,78 @@ def build_manifest(out_dir: str, per_term: dict, stats: dict) -> dict:
     return manifest
 
 
+def write_dataset_card(out_dir: str, per_term: dict) -> str:
+    coverage = ", ".join(f"term{t}: {v['votings']} divisions" for t, v in sorted(per_term.items()))
+    card = f"""---
+language:
+- pl
+license: other
+license_name: polish-public-sector-open-statutory-reuse
+license_link: https://eli.gov.pl/api/acts/DU/2023/1524/text.html
+task_categories:
+- text-classification
+tags:
+- sejm
+- poland
+- parliament
+- roll-call
+- votes
+pretty_name: Sejm roll-call votes (official API mirror)
+source_datasets:
+- original
+size_categories:
+- 1M<n<10M
+---
+
+# Sejm roll-call votes — official API mirror (sejmbench)
+
+Every named vote of the Sejm of the Republic of Poland as served by the
+official Sejm API, with one row per MP vote. Two configs:
+
+- `votings` — one row per division (raw API fields + source_url)
+- `votes` — one row per MP vote (term, sitting, votingNumber, MP, club, name, vote)
+
+Coverage: {coverage}.
+
+## Provenance
+
+- Source: official Sejm API (https://api.sejm.gov.pl) — Chancellery of the Sejm.
+- Fetched: {time.strftime('%Y-%m-%d', time.gmtime())}; immutable gzip raw snapshots + sha256
+  manifest; nothing derived is added (outcome/majority classification is left to the
+  consumer — see CODEBOOK.md in the source repo).
+
+## Process and scoring
+
+https://github.com/radoskoppl/sejmbench (CODEBOOK.md, seed rule, testable hypotheses).
+"""
+    path = os.path.join(out_dir, "dataset_card.md")
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(card)
+    return path
+
+
 def build_and_push(out_dir: str, repo_id: str, token: str | None, private: bool) -> None:
     try:
         from datasets import Dataset, DatasetDict  # type: ignore
+        from huggingface_hub import HfApi  # type: ignore
     except ImportError as e:
-        sys.exit(f"--push requires the datasets library: pip install datasets huggingface_hub ({e})")
+        sys.exit(f"--push requires: pip install datasets huggingface_hub ({e})")
     dd = DatasetDict({
         "votings": Dataset.from_json(os.path.join(out_dir, "votings.jsonl")),
         "votes": Dataset.from_json(os.path.join(out_dir, "votes.jsonl")),
     })
     dd.push_to_hub(repo_id, token=token, private=private)
     print(f"pushed DatasetDict with configs: votings, votes -> {repo_id}")
+    card_path = os.path.join(out_dir, "dataset_card.md")
+    if os.path.exists(card_path):
+        HfApi(token=token).upload_file(
+            path_or_fileobj=card_path,
+            path_in_repo="README.md",
+            repo_id=repo_id,
+            repo_type="dataset",
+            commit_message="Add provenance dataset card",
+        )
+        print(f"dataset card uploaded as README.md -> {repo_id}")
 
 
 def main() -> None:
@@ -239,6 +300,8 @@ def main() -> None:
     print(json.dumps(manifest["files"], ensure_ascii=False))
     print(f"fetch stats: {stats}")
     print(f"manifest: {os.path.join(args.out, 'manifest.json')}")
+    card_path = write_dataset_card(args.out, per_term)
+    print(f"dataset card: {card_path}")
 
     if args.push:
         token = args.token or os.environ.get("HF_TOKEN")
