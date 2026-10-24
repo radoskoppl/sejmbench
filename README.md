@@ -35,6 +35,11 @@ municipal councils: resolutions are treated as decisions that can be scored
 after the fact, so decision-making quality becomes measurable instead of
 narrated. SejmBench ports that idea from city councils to the Sejm.
 
+Prior-art review behind this design (arXiv, 2026-10-24):
+[docs/RESEARCH-DECISION-SYSTEMS.md](docs/RESEARCH-DECISION-SYSTEMS.md) —
+roll-call vote prediction with LLMs, ideal-point estimation, agent-based
+legislative simulation, and the benchmark gap this repo fills.
+
 ## What is in the repo (v0.2)
 
 - `fixtures/` — two real divisions fetched from the official Sejm API, with
