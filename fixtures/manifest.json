@@ -1,0 +1,44 @@
+{
+ "fetched_at_utc": "2026-10-24T07:39:49+00:00",
+ "source": "Sejm API v1 (https://api.sejm.gov.pl) — official public API of the Chancellery of the Sejm",
+ "fixtures": [
+  {
+   "file": "fixtures/term10-s1-v2-landslide.json",
+   "sha256": "538f9709c66469eb08eb0c98652dd3c78a6f1a5f72a42564f207488be338f871",
+   "term": 10,
+   "sitting": 1,
+   "votingNumber": 2,
+   "title": "Pkt. 2 Poselskie projekty uchwał w sprawie ustalenia liczby Wicemarszałków Sejmu RP (druki nr 1 i 2)",
+   "date": "2023-11-13T18:02:12",
+   "kind": "ELECTRONIC",
+   "counts": {
+    "yes": 458,
+    "no": 0,
+    "abstain": 0,
+    "notParticipating": 2,
+    "totalVoted": 458
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term10/votings/1/2",
+   "n_vote_records": 460
+  },
+  {
+   "file": "fixtures/term10-s6-v14-tight.json",
+   "sha256": "1fd2601aeef2395829b4991b3ef7264b6b8ff933354bd51b5ea6111d0387462d",
+   "term": 10,
+   "sitting": 6,
+   "votingNumber": 14,
+   "title": "Pkt. 9 Sprawozdanie Komisji o rządowym projekcie ustawy o zmianie ustawy - Prawo farmaceutyczne (druki nr 185, 197 i 197-A) - trzecie czytanie",
+   "date": "2024-02-22T15:43:25",
+   "kind": "ELECTRONIC",
+   "counts": {
+    "yes": 224,
+    "no": 196,
+    "abstain": 1,
+    "notParticipating": 37,
+    "totalVoted": 421
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term10/votings/6/14",
+   "n_vote_records": 458
+  }
+ ]
+}
