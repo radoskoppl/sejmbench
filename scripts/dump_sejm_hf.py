@@ -118,10 +118,19 @@ def dump_terms(terms, out_dir, limit_sittings, limit_votings, sleep_s):
             sitting = s["proceeding"]
             tdir = os.path.join(raw_dir, f"term{term}", f"sitting{sitting:03d}")
             os.makedirs(tdir, exist_ok=True)
-            n = s.get("votingsNum", 0)
+            # BUGFIX 2026-10-25: votingNumber is unique across the WHOLE
+            # (multi-day) sitting, but index row's votingsNum counts only its
+            # first day — range(1, n+1) silently truncated multi-day sittings
+            # (term10: 808 of 5201 votings). Query the sitting list endpoint
+            # for the true votingNumber set.
+            try:
+                lst = get_json(f"{API}/term{term}/votings/{sitting}") or []
+                vnos = [x["votingNumber"] for x in lst]
+            except Exception:
+                vnos = list(range(1, s.get("votingsNum", 0) + 1))  # fallback
             if limit_votings:
-                n = min(n, limit_votings)
-            for vno in range(1, n + 1):
+                vnos = vnos[:limit_votings]
+            for vno in vnos:
                 fname = os.path.join(tdir, f"v{vno:03d}.json.gz")
                 if os.path.exists(fname):
                     with gzip.open(fname, "rt", encoding="utf-8") as f:
