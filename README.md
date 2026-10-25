@@ -123,3 +123,38 @@ tell us your numbers, we are curious too.
 ## License
 
 MIT. Data: official public records of the Sejm of the Republic of Poland.
+
+---
+
+## Public dataset
+
+The complete Sejm roll-call mirror produced by the pipeline below is published at:
+
+**https://huggingface.co/datasets/patrykorwat/sejm-votings**
+
+| config | rows | content |
+|---|---|---|
+| `votes` | 9,591,905 | individual votes per MP |
+| `votings` | 20,907 | divisions with counts, majority, dates |
+| `sittings` | 1,541 | sitting days with vote counts |
+| `druki` | 21,498 | Sejm prints metadata + attachment urls |
+| `druk_texts` | 40,516 | extracted print texts (99.9%) |
+
+Provenance (sha256, per-row `source_url`, license) lives in the dataset card.
+Source: official [Sejm API](https://api.sejm.gov.pl) only; nothing derived is added.
+
+## Pipeline tooling (`scripts/`)
+
+Operator scripts that regenerate or extend the mirror. They default to the
+owner's ATX layout (`~/sejm-dump`, `~/.hf-token`) — adjust paths when running elsewhere.
+
+| script | role |
+|---|---|
+| `dump_sejm_hf.py` | resumable dump: raw gz snapshots, votings/votes JSONL, sha256 manifest, Hub push |
+| `build_extra.py` | rebuild `votings` with full fields, build `sittings` |
+| `build_druki.py` | build `druki` from the `/prints` endpoint |
+| `download_druki.py` | threaded, resumable attachment downloader |
+| `extract_druki.py` | text extraction: pdftotext / python-docx / striprtf / odfpy |
+| `fix_docs.py` | `.doc` backfill via catdoc |
+| `push_druk.py` | schema-forced push helper |
+| `run_druki.sh` | supervisor loop (restart-on-failure, resumable) |

@@ -38,7 +38,7 @@ API = "https://api.sejm.gov.pl/sejm"
 UA = "sejmbench-dump/0.1 (github.com/radoskoppl/sejmbench)"
 
 
-def get_json(url: str, retries: int = 3):
+def get_json(url: str, retries: int = 6):
     delay = 1.0
     for attempt in range(retries + 1):
         req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
@@ -88,7 +88,7 @@ def discover_terms(max_term: int = 12) -> list[int]:
 VOTING_FIELDS = (
     "term", "sitting", "votingNumber", "date", "title", "topic", "description",
     "motion", "kind", "yes", "no", "abstain", "notParticipating", "present",
-    "totalVoted", "majorityType", "majorityVotes", "votingOptions", "links",
+    "totalVoted", "majorityType", "majorityVotes", "votingOptions", "links", "sittingDay",
 )
 
 
@@ -261,7 +261,8 @@ def build_and_push(out_dir: str, repo_id: str, token: str | None, private: bool)
         "votings": Dataset.from_json(os.path.join(out_dir, "votings.jsonl")),
         "votes": Dataset.from_json(os.path.join(out_dir, "votes.jsonl")),
     })
-    dd.push_to_hub(repo_id, token=token, private=private)
+    for _cfg, _ds in dd.items():
+        _ds.push_to_hub(repo_id, config_name=_cfg, token=token, private=private)
     print(f"pushed DatasetDict with configs: votings, votes -> {repo_id}")
     card_path = os.path.join(out_dir, "dataset_card.md")
     if os.path.exists(card_path):
