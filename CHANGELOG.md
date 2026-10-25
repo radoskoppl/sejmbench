@@ -5,6 +5,17 @@ Format follows Keep-a-Changelog; versions follow SemVer.
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-10-25
+### Fixed
+- `dump_sejm_hf.py`: multi-day sittings were silently truncated — discovery
+  used `range(1, votingsNum+1)` where `votingsNum` counts only the first day
+  of a sitting, while `votingNumber` is unique across the whole sitting
+  (term10: 808 of 5,201 divisions). Discovery now queries the per-sitting
+  list endpoint. The published HF mirror is incomplete until re-dumped.
+### Changed
+- `dump_sejm_hf.py` streams rows to JSONL instead of accumulating in memory
+  (full corrected dump ≈ 20M rows; 14 GB hosts were not enough).
+
 ## [0.3.0] - 2026-10-25
 ### Added
 - Public dataset mirror on Hugging Face: `patrykorwat/sejm-votings`

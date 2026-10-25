@@ -95,8 +95,11 @@ VOTING_FIELDS = (
 def dump_terms(terms, out_dir, limit_sittings, limit_votings, sleep_s):
     raw_dir = os.path.join(out_dir, "raw")
     os.makedirs(raw_dir, exist_ok=True)
-    votings_rows: list[dict] = []
-    votes_rows: list[dict] = []
+    # stream rows straight to disk: a full corrected dump is ~20M vote rows
+    # and must not accumulate in memory (ATX has 14 GB)
+    fv = open(os.path.join(out_dir, "votings.jsonl"), "w", encoding="utf-8")
+    fs = open(os.path.join(out_dir, "votes.jsonl"), "w", encoding="utf-8")
+    n_v = n_s = 0
     stats = {"fetched": 0, "cached": 0, "missing": 0}
     per_term: dict[int, dict] = {}
 
@@ -154,12 +157,13 @@ def dump_terms(terms, out_dir, limit_sittings, limit_votings, sleep_s):
                 source_url = f"https://api.sejm.gov.pl/sejm/term{term}/votings/{sitting}/{vno}"
                 vrow = {k: detail.get(k) for k in VOTING_FIELDS}
                 vrow["source_url"] = source_url
-                votings_rows.append(vrow)
+                fv.write(json.dumps(vrow, ensure_ascii=False) + "\n")
+                n_v += 1
 
                 votes = detail.get("votes")
                 if isinstance(votes, list):
                     for rec in votes:
-                        votes_rows.append({
+                        fs.write(json.dumps({
                             "term": term,
                             "sitting": sitting,
                             "votingNumber": vno,
@@ -169,7 +173,8 @@ def dump_terms(terms, out_dir, limit_sittings, limit_votings, sleep_s):
                             "lastName": rec.get("lastName"),
                             "secondName": rec.get("secondName"),
                             "vote": rec.get("vote"),
-                        })
+                        }, ensure_ascii=False) + "\n")
+                        n_s += 1
                 else:
                     print(f"  ! term{term} s{sitting} v{vno}: votes is {type(votes).__name__} — vote rows skipped")
             tstats["sittings"] += 1
@@ -180,7 +185,9 @@ def dump_terms(terms, out_dir, limit_sittings, limit_votings, sleep_s):
         )
         per_term[term] = tstats
         print(f"term{term}: {tstats['sittings']} sittings, {tstats['votings']} divisions (raw files)")
-    return votings_rows, votes_rows, stats, per_term
+    fv.close()
+    fs.close()
+    return n_v, n_s, stats, per_term
 
 
 def write_jsonl(rows: list[dict], path: str) -> None:
@@ -301,11 +308,10 @@ def main() -> None:
     print(f"terms: {terms}")
     os.makedirs(args.out, exist_ok=True)
 
-    votings_rows, votes_rows, stats, per_term = dump_terms(
+    n_v, n_s, stats, per_term = dump_terms(
         terms, args.out, args.limit_sittings, args.limit_votings, args.sleep
     )
-    write_jsonl(votings_rows, os.path.join(args.out, "votings.jsonl"))
-    write_jsonl(votes_rows, os.path.join(args.out, "votes.jsonl"))
+    print(f"rows written: votings={n_v} votes={n_s}")
     manifest = build_manifest(args.out, per_term, stats)
     print(json.dumps(manifest["files"], ensure_ascii=False))
     print(f"fetch stats: {stats}")
