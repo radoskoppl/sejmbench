@@ -128,9 +128,24 @@ def dump_terms(terms, out_dir, limit_sittings, limit_votings, sleep_s):
             # for the true votingNumber set.
             try:
                 lst = get_json(f"{API}/term{term}/votings/{sitting}") or []
-                vnos = [x["votingNumber"] for x in lst]
-            except Exception:
-                vnos = list(range(1, s.get("votingsNum", 0) + 1))  # fallback
+            except urllib.error.HTTPError as e:
+                if e.code == 404 and not s.get("votingsNum", 0):
+                    vnos = []  # empty sitting, nothing to fetch
+                else:
+                    raise RuntimeError(
+                        f"sitting list fetch failed: term{term} s{sitting}: {e}"
+                    ) from e
+            except Exception as e:
+                raise RuntimeError(
+                    f"sitting list fetch failed: term{term} s{sitting}: {e}"
+                ) from e
+            if not lst and s.get("votingsNum", 0):
+                raise RuntimeError(
+                    f"empty sitting list: term{term} s{sitting} "
+                    f"(votingsNum={s['votingsNum']})"
+                )
+            vnos = [x["votingNumber"] for x in lst]
+            time.sleep(0.05)  # ~1540 list calls per pass — be gentle
             if limit_votings:
                 vnos = vnos[:limit_votings]
             for vno in vnos:
@@ -244,15 +259,39 @@ source_datasets:
 - original
 size_categories:
 - 1M<n<10M
+configs:
+- config_name: votings
+  data_files:
+  - split: train
+    path: votings/*.parquet
+- config_name: votes
+  data_files:
+  - split: train
+    path: votes/*.parquet
+- config_name: sittings
+  data_files:
+  - split: train
+    path: sittings/*.parquet
+- config_name: druki
+  data_files:
+  - split: train
+    path: druki/*.parquet
+- config_name: druk_texts
+  data_files:
+  - split: train
+    path: druk_texts/*.parquet
 ---
 
 # Sejm roll-call votes — official API mirror (sejmbench)
 
 Every named vote of the Sejm of the Republic of Poland as served by the
-official Sejm API, with one row per MP vote. Two configs:
+official Sejm API, with one row per MP vote. Five configs:
 
 - `votings` — one row per division (raw API fields + source_url)
 - `votes` — one row per MP vote (term, sitting, votingNumber, MP, club, name, vote)
+- `sittings` — one row per sitting day
+- `druki` — one row per parliamentary print
+- `druk_texts` — extracted text of print attachments
 
 Coverage: {coverage}.
 
@@ -312,7 +351,14 @@ def build_and_push(out_dir: str, repo_id: str, token: str | None, private: bool)
             }),
         ),
     })
+    api = HfApi(token=token)
     for _cfg, _ds in dd.items():
+        # stale shards from earlier pushes (different shard counts) must go,
+        # or config globs would index overlapping data
+        try:
+            api.delete_files(repo_id, repo_type="dataset", delete_patterns=f"{_cfg}/*")
+        except Exception as e:
+            print(f"  (stale-shard delete for {_cfg}: {e})", flush=True)
         _ds.push_to_hub(repo_id, config_name=_cfg, token=token, private=private)
     print(f"pushed DatasetDict with configs: votings, votes -> {repo_id}")
     card_path = os.path.join(out_dir, "dataset_card.md")

@@ -5,6 +5,19 @@ Format follows Keep-a-Changelog; versions follow SemVer.
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-10-26
+### Fixed
+- A failed sitting-list fetch silently fell back to first-day-only discovery,
+  truncating the dump (60,128 of 66,427 divisions were pushed). Discovery now
+  aborts the pass on a list-fetch failure or an empty list for a non-empty
+  sitting — the supervisor retries instead of pushing incomplete data.
+- The dataset card was uploaded without a `configs:` block, which collapsed
+  all five configs into one `default` on the Hub. The card now declares all
+  five configs with `*.parquet` globs.
+- Stale parquet shards from earlier pushes are deleted before each config
+  push (shard counts change between runs; leftover shards would otherwise be
+  indexed alongside the new ones).
+
 ## [0.3.2] - 2026-10-26
 ### Fixed
 - HF push crashed on JSONL schema inference: `votingOptions` structs with
