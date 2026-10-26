@@ -5,6 +5,14 @@ Format follows Keep-a-Changelog; versions follow SemVer.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-26
+### Added
+- `scripts/build_divisions.py`: rebuild the divisions view (one row per
+  voting, per-MP votes embedded — the backtest input format) from the dump
+  offline, no API access needed. Streaming, O(one division) memory, optional
+  term filter, `.gz` output. Verified to reproduce the term-10 divisions
+  built during the backtest runs (5,201 divisions, byte-identical).
+
 ## [0.3.3] - 2026-10-26
 ### Fixed
 - A failed sitting-list fetch silently fell back to first-day-only discovery,
