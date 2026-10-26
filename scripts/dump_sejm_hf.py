@@ -126,11 +126,13 @@ def dump_terms(terms, out_dir, limit_sittings, limit_votings, sleep_s):
             # first day — range(1, n+1) silently truncated multi-day sittings
             # (term10: 808 of 5201 votings). Query the sitting list endpoint
             # for the true votingNumber set.
+            vnos = []
+            lst = []
             try:
                 lst = get_json(f"{API}/term{term}/votings/{sitting}") or []
             except urllib.error.HTTPError as e:
                 if e.code == 404 and not s.get("votingsNum", 0):
-                    vnos = []  # empty sitting, nothing to fetch
+                    lst = []  # empty sitting, nothing to fetch
                 else:
                     raise RuntimeError(
                         f"sitting list fetch failed: term{term} s{sitting}: {e}"
