@@ -135,12 +135,18 @@ def dump_terms(terms, out_dir, limit_sittings, limit_votings, sleep_s):
                 vnos = vnos[:limit_votings]
             for vno in vnos:
                 fname = os.path.join(tdir, f"v{vno:03d}.json.gz")
+                url = f"{API}/term{term}/votings/{sitting}/{vno}"
+                detail = None
                 if os.path.exists(fname):
-                    with gzip.open(fname, "rt", encoding="utf-8") as f:
-                        detail = json.load(f)
-                    stats["cached"] += 1
-                else:
-                    url = f"{API}/term{term}/votings/{sitting}/{vno}"
+                    try:
+                        with gzip.open(fname, "rt", encoding="utf-8") as f:
+                            detail = json.load(f)
+                        stats["cached"] += 1
+                    except Exception:
+                        # corrupt/empty cache entry (e.g. killed mid-write) — re-fetch
+                        os.remove(fname)
+                        detail = None
+                if detail is None:
                     try:
                         detail = get_json(url)
                     except urllib.error.HTTPError as e:
