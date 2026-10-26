@@ -5,6 +5,15 @@ Format follows Keep-a-Changelog; versions follow SemVer.
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-10-26
+### Fixed
+- HF push crashed on JSONL schema inference: `votingOptions` structs with
+  and without the optional `description` key both occur across terms, so
+  chunk-wise inference failed to cast. `build_and_push` now passes explicit
+  features for both configs (`votingOptions`/`links` declared as struct
+  lists). Added `--push-only` to build+push from the existing JSONL without
+  re-walking the raw cache.
+
 ## [0.3.1] - 2026-10-25
 ### Fixed
 - `dump_sejm_hf.py`: multi-day sittings were silently truncated — discovery

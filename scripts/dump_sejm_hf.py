@@ -275,13 +275,42 @@ https://github.com/radoskoppl/sejmbench (CODEBOOK.md, seed rule, testable hypoth
 
 def build_and_push(out_dir: str, repo_id: str, token: str | None, private: bool) -> None:
     try:
-        from datasets import Dataset, DatasetDict  # type: ignore
+        from datasets import (  # type: ignore
+            Dataset, DatasetDict, Features, Value,
+        )
         from huggingface_hub import HfApi  # type: ignore
     except ImportError as e:
         sys.exit(f"--push requires: pip install datasets huggingface_hub ({e})")
+    # Explicit features: JSONL schema inference crashes when a struct column
+    # has optional keys that appear only in later chunks — votingOptions
+    # structs with/without `description` both occur across terms. Missing
+    # keys become None under the declared feature.
+    _t, _i = Value("string"), Value("int64")
     dd = DatasetDict({
-        "votings": Dataset.from_json(os.path.join(out_dir, "votings.jsonl")),
-        "votes": Dataset.from_json(os.path.join(out_dir, "votes.jsonl")),
+        "votings": Dataset.from_json(
+            os.path.join(out_dir, "votings.jsonl"),
+            features=Features({
+                "term": _i, "sitting": _i, "votingNumber": _i, "date": _t,
+                "sittingDay": _i, "title": _t, "topic": _t, "description": _t,
+                "motion": _t, "kind": _t, "yes": _i, "no": _i, "abstain": _i,
+                "notParticipating": _i, "present": _i, "totalVoted": _i,
+                "majorityType": _t, "majorityVotes": _i,
+                "votingOptions": [{
+                    "option": _t, "optionIndex": _i, "votes": _i,
+                    "description": _t,
+                }],
+                "links": [{"href": _t, "rel": _t}],
+                "source_url": _t,
+            }),
+        ),
+        "votes": Dataset.from_json(
+            os.path.join(out_dir, "votes.jsonl"),
+            features=Features({
+                "term": _i, "sitting": _i, "votingNumber": _i, "MP": _i,
+                "club": _t, "firstName": _t, "lastName": _t, "secondName": _t,
+                "vote": _t,
+            }),
+        ),
     })
     for _cfg, _ds in dd.items():
         _ds.push_to_hub(repo_id, config_name=_cfg, token=token, private=private)
@@ -306,6 +335,8 @@ def main() -> None:
     ap.add_argument("--limit-votings", type=int, default=None, help="smoke: cap divisions per sitting")
     ap.add_argument("--sleep", type=float, default=0.25, help="seconds between detail fetches (politeness)")
     ap.add_argument("--push", default="", metavar="REPO_ID", help="push DatasetDict to the Hub after building")
+    ap.add_argument("--push-only", action="store_true",
+                    help="skip fetching; build+push from the existing JSONL/manifest")
     ap.add_argument("--token", default=None, help="HF token (or set HF_TOKEN env)")
     ap.add_argument("--private", action="store_true", help="make the Hub dataset private")
     args = ap.parse_args()
@@ -314,16 +345,26 @@ def main() -> None:
     print(f"terms: {terms}")
     os.makedirs(args.out, exist_ok=True)
 
-    n_v, n_s, stats, per_term = dump_terms(
-        terms, args.out, args.limit_sittings, args.limit_votings, args.sleep
-    )
-    print(f"rows written: votings={n_v} votes={n_s}")
-    manifest = build_manifest(args.out, per_term, stats)
-    print(json.dumps(manifest["files"], ensure_ascii=False))
-    print(f"fetch stats: {stats}")
-    print(f"manifest: {os.path.join(args.out, 'manifest.json')}")
-    card_path = write_dataset_card(args.out, per_term)
-    print(f"dataset card: {card_path}")
+    if args.push_only:
+        # build+push from the existing JSONL/manifest — no API walk
+        mpath = os.path.join(args.out, "manifest.json")
+        per_term = {}
+        if os.path.exists(mpath):
+            with open(mpath, encoding="utf-8") as f:
+                per_term = json.load(f).get("terms", {})
+        stats = {"fetched": 0, "cached": 0, "missing": 0}
+        print("push-only: using existing JSONL + manifest", flush=True)
+    else:
+        n_v, n_s, stats, per_term = dump_terms(
+            terms, args.out, args.limit_sittings, args.limit_votings, args.sleep
+        )
+        print(f"rows written: votings={n_v} votes={n_s}")
+        manifest = build_manifest(args.out, per_term, stats)
+        print(json.dumps(manifest["files"], ensure_ascii=False))
+        print(f"fetch stats: {stats}")
+        print(f"manifest: {os.path.join(args.out, 'manifest.json')}")
+        card_path = write_dataset_card(args.out, per_term)
+        print(f"dataset card: {card_path}")
 
     if args.push:
         token = args.token or os.environ.get("HF_TOKEN")
