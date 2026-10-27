@@ -1,66 +1,98 @@
 ---
 name: sejmbench
-description: "Use when working on the SejmBench benchmark or the Sejm API."
+description: "Use when pracując nad benchmarkiem SejmBench (API Sejmu)."
 version: 1.0.0
-author: Radoskop
+author: Hermes Agent
 license: MIT
 metadata:
-  tags: [benchmark, sejm, llm, poland, roll-call]
+  hermes:
+    tags: [benchmark, sejm, llm, radoskop]
+    related_skills: [radoskop-strategy, github-commit-push]
 ---
 
-# sejmbench
+## When to Use
+- Praca nad repo SejmBench (/opt/data/workspace/sejmbench → github.com/radoskoppl/sejmbench): fixtures, metryka, codebook, wyniki agentów.
+- Pobieranie danych z API Sejmu (api.sejm.gov.pl) do benchmarków/backtestów głosowań.
 
-Work on **SejmBench** — a reproducible benchmark measuring how well LLMs
-understand Polish parliamentary decision-making, starting from roll-call
-data. This file lives in the sejmbench repo itself; all paths below are
-relative to the repo root.
+# SejmBench
 
-## What is in the repo (v0.2)
+Benchmark dla LLM-ów na danych imiennych Sejmu; port filozofii backtestingu uchwał z Radoskopu (decyzja da się ocenić po fakcie). Repo docelowe: `github.com/radoskoppl/sejmbench`, lokalnie `/opt/data/workspace/sejmbench`.
 
-- `seed_rule.py` — winner determination + per-club cohesion
-  (`yes_share = YES/(YES+NO+ABSTAIN)`, `polarization = 1 - |YES-NO|/n`).
-- `CODEBOOK.md` — frozen v0.2 definitions + reference prompt; scores are
-  never compared across metric versions.
-- `fixtures/` — real divisions from the official Sejm API with sha256 pins in
-  `fixtures/manifest.json` (landslide 458:0; tight 224:196).
-- `AGENTS.md` — submission contract: PR to `results/`, temperature 0, no
-  tools, no network.
-- `docs/RESEARCH-DECISION-SYSTEMS.md` — prior-art review (arXiv) behind the
-  design.
+## Stan (2026-10-24)
+- v0.2 lokalnie, commity `f41b1f4` (+ push.sh): `seed_rule.py` (zwycięzca + yes_share/polaryzacja per klub), 7 testów zielonych, 2 fixtures z sha256 (`fixtures/manifest.json`), `CODEBOOK.md` (definicje zamrożone), `AGENTS.md` (kontrakt: PR do results/, temp 0, bez narzędzi).
+- Post do Discorda basal: `post-basal-discord.md` w repo — NIE publikowany; social tylko po akceptacji usera (profil: posty NIGDY bez akceptacji).
+- Publikacja: DONE 2026-10-24 — user utworzył repo; `./scripts/push.sh` wypchnął main, VERIFY_OK; repo publiczne. Kolejne commity: `361a46b` = research note arXiv (`docs/RESEARCH-DECISION-SYSTEMS.md`, 20+ prac: 2412.07144 Political Actor Agent = najbliższy poprzednik warstwy 3; 1805.08182 = baseline „club-line"; 2405.02472 = IRT jako następna rodzina metryk) + link w README. Uwaga: `git ls-remote` bez GIT_SSH_COMMAND daje Permission denied (domyślny lookup klucza) — normalne; skrypt pinuje klucz.
+- SKILL.md sejmbench mieszka W REPO sejmbench (root, `27e3e1c`, VERIFY_OK) — nie w basal-skills. Repo skilli: **patrykorwat/basal-skills** (public, live @ `34b1d09`) = TYLKO ulepszanie procesu decyzyjnego basala (research + doświadczenia userów; mapa literatury + decision register); sejmbench skill tam USUNIĘTY (user decision). Public skills po ANGIELSKU, bez ścieżek lokalnych.
+- Push: `./scripts/push.sh` (pinuje GIT_SSH_COMMAND na /opt/data/workspace/.ssh/id_ecdsa + weryfikacja rev-parse origin/main == HEAD).
+- **HF dataset LIVE (v0.4.0, 2026-10-26, KOMPLETNY):** `huggingface.co/datasets/patrykorwat/sejm-votings` — configi `votes` (30 511 109) / `druki` (21 498) / `votings` (66 427) / `sittings` (1541) / `druk_texts` (40 516, 99.9% z tekstem); row-county zweryfikowane przez `datasets-server/size` (5 nazwanych configów — karta z blokiem `configs:` naprawiła kolaps do `default`). Narzędzia pipeline'u skommitowane w repo `scripts/` (build_extra, build_druki, download_druki, extract_druki, fix_docs, push_druk, run_druki.sh); repo ma VERSION+CHANGELOG od v0.3.0. ATX kanon: `~/sejm-dump` (raw gz + jsonl + manifest), `~/sejm-venv` (datasets 5.1.0 + hub 2.3.0; system python jest PEP 668 → venv przez `python3 -m venv --without-pip` + bootstrap `get-pip.py`), `~/run_dump.sh` (supervisor loop: until + sleep 60, resume po cache'u raw), `~/build_extra.py` (odbudowa jsonl z raw + push per-config + karta). Divisions do backtestów: `python3 scripts/build_divisions.py --terms 10 --dump ~/sejm-dump` (v0.4.0; sha rozkompresowanej treści == ręczny konwerter; paritet backtestu 0.761/0.280 na dump-pochodnych danych).
 
-## Sejm API (api.sejm.gov.pl) — verified recipes
+## Sejm API (api.sejm.gov.pl) — sprawdzone 2026-10-24
+- Indeks posiedzenia: `GET /sejm/term{N}/votings/{sitting}` → `votingNumber`, `title`, `yes/no/abstain/totalVoted`.
+- Detal: `GET /sejm/term{N}/votings/{sitting}/{votingNumber}` → `votes` to LISTA rekordów `{MP, club, firstName, lastName, secondName, vote}`, vote ∈ YES/NO/ABSTAIN/ABSENT.
+- Klucz to `votingNumber` (nie `votingNo`) — unikalny **tylko w ramach posiedzenia**; globalny klucz to trójka `(term, sitting, votingNumber)`.
+- `/term{N}/votings` zwraca wpisy dzienne `{date, proceeding, votingsNum}` — `proceeding` = numer posiedzenia; stąd tabela `sittings` (1541 wierszy = dni, nie posiedzenia). `sittingDay` jest w detalu głosowania.
+- **Pułapka discovery:** `votingsNum` liczy głosowania tylko z PIERWSZEGO dnia wielodniowego posiedzenia, a `votingNumber` jest unikalny w skali całego posiedzenia — `range(1, votingsNum+1)` cicho ucina każdą wielodniową sesję (term10: 808/5201). Odkrywaj głosowania wyłącznie przez `GET /term{N}/votings/{sitting}` (lista per posiedzenie). Komplementarnie: kompletność dowolnego dumpa weryfikuj sumą `votingsNum` po tabeli dziennej (każde głosowanie liczone raz, w swoim dniu), nie liczbą plików w `raw/`.
+- Treści głosowań w API: `title` 100% (tytuł posiedzenia), `topic` ~91%, `description` ~46%. Sam API ma też **druki**: `GET /term{N}/prints` (cała lista kadencji jednym wywołaniem), `GET /term{N}/prints/{num}` (szczegóły z `additionalPrints`), `GET /term{N}/prints/{num}/{attachment}` (bajty pliku wprost z api.sejm.gov.pl, bez WAF-a — www.sejm.gov.pl jest za Incapsulą, API nie jest). Pełne teksty aktów prawnych (ISAP/DU) to nadal osobne źródło.
+- Docs: strona główna `/` ładuje endpointy dynamicznie (grep HTML nic nie daje), `openapi.json` → 404, ale **pełny spec jest pod `https://api.sejm.gov.pl/sejm.html`** — szukaj po anchorach (`id="_lista_druków"`, `id="_szczegóły_druku"`) i przykładach curl w sekcjach, nie w TOC (nawigacja powtarza te same słowa i nie wnosi nic).
+- Pułapki danych: głosowania wyborcze mają yes=no=abstain=0 mimo oddanych głosów (liczniki nie dotyczą wyborów); etykiety klubów niestabilne wewnątrz kadencji (XI 2023: Nowa_Lewica/PSL/Polska2050 → II 2024: Lewica/PSL-TD/Polska2050-TD); mapowanie klubów = kuratorowane ręcznie (v0.3), nie regex.
+- W payloadzie LISTY `GET /term{N}/votings/{sitting}` pole `description` jest w ~60% puste ("-") — urzędowy słownik typów głosowań istnieje tylko w detalu głosowania; regexowanie listy fałszywie pokrywa kubełki (coverage test na liście = błąd).
 
-- Sitting index: `GET /sejm/term{N}/votings/{sitting}` → list with
-  `votingNumber`, `title`, `yes`, `no`, `abstain`, `totalVoted`.
-- Division detail: `GET /sejm/term{N}/votings/{sitting}/{votingNumber}` →
-  `votes` is a **list** of records
-  `{MP, club, firstName, lastName, secondName, vote}`,
-  `vote` ∈ `YES`/`NO`/`ABSTAIN`/`ABSENT`.
-- The key field is `votingNumber` (not `votingNo`).
-- The docs page at `/` loads endpoint listings dynamically (grepping the HTML
-  yields nothing); `openapi.json` returns 404. Probing real paths beats
-  hunting for a spec.
-- Election divisions (Marshal elections etc.) carry
-  `yes = no = abstain = 0` even though votes were cast — the headline counters
-  do not apply to non-legislative voting.
-- Club labels are **not stable within a term** (Nov 2023: `Nowa_Lewica`,
-  `PSL`, `Polska2050` → Feb 2024: `Lewica`, `PSL-TD`, `Polska2050-TD`).
-  Cross-division work needs a canonical club mapping — curate it by hand,
-  never regex.
+## Typy głosowań (warstwa 1) — istniejący słownik, nie nowe koło
+User correction: klasyfikacje już istnieją, nie tworzymy własnego codebooka. Sejm oficjalnego słownika typów NIE publikuje (potwierdzone w literaturze: Public Choice 2025 — „votes are not explicitly labeled, we classified ourselves"), więc źródła do PRZEJĘCIA:
+1. Urzędowe stringi `description` z endpointu szczegółów: `całość projektu ustawy`, `całość projektu uchwały`, `wybór …`, `wniosek w sprawie powołania …`, `wniosek o odwołanie …`, `wniosek o odrzucenie … w pierwszym czytaniu`, `wotum …`. Mapowanie string→kubełek = KOD; model tylko do resztówki niejednoznacznej (np. „wniosek z druku nr N").
+2. jakglosuja.pl — eksport CSV CC-BY 4.0 (5201 głosowań X kadencji): kolumna `category` (substantive merytoryczne / procedural) + `topic` + etykiety AI; wymaga atrybucji źródła.
+Pitfall: własnoręcznie wymyślone kryteria `choice` (election/bill_whole/amendment/procedural/other) mylą się na głosowaniach nad uchwałami — model słusznie odpowiada `other`, kiedy brakuje istniejącej kategorii. Zanim dodasz nową etykietę, sprawdź słownik API i jakglosuja.
 
-## Benchmark principles (non-negotiable)
+## Druki i pełna treść (v0.3.0)
+- Załączniki druków to mieszanka: ~54% .pdf, ~30% .docx, ~16% .doc (+rtf/odt/xls). Nie szpieguj magii plików (`content[:4]==b"%PDF"`) — zapisuj każdy HTTP 200 i klasyfikuj po rozszerzeniu, inaczej ciche `bad` zjada połowę korpusu (term6: same .doc-y).
+- Ekstrakcja bez sudo: `pdftotext -layout` (poppler — czystszy niż pypdf, znika artefakt l→1), `python-docx`/`striprtf`/`odfpy` (pip), `catdoc` dla .doc. Osiągnięte pokrycie: 99.9% (40 485/40 516); nie wyciągalne: głównie przebraniki formatów (.docm/.nk) i xlsx.
+- api.sejm.gov.pl throttle'uje ~13 KB/s na połączenie (testowane: 8 i 20 równoległych identyczne na małych plikach; większe przyspieszają — limit szybkości, nie kolejkowania). 24 wątki ≈ 1 plik/s, wyżej = nadużycie. Pobieranie ~40k załączników planuj jako 10–20 h job z supervisor-loopem, nie minuty.
+- Nazwy załączników od API zawierają spacje/nowe linie — budując URL-e `urllib.parse.quote(path, safe="/")` i normalizuj białe znaki nazwy przed użyciem jako ścieżki lokalnej.
 
-1. Official sources only; every fixture carries a sha256.
-2. Definitions frozen before results; versioned codebook.
-3. Zero trivia — if a task is solvable by retrieval, it does not belong.
-4. Measure positions ("for what", "how"), not camps ("who blocked").
-5. Always report next to the club-line baseline: an LLM must beat
-   "always vote with your club" to be news (prior art: arXiv 1805.08182).
+## Pułapki publikacji na HF (verified 2026-10-25)
+- `DatasetDict.push_to_hub` z configami o **różnych schematach rzuca ValueError** (features must match) — pushuj każdy `Dataset` osobno: `ds.push_to_hub(repo, config_name=cfg)`.
+- Upload własnej karty jako `README.md` **nadpisuje automatyczne metadane configów** — serwer wtedy indeksuje wszystko jako `default`. Trzeba zadeklarować `configs:` (config_name + data_files) w YAML-frontmattrze karty i re-uploadować README po każdej zmianie danych.
+- Weryfikacja bez pobierania: `datasets-server.huggingface.co/size?dataset=...` (num_rows per config) + `/rows?...&config=X` (czy config się indeksuje). Kolejność stanów: `Not found` → `busier than usual` = trwa indeksowanie po nowym commicie, nie błąd — nie odpuszczaj przy pierwszym `Not found`.
+- `Dataset.from_json` na jsonlu z kolumną null↔string (np. `error`) rzuca `Couldn't cast array of type string to null` — podaj jawne `features=Features({...})` (Value("int64")/Value("string")). v0.3.2 (`dc65f75`): `build_and_push` ma JAWNE features obu configów — `votingOptions` = lista structów z OPCJONALNYM `description` (oba warianty występują w korpusie — chunk-wise inference kładzie się na różnicy); `links` = [{href, rel}]. Do tego `--push-only`: build+push z istniejącego jsonl/manifestu bez walka po cache.
+- Surowe dane: 66 427 snapshotów (v0.4.0; quirk rachunkowy: os.walk liczy 66 406 plików przy 66 427 wierszach w votings.jsonl — dane zweryfikowane paritetem backtestu, rows = API total).
+- **Cichy fallback discovery = zatrute dane** (usunięty w v0.3.3): przy failu fetcha listy sesji NIE wolno schodzić do `range(1, votingsNum+1)` (pierwszy dzień sesji) — abort pass (RuntimeError, supervisor retryuje). Objaw zatrucia: manifest `cached` < 66 427 przy `fetched=0` — wygląda jak sukces. Przed uznaniem pusha porównuj rows manifestu z API-totals (suma `votingsNum` po tabeli dziennej).
+- **Stare shardy parquet**: liczba shardów zmienia się między runami (nazwy `train-*of-*` nie nachodzą) → bez czyszczenia indeks widzi duplikaty/stare dane. v0.3.3 robi `delete_files {cfg}/*` przed pushem każdego configu.
+- **sha256 porównuj na rozkompresowanej treści** — nagłówek gzip wbudowuje mtime; dwa .gz z identyczną treścią nigdy nie są bajtowo równe.
 
-## Roadmap
+## Zasady benchmarku (dziedziczone z Radoskopu)
+- Definicje przed wynikami (CODEBOOK, wersjonowanie); wyników nie porównuje się między wersjami metryki.
+- Tylko oficjalne źródła; każdy fixture ma sha256; zero trivia (jak da się wyszukać — nie należy tu); „za czym" i „jak", nie „kto zablokował".
 
-- v0.3 — 50 stratified pinned fixtures (margin × division type); canonical
-  club mapping for term 10.
-- v0.5 — cohesion over time; first cross-model scoreboard.
-- v1 — the prediction backtest: history ≤ T in, division T+1 predicted,
-  scored against the real roll-call (retrieval-proof).
+## Roadmapa
+- v0.3: 50 fixtures stratyfikowanych (marża × typ), kanoniczne mapowanie klubów kadencji X.
+- v0.5: spójność w czasie; pierwsza tablica wyników cross-model.
+- v1: backtest predykcyjny — historia ≤ T, przewidź podział T+1, punktacja vs rzeczywisty roll-call (odporny na retrieval).
+
+## Backtest warstw 2/3 (2026-10-25, `f4b475a`)
+- **Full-corpus run (2026-10-26, harness v0.4.2, `results/backtest-full-corpus-2026-10-26.md`):** 66,044 scored divisions (terms 3-10, 1997-2026): kNN **0.707 winner acc** (bar) vs carry_last 0.688; carry_last wygrywa MAE (**0.287** vs 0.303) — dwie poprzeczki. kNN > carry_last w 7/8 kadencji (tylko term 9: -0.006); przewaga największa przy wyrazistej agendzie (term10 +0.080, term7 +0.051). club_mean zyskuje na długiej historii (0.569 vs 0.477 na term10). Cross-term: club labels nie zmapowane kanonicznie (poza term10) — najbliższy krok data-quality. Harness v0.4.1 (`3529c03`): memory-compact load (~9 GB → ~1 GB na 14 GB ATX) + dormant-club decay (kluby-widma przestają wnosić masę fantomową) + per-term breakdown; v0.4.2 (`42a1acd`): empty-text guard (6 divisions bez indexowalnego tekstu). Wyniki nie są porównywalne z term-10-only (inna wersja harnessa + inny zbiór).
+- `scripts/backtest_layers.py` na 5 079 divisions term 10: bar = kNN tytułów **0.761 winner acc / 0.280 MAE** (k=5, TF-IDF hash 2^15, m=0.1, plateau k3-10/m0.1-0.3 — nie fluke). carry_last 0.673 (liczy tylko kluby aktywne dziś; stary skeleton 0.566 rozwadniał nieaktywnymi), ewma 0.559, affinity diffusion 0.572 (layer 2 bez treści ≈ bezużyteczny — graf i tak oddaje mean własnego klubu), blend gorszy niż kNN solo (0.718) → odrzucony.
+- Wniosek: treść > struktura; autokorelacja sesyjna dominuje (business arrives in blocks — kNN trafia w blok, carry_last w ostatni).
+- Club continuity term10 (MP-overlap weryfikacja): Nowa_Lewica→Lewica, PSL→PSL-TD, Polska2050→Polska2050-TD (renamy, 100% overlap); Centrum/RozwojPlus/Konfederacja_KP = spliology, osobno.
+- **BUG dump_sejm_hf (naprawiony `f4b475a` + `10004fb` v0.3.1):** `votingsNum` liczy pierwszy dzień wielodniowego posiedzenia, a `votingNumber` jest unikalny w skali całego posiedzenia → `range(1,n+1)` ucinał wielodniowe sesje. Term10: 808/5201 w votes/votings.jsonl na ATX i na HF. Naprawka: discovery przez endpoint listy per sitting + **streaming wierszy do jsonla** (poprawny dump ≈ 20M rekordów — lista w pamięci kładzie hosta 14 GB; na ATX `free` sprawdzone). Re-dump na ATX wystartowany 2026-10-25 22:29 (supervisor `~/run_dump.sh`, PID `~/sejm-dump.pid`, log `~/sejm-dump-redump.log`, `--push patrykorwat/sejm-votings`; stare pliki jako `*.v030.bak`). ETA ~6-8h. Zweryfikowane 2026-10-26: 66 427 votings / 30 511 109 votes (term10=5 201), 5 nazwanych configów na HF; paritet backtestu na dump-pochodnych danych 1:1.
+- Divisions term-10 do backtestów: dump-pochodne (`scripts/build_divisions.py --terms 10 --dump ~/sejm-dump`, v0.4.0; byte-identical z build_t10.py — sha rozkompresowanej treści; paritet backtestu 1:1 z API-fetchem). Scratch: `/opt/data/cache/scratch/sejmbench/divisions_from_dump.jsonl` + API-fetch `divisions.jsonl`.
+
+## Testy na lokalnym basalu (pilot 2026-10-25)
+- Serwer decyzyjny: `192.168.0.18:8000` = basal-omni-1.0-ultra-FP8 w trybie vllm (tylko tekst); build sprzed 2.4 → `verify`/`classify` zwracają 422, działają `choice`/`noul`/`score`/`act`. Diagnostyka 422: najpierw `release_date` z `/v1/models`.
+- Druga lokalizacja danych: ATX `~/sejmbench` (fixtures + codebook + seed_rule) — `ssh -i /opt/data/workspace/.ssh/metis_rsa porwat@192.168.0.23` (direct, bez hopa).
+- Poprawna architektura testu: KOD liczy ground truth (zwycięzca, jednomyślność, polarizacja — `seed_rule.py`), MODEL dostaje pytania semantyczne po stanie zagregowanemu per klub (nie wiersze per poseł). noul-proby kalibracyjne: 4/4 zgodne z GT kodu, conf >0.9999 — ale to skrajne przypadki (landslide/tight), dopiero marginesy 1–5 badają realną kalibrację.
+- Warstwa 0 (metryka) nigdy nie idzie do modelu — to reguła „kod, nie model"; model ma sens w warstwie 1 tylko tam, gdzie mapowanie stringów API nie wystarcza.
+
+## Pułapki środowiska
+- W kernelu execute_code `hermes_tools.terminal()` potrafi rzucić JSONDecodeError „Extra data" na własnym outputcie (bug wrappera) — używać bezpośredniego narzędzia terminal.
+- Re-dump ATX: zawsze DOKŁADNIE jeden supervisor `run_dump.sh` (until-loop); przed startem `ps -eo pid,ppid,cmd | grep dump_sejm` i ubij pid-y; supervisor respawnuje pythona po crashu w ciągu 60 s — „martwy" python ≠ martwy supervisor. Dwa równoległe passy = przeplatane jsonl (manifest liczy wiersze pliku, nie prawdę) → potem zawsze świeży pass zanim pchniesz na HF.
+- `pkill -f dump_sejm_hf` łapie też własny ssh-wrapper zdalnej komendy (EPERM + zerwanie sesji) — ubijać przez `ssh host 'bash -s' <<EOF` z pgrep-minus-$$; tracked `terminal(background=true)` na ssh z `bash run_dump.sh` = runner+waiter w jednym (notify na sukcesie incl. push).
+- Restarty hosta zostawiają zero-bajtowe .gz w raw/ cache — self-healing w dump_sejm_hf (os.remove + refetch) to czyści; do palnotywnych rerunów pliki jsonl i tak pisane od zera (tryb "w").
+- Nie wypuszczać jsonl do HF bez równania row-counts: per-term z os.walk vs rows w pliku muszą się zgrać (były 21 śmieciowych wierszy z wyścigu).
+
+## Zmiany
+- 2026-10-26 — RE-DUMP DOMKNIĘTY: v0.3.2 (`dc65f75`, jawne features + `--push-only`) → v0.3.3 (`677ece1`: discovery ABORTUJE pass przy failu listy sesji — cichy fallback wcisnął obcięte dane 60 128/66 427 i push „sukcesu"; karta deklaruje `configs:` — wcześniej kolaps do `default` 27 741 097 wierszy; `delete_files {cfg}/*` przed pushem) → `bb9623a` (init lst/vnos, pyright unbound) → v0.4.0 (`a18c6a3`, `build_divisions.py` — byte-identical z build_t10.py na rozkompresowanej treści). Weryfikacja końcowa: manifest 66 427 votings / 30 511 109 votes (term10=5 201), fetched=0/cached=66 427, HF = 5 nazwanych configów z poprawnymi countami, paritet backtestu 1:1 (0.761/0.280). Quirk: os.walk liczy 66 406 raw plików przy 66 427 wierszach — dane kompletne, 21-diff rachunkowy. Następnie harness v0.4.1/v0.4.2 (memory-compact load ~9→~1 GB, dormant-club decay, empty-text guard: 6 divisions) + full-corpus run 66,044 scored: bar dwumetryczny kNN 0.707 acc / carry_last 0.287 MAE (`results/backtest-full-corpus-2026-10-26.md`).
+- 2026-10-25 — pilot x basal (2 fixtures, 6 odpowiedzi): noul 4/4, choice poprawny tylko przy gotowym słowniku; user skorygował: typy głosowań bioremy z istniejących źródeł (stringi `description` API + jakglosuja CC-BY), nie z wymyślonego codebooka. Reszta ustaleń w sekcjach wyżej.
+- 2026-10-24 — skan HF (user): 11 zbiorów po zapytaniach (sejm/polish parliament/sejmometr/głosowania/roll call...), ZERO z głosowaniami imiennymi per poseł. Warstwa mowy: PiotrSty/sejm-committee-transcripts (komisje, kadencje IX-X, speaker-attributed turns, license „polish-public-sector-open-statutory-reuse", audit artifacts) + PiotrSty/sejm-speeches-corpus (VII-X, 100K<n<1M, wersjonowany); CLARIN sejmsenat (ASR); PoliWings/PPSC (lewo/prawo po przynależności, **CC-BY-NC-4.0** — uwaga komercyjnie); Ksardias/sejmLegalSum (117); UAM ASR próbka. „Roll call" = US Congress (emperor-mew, 2018-2024). Wniosek: warstwa decyzyjna (roll-calle + kluby + sha256) PUSTA na HF → publikacja naszego datasetu byłaby PIERWSZYM zbiorem głosowań sejmowych na HF (pozycjonowanie v0.3/v1). PiotrSty = kandydat enrichment (kontekst przemówień przy głosowaniach) — sprawdzić LICENSE.md przed użyciem.
+- 2026-10-24 — dump_sejm_hf.py (user: „napisz skrypt do dumpowania danych sejmowych do HF"): resumable dump całego API (autodiscovery termów 1-12, raw gz snapshots immutable, votings.jsonl + votes.jsonl + manifest sha256, source_url per wiersz; --push przez datasets.push_to_hub — wymaga datasets+huggingface_hub+HF_TOKEN). Smoke: term10 ×2 sittings ×5 = 10/10 fetch; resume: cached 10/0; cross-check v002 vs sha256-pinned fixture zgodny (458:0, 460 rekordów). Live @ `09e29ce` → `dba5418` (card feature: provenance dataset card generowana + upload jako README po push). Decyzja usera: TAK, publikować na HF — nisza pusta (↑), nasz dataset = pierwszy sejmowy votes dataset na HF.
+- 2026-10-24 — KONKURENT (inbound): firma ma przeszlosc.today/przeszlosc/glosowania — import podzbioru danych urzędowych (schemat 1:1 z API Sejmu + 3 pola pochodne: outcome, majority.type, widok klubowy; link do źródła w Sejmie; „to nie jest pełne archiwum"). Zysk: zero — dane commodity (API Sejmu term 6-10, term6=197 posiedzeń z głosowaniami). Strategia: inbound = sonda; odpowiedź jednozdaniowa („pobieramy z oficjalnego API"); po publikacji datasetu na HF biznes partial-import staje się redundantny (komplet > subset, provenance > import, open harness > zamknięte widoki).
+- 2026-10-24 — DEPLOY NA ATX (user: token z Sparka, dump na ATX): token HF ze Sparka (write, patrykorwat, 37B) → ATX ~/.hf-token (600); repo cloned ~/sejmbench @ `dba5418`; venv przez get-pip bootstrap (Debian: python3.14-venv missing, system pip3 absent) → huggingface_hub 2.3.0 + datasets 5.1.0; dump+push CHAIN uruchomiony (--push patrykorwat/sejm-votings, public) — PID ~/sejm-dump.pid (139463), log ~/sejm-dump.log; 28 divisions/41s (≈0.7/s), ETA kilka godzin, resumowalny; lokalny dump KILLED (bez podwójnego obciążenia API Sejmu — ATX = kanon); lokalny waiter polluje ATX co 60s (notify na exit). Token file na ATX do usunięcia po pushu. Po exit: weryfikacja HF (api/datasets/patrykorwat/sejm-votings) + manifest.

@@ -5,6 +5,8 @@ Format follows Keep-a-Changelog; versions follow SemVer.
 
 ## [Unreleased]
 
+- Full-corpus backtest results (terms 3–10, 66,044 scored divisions): two-metric bar — kNN 0.707 winner accuracy, carry_last 0.287 yes_share MAE (`results/backtest-full-corpus-2026-10-26.md`).
+
 ## [0.4.2] - 2026-10-26
 ### Fixed
 - kNN crash on cross-term input: a division with no indexable tokens (empty
