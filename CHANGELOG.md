@@ -5,6 +5,14 @@ Format follows Keep-a-Changelog; versions follow SemVer.
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-10-26
+### Fixed
+- kNN crash on cross-term input: a division with no indexable tokens (empty
+  title/topic/description) was stored as a zero-nonzeros row of the
+  retrieval index and broke `add.reduceat` when it became the last row.
+  Empty-text divisions are no longer stored (nor retrievable); the summary
+  reports their count.
+
 ## [0.4.1] - 2026-10-26
 ### Fixed
 - `backtest_layers.py` memory: aggregate per division at load time — the

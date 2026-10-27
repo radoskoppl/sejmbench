@@ -179,6 +179,7 @@ class Tfidf:
         self.indptr = np.array([0], dtype=np.int64)
         self.norms = np.zeros(0)
         self.dirty = 0
+        self.empty = 0
 
     @staticmethod
     def text(d):
@@ -204,10 +205,14 @@ class Tfidf:
         for b in tf:
             self.df[b] += 1
         self.n += 1
+        if not vec:
+            self.empty += 1
+            return False  # no indexable tokens; keeps vecs aligned with past_aggs
         self.vecs.append((sorted(vec), [vec[b] for b in sorted(vec)]))
         self.dirty += 1
         if self.dirty >= KNN_BLOCK:
             self.rebuild()
+        return True
 
     def rebuild(self):
         if not self.dirty:
@@ -317,8 +322,8 @@ def main():
             # store AFTER scoring (no leakage)
         # update history AFTER scoring; index gets ALL earlier divisions too
         hist.update(d["agg"])
-        past_aggs.append({c: s for c, s in d["agg"].items() if sum(s) > 0})
-        tfidf.add(d)
+        if tfidf.add(d):
+            past_aggs.append({c: s for c, s in d["agg"].items() if sum(s) > 0})
     acc = lambda xs: sum(xs) / len(xs) if xs else float("nan")
     mae = lambda xs: sum(xs) / len(xs) if xs else float("nan")
     print(f"divisions loaded: {len(rows)}   scored: {scored} (warmup {WARMUP})")
@@ -332,6 +337,7 @@ def main():
         cl = [c for tt, c in by_term["carry_last"] if tt == t]
         kn = [c for tt, c in by_term["knn"] if tt == t]
         print(f"  term{t:<3} n={len(cl):<5} carry_last {acc(cl):.3f}   knn {acc(kn):.3f}")
+    print(f"empty-text divisions (not indexed): {tfidf.empty}")
 
 
 if __name__ == "__main__":
