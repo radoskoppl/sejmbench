@@ -48,31 +48,34 @@ def club(c):
 
 
 def load():
+    """Parse + aggregate at load time: one compact dict per division.
+
+    Full-corpus input is ~66k divisions; keeping raw per-MP vote dicts would
+    need ~9 GB (ATX: 14 GB). The per-club aggregate is all the harness
+    consumes (kNN text comes from title/topic/description).
+    """
     rows, seen = [], set()
-    with open(SRC) as f:
+    with open(SRC, encoding="utf-8") as f:
         for line in f:
             d = json.loads(line)
             key = (d["term"], d["sitting"], d["votingNumber"])
-            if key not in seen:
-                seen.add(key)
-                rows.append(d)
-    rows.sort(key=lambda d: (d["date"] or "", d["sitting"], d["votingNumber"]))
+            if key in seen:
+                continue
+            seen.add(key)
+            agg = defaultdict(lambda: [0, 0, 0])
+            for v in d["votes"]:
+                val = v["vote"]
+                if val in ("YES", "NO", "ABSTAIN"):
+                    agg[club(v["club"])][{"YES": 0, "NO": 1, "ABSTAIN": 2}[val]] += 1
+            rows.append({"key": key, "date": d.get("date"),
+                         "title": d.get("title"), "topic": d.get("topic"),
+                         "description": d.get("description"), "agg": dict(agg)})
+    rows.sort(key=lambda d: (d["date"] or "", d["key"][1], d["key"][2]))
     return rows
 
 
-def agg_clubs(d):
-    """club -> [yes, no, abstain]; inactive values excluded."""
-    agg = defaultdict(lambda: [0, 0, 0])
-    for v in d["votes"]:
-        val = v["vote"]
-        if val not in ("YES", "NO", "ABSTAIN"):
-            continue  # ABSENT / PRESENT / VOTE_VALID: inactive per CODEBOOK v0.2
-        agg[club(v["club"])][{"YES": 0, "NO": 1, "ABSTAIN": 2}[val]] += 1
-    return agg
-
-
 def actuals(d):
-    agg = agg_clubs(d)
+    agg = d["agg"]
     tracks = {c: s for c, s in agg.items() if sum(s) >= MIN_TRACK}
     ty = sum(s[0] for s in tracks.values())
     tn = sum(s[1] for s in tracks.values())
@@ -95,8 +98,7 @@ class Hist:
         self.agree = {}       # (c, c') sorted -> [agree, disagree]
         self.last_share = {}
 
-    def update(self, d):
-        agg = agg_clubs(d)
+    def update(self, agg):
         active = {c: s for c, s in agg.items() if sum(s) > 0}
         sides = {}
         for c, s in active.items():
@@ -120,6 +122,11 @@ class Hist:
                     a[0] += 1
                 else:
                     a[1] += 1
+        # dormant clubs decay: without this, defunct clubs would contribute
+        # phantom vote mass to every future division in cross-term runs
+        for c in list(self.ew_size):
+            if c not in active:
+                self.ew_size[c] = self.ew_size[c] * (1 - self.alpha)
 
     def prior(self, c, gmean):
         if c in self.ew_share:
@@ -240,6 +247,7 @@ def main():
     tfidf = Tfidf()
     past_aggs = []   # club tracks per stored division, index-aligned with vecs
     scores = defaultdict(list)
+    by_term = defaultdict(list)   # (term, winner-correct) per method
     maes = defaultdict(list)
     scored = 0
     yes_wins = 0
@@ -258,6 +266,7 @@ def main():
                 ey = sum(pred_shares.get(c, gmean) * sizes.get(c, 0) for c in clubs_now)
                 en = sum((1 - pred_shares.get(c, gmean)) * sizes.get(c, 0) for c in clubs_now)
                 scores[name].append(("yes" if ey > en else "no") == act["winner"])
+                by_term[name].append((d["key"][0], scores[name][-1]))
                 for c, s in act["shares"].items():
                     if c in pred_shares:
                         maes[name].append(abs(pred_shares[c] - s))
@@ -266,8 +275,7 @@ def main():
             scores["always_yes"].append(act["winner"] == "yes")
             cm = {c: (hist.sum_yes.get(c, 0) + 1) / (hist.sum_active.get(c, 0) + 2)
                   for c in clubs_now}
-            score("club_mean", cm, {c: hist.sum_active.get(c, 0) / max(hist.n_seen.get(c, 1), 1)
-                                    for c in clubs_now})
+            score("club_mean", cm, {c: hist.ew_size.get(c, 0) for c in clubs_now})
             cl = {c: hist.last_share.get(c, gmean) for c in clubs_now}
             score("carry_last", cl, {c: hist.ew_size.get(c, 0) for c in clubs_now})
 
@@ -308,8 +316,8 @@ def main():
                         maes["blend"].append(abs((aff.get(c, gmean) + knn_p[c]) / 2 - s))
             # store AFTER scoring (no leakage)
         # update history AFTER scoring; index gets ALL earlier divisions too
-        hist.update(d)
-        past_aggs.append({c: s for c, s in agg_clubs(d).items() if sum(s) > 0})
+        hist.update(d["agg"])
+        past_aggs.append({c: s for c, s in d["agg"].items() if sum(s) > 0})
         tfidf.add(d)
     acc = lambda xs: sum(xs) / len(xs) if xs else float("nan")
     mae = lambda xs: sum(xs) / len(xs) if xs else float("nan")
@@ -319,6 +327,11 @@ def main():
     for name in ["always_yes", "club_mean", "carry_last", "ewma",
                  "affinity", "knn", "blend"]:
         print(f"{name:<12} {acc(scores[name]):>10.3f} {mae(maes[name]):>14.3f}")
+    print("\nper-term winner acc (carry_last vs knn):")
+    for t in sorted({t for t, _ in by_term["carry_last"]}):
+        cl = [c for tt, c in by_term["carry_last"] if tt == t]
+        kn = [c for tt, c in by_term["knn"] if tt == t]
+        print(f"  term{t:<3} n={len(cl):<5} carry_last {acc(cl):.3f}   knn {acc(kn):.3f}")
 
 
 if __name__ == "__main__":

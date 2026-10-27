@@ -5,6 +5,18 @@ Format follows Keep-a-Changelog; versions follow SemVer.
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-10-26
+### Fixed
+- `backtest_layers.py` memory: aggregate per division at load time — the
+  full-corpus input is ~1 GB instead of ~9 GB of raw vote dicts, which
+  enables cross-term runs on the 14 GB host.
+- Dormant-club decay: a club's expected size decays with the same half-life
+  while it is absent, so defunct clubs stop contributing phantom vote mass
+  in cross-term runs; `club_mean` now weights by the same decayed size
+  (uniform winner aggregation across all methods).
+### Added
+- Per-term winner-accuracy breakdown (carry_last vs knn) in the summary.
+
 ## [0.4.0] - 2026-10-26
 ### Added
 - `scripts/build_divisions.py`: rebuild the divisions view (one row per
