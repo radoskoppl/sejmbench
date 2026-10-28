@@ -46,6 +46,10 @@ division: `YES` if `YES > NO`, `NO` if `NO > YES`.
 **Tie-break (including 0:0):** the earlier seed wins; the `YES` seed is
 defined as the earlier seed. Deterministic, no randomness.
 
+This tie-break is a scorer convention of this benchmark, not an
+interpretation of the legal outcome of a vote. A 0:0 resolution must never
+be reported as "the motion passed".
+
 Reported alongside: `margin` (seed tracks only) and `margin_all`
 (all vote records, including `inni`).
 
@@ -105,3 +109,36 @@ Raw model output is committed alongside the parsed JSON.
   — layer 1).
 - No prediction (layer 3). Do not submit predictions against v0.2; they will
   not be scored.
+
+## 8. Statistical protocol (added 2026-10-27; contract for v0.3+)
+
+These rules do not alter any v0.2 metric definition.
+
+1. Headline accuracy and MAE are reported with a bootstrap 95% confidence
+   interval (resample divisions with replacement, >= 10,000 replicates,
+   fixed documented seed).
+2. Comparing two scorecards requires a paired bootstrap over the shared
+   division set; differences inside the CI are not ranked.
+3. A bucket or cell with fewer than the minimum count defined in the release
+   PR is reported but not used in aggregates.
+4. No composite score across layers or metric versions. A composite requires
+   a written aggregation rule in this CODEBOOK first.
+5. `n` is reported with every number: scored, excluded (with reason),
+   abstained, parse failures, refusals.
+
+## 9. Model input and contamination contract (added 2026-10-27)
+
+1. Layer 0.1/0.2 input is the full vote record list (§5). The task is
+   computation on provided data; retrieval is blocked by construction
+   because the answer is derivable from the input alone.
+2. Every new layer must freeze, in this CODEBOOK and before fixtures ship:
+   which fields the model sees, which are hidden, and a leakage check run in
+   CI (no string in the input deterministically reveals the label).
+3. The reference prompt is versioned by its hash; the hash is recorded in
+   the scorecard.
+4. Abstain, parse failure and refusal count as incorrect for headline
+   accuracy and are reported separately.
+5. Scorecards carry the evaluation date and the model's declared training
+   cutoff (`unknown` when unverifiable). SejmBench never certifies a model
+   as "uncontaminated"; the temporal holdout (issue #5) is the primary
+   contamination control.

@@ -6,6 +6,11 @@ Format follows Keep-a-Changelog; versions follow SemVer.
 ## [Unreleased]
 
 - Full-corpus backtest results (terms 3–10, 66,044 scored divisions): two-metric bar — kNN 0.707 winner accuracy, carry_last 0.287 yes_share MAE (`results/backtest-full-corpus-2026-10-26.md`).
+- Governance: `GOVERNANCE.md` (errata policy, conflict of interest, appeals) and `DATA_LICENSE.md` (MIT covers code, not data).
+- README: version axes (metric / dataset / harness / release), contamination policy, dataset table corrected to v0.4.0 (30,511,109 votes, 66,427 votings).
+- CODEBOOK: §3 tie-break marked as a scorer convention (0:0 is not "passed"); §8 statistical protocol; §9 model input and contamination contract.
+- `scripts/verify_fixtures.py`: duplicate-entry and schema checks; optional per-fixture `layers` eligibility field (consumed by #1).
+- `scripts/inventory_descriptions.py`: inventory of distinct official `description` formulas per term (input to the #2 dictionary).
 
 ## [0.4.2] - 2026-10-26
 ### Fixed

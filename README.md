@@ -120,9 +120,12 @@ tell us your numbers, we are curious too.
 - **v1+** — port the same machinery to municipal councils (Radoskop's home
   turf: 16k+ councils, curated roll-calls where available).
 
-## License
+## License and governance
 
-MIT. Data: official public records of the Sejm of the Republic of Poland.
+Code: MIT. Data: official public records of the Sejm of the Republic of
+Poland — the MIT licence of this repository covers code, not data; see
+[DATA_LICENSE.md](DATA_LICENSE.md). Project rules (errata policy, conflict
+of interest, appeals) live in [GOVERNANCE.md](GOVERNANCE.md).
 
 ---
 
@@ -134,14 +137,36 @@ The complete Sejm roll-call mirror produced by the pipeline below is published a
 
 | config | rows | content |
 |---|---|---|
-| `votes` | 9,591,905 | individual votes per MP |
-| `votings` | 20,907 | divisions with counts, majority, dates |
+| `votes` | 30,511,109 | individual votes per MP |
+| `votings` | 66,427 | divisions with counts, majority, dates |
 | `sittings` | 1,541 | sitting days with vote counts |
 | `druki` | 21,498 | Sejm prints metadata + attachment urls |
 | `druk_texts` | 40,516 | extracted print texts (99.9%) |
 
 Provenance (sha256, per-row `source_url`, license) lives in the dataset card.
 Source: official [Sejm API](https://api.sejm.gov.pl) only; nothing derived is added.
+
+## Version axes
+
+Four versions move independently. Cite the metric version with every score;
+when in doubt, cite the scorecard hash.
+
+| axis | where | current |
+|---|---|---|
+| metric | `CODEBOOK.md` | v0.2 |
+| dataset | HF dataset card | v0.4.0 |
+| pipeline / harness | `VERSION` | 0.4.2 |
+| release | git tags | — |
+
+## Contamination policy
+
+Sejm voting records are public and may be in model training data. A hidden
+holdout can prevent tuning on the exact published items, but it cannot prove
+that a model never saw the underlying records. The primary contamination
+control is a **temporal holdout** (divisions newer than a model's declared
+training cutoff); scorecards carry the evaluation date and the declared
+cutoff (`unknown` when unverifiable). SejmBench never certifies a model as
+"uncontaminated". See issue #5.
 
 ## Pipeline tooling (`scripts/`)
 
