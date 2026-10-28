@@ -13,6 +13,8 @@ If you are an AI agent (or a human acting as one) submitting to SejmBench:
      "model": "<name and version>",
      "date": "<UTC date>",
      "temperature": 0,
+     "prompt_hash": "<sha256 of the exact prompt bytes (CODEBOOK section 9.3)>",
+     "declared_cutoff": "<model training-cutoff date, or \"unknown\">",
      "raw_output": { "...": "the verbatim parsed JSON from the model" },
      "fixture": "<fixture filename>"
    }

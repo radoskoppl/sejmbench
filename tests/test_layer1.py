@@ -173,3 +173,35 @@ def test_repair_does_not_touch_correct_forms():
 # --- rule 1 anchor: plain I-czytanie formula ----------------------------------
 def test_first_reading_rejection_plain_i():
     assert c("wniosek o odrzucenie w I czytaniu") == "first_reading_rejection"
+
+
+# --- rule-order edges pinned (CODEBOOK section 10: act-dominant axis) ---------
+def test_order_edge_rejection_vs_committee():
+    # act-dominant: the rejection motion wins over the committee subject
+    assert c("wniosek o odrzucenie zmian w składach osobowych komisji") == "rejection"
+
+
+def test_order_edge_odwołanie_i_wybór():
+    # mixed action: rule order resolves (election precedes dismissal)
+    assert c("wniosek o odwołanie i wybór następcy") == "election"
+
+
+def test_order_edge_resolution_with_appointment():
+    assert c("całość projektu uchwały o powołaniu członków komisji") == "resolution_whole"
+
+
+def test_package_vote_exclusion():
+    # mid-string "całość projektu ustaw" is deliberately NOT bill_whole (prefix)
+    assert c("poprawki, całość projektu ustawy") == "unspecified"
+
+
+# --- dictionary structure ------------------------------------------------------
+def test_dictionary_structure():
+    assert len(D["rules"]) == 13
+    buckets = {r["bucket"] for r in D["rules"]}
+    assert buckets == {"first_reading_rejection", "rejection", "committee_composition",
+                       "bill_whole", "resolution_whole", "election", "wotum",
+                       "re_enactment", "appointment", "dismissal"}
+    assert {r["match"] for r in D["rules"]} <= {"contains", "prefix"}
+    assert D["fallback"] == "unspecified"
+    assert D["repairs"] == [["calość", "całość"], ["ccałość", "całość"]]

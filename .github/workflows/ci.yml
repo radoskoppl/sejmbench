@@ -17,3 +17,5 @@ jobs:
       - run: python -m pytest tests/ -v
       - run: python scripts/verify_fixtures.py
       - run: python scripts/layer1_formula_buckets.py --check
+      - run: python scripts/layer1_coverage.py --check
+      - run: python scripts/leakage_check.py

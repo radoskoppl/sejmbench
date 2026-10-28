@@ -125,11 +125,12 @@ These rules do not alter any v0.2 metric definition.
 
 1. Headline accuracy and MAE are reported with a bootstrap 95% confidence
    interval (resample divisions with replacement, >= 10,000 replicates,
-   fixed documented seed).
+   seed pinned to 20261027).
 2. Comparing two scorecards requires a paired bootstrap over the shared
    division set; differences inside the CI are not ranked.
-3. A bucket or cell with fewer than the minimum count defined in the release
-   PR is reported but not used in aggregates.
+3. The minimum cell count is pre-registered: 20 divisions per bucket.
+   Buckets below it are reported but not used in aggregates; changing the
+   minimum requires a version bump.
 4. No composite score across layers or metric versions. A composite requires
    a written aggregation rule in this CODEBOOK first.
 5. `n` is reported with every number: scored, excluded (with reason),

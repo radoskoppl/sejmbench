@@ -9,6 +9,8 @@ benchmark auditable despite that.
   version bump, and scores are never compared across metric versions.
 - `AGENTS.md` binds automated contributors (results-only PRs, temperature 0,
   no tools). It does not replace this document.
+- This document changes via ordinary commits; material policy changes are
+  recorded in `CHANGELOG.md`.
 
 ## Errata policy
 
@@ -27,17 +29,22 @@ rules as everyone else:
 
 - the row is flagged `maintainer`,
 - it is produced by the same harness and validated by the same CI,
-- the run log (model id, date, prompt hash, output hash) is public.
+- the run log (model id, date, prompt hash, output hash) is public, under
+  `results/run-logs/` from the scorecard contract (issue #4) onward.
 
 ## Appeals
 
 Dispute a score or a definition by opening an issue. The resolution is
 recorded in the issue thread; accepted corrections follow the errata policy.
+If the dispute involves the maintainer's own model or a conflict of
+interest, the maintainer commits to external arbitration: the issue stays
+open until a reviewer outside the project has weighed in.
 
 ## Conduct
 
 Be precise, be civil, no partisan framing. The benchmark measures
-understanding of decisions, not politics.
+understanding of decisions, not politics. Violations: PRs and comments may
+be rejected; repeated violations lead to blocking.
 
 ## Continuity
 

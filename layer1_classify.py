@@ -4,13 +4,18 @@ Deterministic mapping from official Sejm API `description` strings to vote-type
 buckets. Ground truth comes only from official strings (no third-party labels).
 
 Matching semantics (CODEBOOK section 10):
-  1. normalize: NFC, documented repairs, casefold, whitespace collapse
+  1. normalize: NFC, casefold, documented repairs, whitespace collapse
   2. apply ordered rules; first match wins; `contains` requires the needle as
      a substring, `prefix` requires the needle at the start; `and_any` lists
-     additional needles of which at least one must also be present
+     additional needles of which at least one must also be present;
+     `not_contains` lists needles that must be absent
   3. fallback: `unspecified`
 
-Status: dictionary v0.1.0-draft - pending the hand-coded validation sample;
+Universe note: empty, missing, and `-` descriptions are outside the layer-1
+universe (CODEBOOK section 10). classify() returns `unspecified` for them,
+but fixture builders must filter upstream - they never enter layer-1 scoring.
+
+Status: dictionary v0.1.1-draft - pending the hand-coded validation sample;
 layer-1 scores may not be published until the dictionary is frozen.
 """
 

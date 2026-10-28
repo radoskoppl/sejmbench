@@ -7,9 +7,10 @@
     "casefold": true,
     "whitespace_collapse": true,
     "repairs": [
-      ["calość", "całość"]
+      ["calość", "całość"],
+      ["ccałość", "całość"]
     ],
-    "repair_note": "documented source-variant repair: the live Sejm API itself returns the l-variant ('calość'; verified 2026-10-28, term4/106/11); repairs applied AFTER casefold (keys lowercase) so case variants are caught; explicit and curated - no general diacritic stripping"
+    "repair_note": "documented source-variant repairs: the live Sejm API itself returns the l-variant ('calość'; verified 2026-10-28, term4/106/11); repairs applied AFTER casefold (keys lowercase) so case variants are caught; each entry explicit and curated - no general diacritic stripping"
   },
   "rules": [
     {"bucket": "first_reading_rejection", "match": "contains", "needle": "odrzuceni", "and_any": ["pierwszym czytaniu", " i czytaniu"]},

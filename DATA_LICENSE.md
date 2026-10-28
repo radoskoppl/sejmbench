@@ -12,6 +12,13 @@ the data.
   its own licence and provenance in the dataset card; that licence governs
   the dataset, not this file.
 
+## Derived texts (druk_texts)
+
+The mirror contains 40,516 extracted print texts. Sejm prints are official
+documents; their copyright status under Polish law is under review and will
+be documented here (PENDING) — this file is not legal advice. Until then,
+treat `druk_texts` as source-faithful reproductions of official records.
+
 ## Third-party text
 
 No third-party text (category exports, scraped posts, press material) enters

@@ -61,15 +61,16 @@ legislative simulation, and the benchmark gap this repo fills.
     Overall polarization 0.9284 on the 0-1 scale.
 - `seed_rule.py` — the v0.2 metric: winner determination + per-track cohesion.
   Fully specified in `CODEBOOK.md`.
-- `tests/` — 7 unit tests (synthetic hand-computed divisions) + a
-  self-consistency test on the real fixture: tallies recomputed from vote
-  records must reconstruct the API headline counts exactly.
+- `tests/` — unit tests (synthetic hand-computed divisions, the layer-1
+  dictionary, the fixture checker) + a self-consistency test on the real
+  fixture: tallies recomputed from vote records must reconstruct the API
+  headline counts exactly.
 - `scripts/fetch_fixtures.py` — reproduces the fixtures from the live API.
 - `scripts/verify_fixtures.py` — checks fixture integrity against the manifest.
 
 ```
 $ python -m pytest tests/ -v
-7 passed
+51 passed
 $ python scripts/verify_fixtures.py
 OK fixtures/term10-s1-v2-landslide.json 538f9709c664
 OK fixtures/term10-s6-v14-tight.json  1fd2601aeef2
@@ -158,7 +159,8 @@ Source: official [Sejm API](https://api.sejm.gov.pl) only; nothing derived is ad
 ## Version axes
 
 Four versions move independently. Cite the metric version with every score;
-when in doubt, cite the scorecard hash.
+when in doubt, cite the scorecard hash (sha256 of the scorecard file as
+accepted by CI; schema in issue #4).
 
 | axis | where | current |
 |---|---|---|
