@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0-draft",
+  "version": "0.1.1-draft",
   "status": "draft - pending hand-coded validation sample (issue #2); layer-1 scores may not be published until the dictionary is frozen in CODEBOOK.md",
   "source_of_truth": "CODEBOOK.md section 10 (this file is the executable mirror)",
   "normalization": {
@@ -9,15 +9,18 @@
     "repairs": [
       ["calość", "całość"]
     ],
-    "repair_note": "documented data repair for a known API encoding artifact (l for ł); each entry is explicit and curated - no general diacritic stripping"
+    "repair_note": "documented source-variant repair: the live Sejm API itself returns the l-variant ('calość'; verified 2026-10-28, term4/106/11); repairs applied AFTER casefold (keys lowercase) so case variants are caught; explicit and curated - no general diacritic stripping"
   },
   "rules": [
     {"bucket": "first_reading_rejection", "match": "contains", "needle": "odrzuceni", "and_any": ["pierwszym czytaniu", " i czytaniu"]},
     {"bucket": "rejection", "match": "contains", "needle": "odrzuceni"},
     {"bucket": "committee_composition", "match": "contains", "needle": "zmian w składach osobowych komisji"},
     {"bucket": "bill_whole", "match": "prefix", "needle": "całość projektu ustaw"},
-    {"bucket": "resolution_whole", "match": "prefix", "needle": "całość projektu uchwał"},
-    {"bucket": "election", "match": "contains", "needle": "wybor"},
+    {"bucket": "resolution_whole", "match": "prefix", "needle": "całość projektu uchwa"},
+    {"bucket": "resolution_whole", "match": "prefix", "needle": "całość projektu rezolucj"},
+    {"bucket": "election", "match": "contains", "needle": "wybór"},
+    {"bucket": "election", "match": "contains", "needle": "wybor", "not_contains": ["wyborcz"]},
+    {"bucket": "election", "match": "contains", "needle": "nad wyborem"},
     {"bucket": "wotum", "match": "contains", "needle": "wotum"},
     {"bucket": "re_enactment", "match": "contains", "needle": "ponowne uchwalenie"},
     {"bucket": "appointment", "match": "contains", "needle": "powołani"},
@@ -27,7 +30,10 @@
   "notes": [
     "rules are ordered; first match wins",
     "needle normalization preserves leading/trailing whitespace (leading space = word-boundary anchor: ' i czytaniu' must not match 'w ii czytaniu')",
+    "election: contains 'wybór' (accented) + contains 'wybor' (unaccented inflections, excluding 'wyborcz' = electoral-law bills) + contains 'nad wyborem'",
+    "the l-variant 'calość' is a source-side API artifact (the live API returns it; verified 2026-10-28, term4/106/11), not a pipeline bug",
     "empty, missing, or '-' descriptions are outside the layer-1 universe (inventory docs/inventory-description.json)",
-    "buckets with volume below the minimum count defined in the release PR are reported but not used in aggregates (CODEBOOK section 8)"
+    "buckets with volume below the minimum count defined in the release PR are reported but not used in aggregates (CODEBOOK section 8)",
+    "frozen endgame: at freeze the dictionary becomes the exhaustive normalized-formula->bucket table (docs/layer1-formula-buckets.json, CI-diffed); rules remain the proposer for new formulas"
   ]
 }

@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+title: SejmBench
+message: "A reproducible, community-owned benchmark measuring how well LLMs understand Polish parliamentary decision-making - starting from roll-call data."
+authors:
+  - alias: patrykorwat
+    email: patrykorwat@gmail.com
+version: 0.4.2
+date-released: "2026-10-28"
+license: MIT
+url: "https://github.com/radoskoppl/sejmbench"
+repository-code: "https://github.com/radoskoppl/sejmbench"
+keywords:
+  - benchmark
+  - llm
+  - polish
+  - parliament
+  - roll-call

@@ -38,3 +38,10 @@ recorded in the issue thread; accepted corrections follow the errata policy.
 
 Be precise, be civil, no partisan framing. The benchmark measures
 understanding of decisions, not politics.
+
+## Continuity
+
+The project is single-maintainer. Continuity measures (some pending):
+repository and dataset snapshots (Zenodo DOI — pending), holdout salts held
+by the maintainer, and a designated backup maintainer (to be designated).
+Security reporting: see SECURITY.md.

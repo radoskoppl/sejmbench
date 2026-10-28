@@ -9,6 +9,8 @@ Scope (CODEBOOK.md 0.2, frozen):
     ABSTAIN dilutes the split, it never inflates polarization).
   * Seed rule: the seed with majority of active votes wins the division.
     Ties resolve by seeding order (earlier seed wins) - deterministic.
+    v0.3 addition: the result exposes `seed_rule.tie` (true iff YES == NO,
+    including 0:0) so ties are explicit and never reported as "passed".
 """
 
 from __future__ import annotations
@@ -86,7 +88,7 @@ def compute_metric(division: dict) -> dict:
     )
 
     return {
-        "schema": "sejmbench.metric/0.2",
+        "schema": "sejmbench.metric/0.3",
         "fixture": {
             "term": division.get("term"),
             "sitting": division.get("sitting"),
@@ -94,7 +96,8 @@ def compute_metric(division: dict) -> dict:
             "title": division.get("title"),
             "date": division.get("date"),
         },
-        "seed_rule": {"winner": winner, "method": method, "margin": margin},
+        "seed_rule": {"winner": winner, "method": method, "margin": margin,
+                      "tie": seed_totals["YES"] == seed_totals["NO"]},
         "margin_all": margin_all,
         "seed_totals": seed_totals,
         "inni_totals": inni_totals,

@@ -26,6 +26,8 @@ DICTIONARY_PATH = os.path.join(_HERE, "layer1_dictionary.json")
 def normalize(text, repairs, strip=True):
     """Normalize an official description string.
 
+    Order matters: NFC -> casefold -> documented repairs (keys lowercase, so
+    case variants of an artifact are caught) -> whitespace collapse.
     strip=False preserves leading/trailing whitespace: needle normalization
     uses it so a leading space acts as a word-boundary anchor
     (" i czytaniu" must not match "w ii czytaniu").
@@ -33,9 +35,9 @@ def normalize(text, repairs, strip=True):
     if text is None:
         return ""
     s = unicodedata.normalize("NFC", str(text))
+    s = s.casefold()
     for bad, good in repairs:
         s = s.replace(bad, good)
-    s = s.casefold()
     s = re.sub(r"\s+", " ", s)
     return s.strip() if strip else s
 
@@ -43,6 +45,20 @@ def normalize(text, repairs, strip=True):
 def load_dictionary(path=DICTIONARY_PATH):
     with open(path, encoding="utf-8") as fh:
         return json.load(fh)
+
+
+def _rule_matches(rule, t, repairs):
+    needle = normalize(rule["needle"], repairs, strip=False)
+    hit = t.startswith(needle) if rule["match"] == "prefix" else needle in t
+    if not hit:
+        return False
+    extra = rule.get("and_any")
+    if extra and not any(normalize(x, repairs, strip=False) in t for x in extra):
+        return False
+    excl = rule.get("not_contains")
+    if excl and any(normalize(x, repairs, strip=False) in t for x in excl):
+        return False
+    return True
 
 
 def classify(text, dictionary):
@@ -53,18 +69,27 @@ def classify(text, dictionary):
     repairs = [tuple(r) for r in norm_cfg.get("repairs", [])]
     t = normalize(text, repairs)
     for rule in dictionary["rules"]:
-        needle = normalize(rule["needle"], repairs, strip=False)
-        if rule["match"] == "prefix":
-            hit = t.startswith(needle)
-        else:
-            hit = needle in t
-        if not hit:
-            continue
-        extra = rule.get("and_any")
-        if extra and not any(normalize(x, repairs, strip=False) in t for x in extra):
-            continue
-        return rule["bucket"]
+        if _rule_matches(rule, t, repairs):
+            return rule["bucket"]
     return dictionary["fallback"]
+
+
+def classify_all(text, dictionary):
+    """Return the deduped list of buckets matched by all rules (conflict audit).
+
+    Used by the coverage report: a formula matching more than one bucket is a
+    rule-order conflict that the dictionary must resolve explicitly.
+    """
+    if text is None:
+        return []
+    norm_cfg = dictionary["normalization"]
+    repairs = [tuple(r) for r in norm_cfg.get("repairs", [])]
+    t = normalize(text, repairs)
+    out = []
+    for rule in dictionary["rules"]:
+        if _rule_matches(rule, t, repairs) and rule["bucket"] not in out:
+            out.append(rule["bucket"])
+    return out
 
 
 if __name__ == "__main__":

@@ -28,6 +28,10 @@ mechanically gradeable answers:
 | 3 | Prediction backtest: train on history ≤ T, predict division T+1 | spec stage |
 | 4 | Cross-institution: local councils (see below) | spec stage |
 
+Layers 0.1 and 0.2 are computation on the provided record — the answer is
+derivable from the input alone (CODEBOOK section 9). Expect saturation there:
+they are the calibration floor, not the comprehension frontier.
+
 The endgame is layer 3: a **predictive backtest**. A model gets the full voting
 history up to a date and must predict the next division — seat by seat, or
 club by club. That is the same evaluation philosophy Radoskop applies to
@@ -40,8 +44,13 @@ Prior-art review behind this design (arXiv, 2026-10-24):
 roll-call vote prediction with LLMs, ideal-point estimation, agent-based
 legislative simulation, and the benchmark gap this repo fills.
 
-## What is in the repo (v0.2)
+## What is in the repo (v0.2 baseline — see Version axes for current)
 
+- `GOVERNANCE.md`, `DATA_LICENSE.md` — errata policy, conflict of interest,
+  data licence and provenance; `SECURITY.md`, `docs/errata.md`, `CITATION.cff`.
+- `layer1_dictionary.json` + `layer1_classify.py` — layer-1 vote-type
+  dictionary (DRAFT, issue #2): deterministic mapping from official
+  description strings; coverage in `docs/layer1-coverage.md`.
 - `fixtures/` — two real divisions fetched from the official Sejm API, with
   sha256 pins in `fixtures/manifest.json`:
   - `term10-s1-v2-landslide.json` — election of Deputy Marshals, 458:0
@@ -153,7 +162,7 @@ when in doubt, cite the scorecard hash.
 
 | axis | where | current |
 |---|---|---|
-| metric | `CODEBOOK.md` | v0.2 |
+| metric | `CODEBOOK.md` | v0.3 |
 | dataset | HF dataset card | v0.4.0 |
 | pipeline / harness | `VERSION` | 0.4.2 |
 | release | git tags | — |

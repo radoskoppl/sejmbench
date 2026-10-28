@@ -129,3 +129,47 @@ def test_empty_and_dash_are_unspecified():
 def test_dictionary_is_draft():
     assert D["version"].endswith("-draft")
     assert "may not be published" in D["status"]
+
+
+# --- election: accented forms (review finding: confirmed false negatives) ----
+def test_election_wybor_accented():
+    assert c("wybór posła na rzecznika praw obywatelskich") == "election"
+
+
+def test_election_wybor_accented_midstring():
+    assert c("Głosowanie na listę (wybór 4 z 6 kandydatów)") == "election"
+
+
+def test_election_wyboru_unaccented():
+    assert c("wyboru nowego składu osobowego komisji dokonano") == "election"
+
+
+def test_kodeks_wyborczy_is_not_election():
+    assert c("wniosek o odrzucenie ustawy - Kodeks wyborczy") == "rejection"
+
+
+def test_poprawka_kodeks_wyborczy_is_unspecified():
+    assert c("poprawka do ustawy - Kodeks wyborczy") == "unspecified"
+
+
+# --- resolution variants ------------------------------------------------------
+def test_resolution_rezolucja():
+    assert c("całość projektu rezolucji") == "resolution_whole"
+
+
+def test_resolution_uchwaly_l_variant():
+    assert c("całość projektu uchwaly") == "resolution_whole"
+
+
+# --- repair map: case variants of the source artifact -------------------------
+def test_calość_capital_c_variant():
+    assert c("Calość projektu ustawy") == "bill_whole"
+
+
+def test_repair_does_not_touch_correct_forms():
+    assert c("całość projektu ustawy o wyborach samorządowych") == "bill_whole"
+
+
+# --- rule 1 anchor: plain I-czytanie formula ----------------------------------
+def test_first_reading_rejection_plain_i():
+    assert c("wniosek o odrzucenie w I czytaniu") == "first_reading_rejection"

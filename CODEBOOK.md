@@ -1,4 +1,4 @@
-# SejmBench CODEBOOK — v0.2 (frozen)
+# SejmBench CODEBOOK — v0.3 (frozen)
 
 This document is the contract. Every submitted score is graded against the
 definitions here. Definitions change only via version bump (`0.2` → `0.3`),
@@ -49,6 +49,15 @@ defined as the earlier seed. Deterministic, no randomness.
 This tie-break is a scorer convention of this benchmark, not an
 interpretation of the legal outcome of a vote. A 0:0 resolution must never
 be reported as "the motion passed".
+
+Version 0.3 addition: the metric exposes `seed_rule.tie` (`true` iff
+`YES == NO`, including 0:0). The `winner` field keeps the scorer convention
+above; a tie must never be reported as "the motion passed" — use the tie
+flag. Also explicit here: `ABSTAIN` counts toward `n_active` but never
+decides the winner — only the `YES` vs `NO` comparison does. Majority-rule
+variants (absolute, qualified) for specific vote types are a layer-1 concern
+(section 10); how many corpus divisions they affect is counted before the
+fixture freeze.
 
 Reported alongside: `margin` (seed tracks only) and `margin_all`
 (all vote records, including `inni`).
@@ -125,6 +134,9 @@ These rules do not alter any v0.2 metric definition.
    a written aggregation rule in this CODEBOOK first.
 5. `n` is reported with every number: scored, excluded (with reason),
    abstained, parse failures, refusals.
+6. MAE is computed over items with a valid parsed answer; refusals, parse
+   failures and abstains are excluded from the MAE denominator and reported
+   as answer coverage alongside.
 
 ## 9. Model input and contamination contract (added 2026-10-27)
 
@@ -154,9 +166,12 @@ Sejm API strings; no third-party labels.
 ### Normalization (applied in order)
 
 1. Unicode NFC.
-2. Documented repair map (curated, explicit; no general diacritic stripping):
-   `calość` → `całość` (API encoding artifact: l for ł).
-3. Casefold.
+2. Casefold.
+3. Documented repair map (keys lowercase; applied after casefold so case
+   variants of an artifact are caught; no general diacritic stripping):
+   `calość` → `całość`. The l-variant is a SOURCE-side artifact: the live
+   Sejm API itself returns `calość` for term-4 divisions (verified against
+   term4/106/11 on 2026-10-28) — not a mirror-pipeline bug.
 4. Collapse whitespace runs to a single space; strip.
 
 ### Rules (ordered; first match wins; matched against the normalized string)
@@ -167,21 +182,47 @@ Sejm API strings; no third-party labels.
 | 2 | rejection | contains | `odrzuceni` | — |
 | 3 | committee_composition | contains | `zmian w składach osobowych komisji` | — |
 | 4 | bill_whole | prefix | `całość projektu ustaw` | — |
-| 5 | resolution_whole | prefix | `całość projektu uchwał` | — |
-| 6 | election | contains | `wybor` | — |
-| 7 | wotum | contains | `wotum` | — |
-| 8 | re_enactment | contains | `ponowne uchwalenie` | — |
-| 9 | appointment | contains | `powołani` | — |
-| 10 | dismissal | contains | `odwołani` | — |
+| 5 | resolution_whole | prefix | `całość projektu uchwa` | — |
+| 6 | resolution_whole | prefix | `całość projektu rezolucj` | — |
+| 7 | election | contains | `wybór` | — |
+| 8 | election | contains | `wybor` | none of: `wyborcz` |
+| 9 | election | contains | `nad wyborem` | — |
+| 10 | wotum | contains | `wotum` | — |
+| 11 | re_enactment | contains | `ponowne uchwalenie` | — |
+| 12 | appointment | contains | `powołani` | — |
+| 13 | dismissal | contains | `odwołani` | — |
 
 Fallback: `unspecified`. Empty, missing, or `-` descriptions are outside the
-layer-1 universe. `and_any` requires at least one additional needle; needle
+layer-1 universe. `and_any` requires at least one additional needle;
+`not_contains` requires the listed needles to be absent (the `wyborcz`
+exclusion keeps electoral-law bills out of `election`). Needle
 normalization preserves leading/trailing whitespace, so a leading space is a
 word-boundary anchor — `w II/III czytaniu` does not match rule 1
 (unit-tested). Buckets below
 the minimum count (section 8, rule 3) are reported but not used in
 aggregates. Machine-readable mirror: `layer1_dictionary.json`
-(v0.1.0-draft); this section is the source of truth.
+(v0.1.1-draft); this section is the source of truth.
+
+### Bucket semantics (axis decision, recorded 2026-10-28)
+
+Buckets classify the dominant procedural ACT (rejection, choice, appointment,
+dismissal), not the subject of the vote. Known tension case:
+`wniosek w sprawie wyboru nowego składu osobowego Komisji...` is both a
+choice (election) and about committee composition — under the act-axis it
+maps to `election`. The alternative subject-axis (everything touching
+committee composition under `committee_composition`) is documented as an
+alternative; the hand-coded validation sample adjudicates the natural
+reading before freeze. The rule order alone must not be the only place this
+decision lives.
+
+### Frozen dictionary plan
+
+At freeze, the dictionary becomes the exhaustive normalized-formula → bucket
+table over the inventory (generated by `scripts/layer1_formula_buckets.py`,
+snapshot `docs/layer1-formula-buckets.json`, CI-diffed via `--check`); the
+rules above remain the proposer for new formulas. Formulas outside the table
+map to `unspecified` until a versioned dictionary change. Every future rule
+change surfaces as a classification diff on concrete formulas.
 
 ### Open design decision (must freeze before layer-1 fixtures ship, section 9.2)
 

@@ -21,6 +21,18 @@ selection bias).
 
 ## Personal data
 
-Roll-call records (names, clubs, votes) are public official records. They
-are reproduced verbatim for verification; enrichment with non-public data is
-not permitted.
+Roll-call records (names, clubs, votes) are personal data within the meaning
+of GDPR, even though they are part of an official public register. They are
+reproduced verbatim for verification; enrichment with non-public data is not
+permitted. The legal basis for redistribution has not been independently
+reviewed — this file is not legal advice. Correction or removal requests:
+open an issue or contact the maintainer (patrykorwat@gmail.com); requests
+are handled per the GOVERNANCE.md errata policy and logged in docs/errata.md.
+
+## Source reuse terms
+
+The reuse terms of api.sejm.gov.pl data are under review and will be cited
+here explicitly (PENDING). Public availability of the API is not by itself a
+complete statement of redistribution rights. Model-output licence conditions
+are the submitter's responsibility; a check item is planned for the
+scorecard contract (issue #4).

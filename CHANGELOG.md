@@ -12,6 +12,12 @@ Format follows Keep-a-Changelog; versions follow SemVer.
 - `scripts/verify_fixtures.py`: duplicate-entry and schema checks; optional per-fixture `layers` eligibility field (consumed by #1).
 - `scripts/inventory_descriptions.py`: inventory of distinct official `description` formulas per term (input to the #2 dictionary).
 - Layer 1 (issue #2): draft dictionary v0.1.0-draft (`layer1_dictionary.json`, `layer1_classify.py`), unit tests, coverage report (`docs/layer1-coverage.md`), seeded validation-sample generator (`scripts/layer1_validation_sample.py`). CODEBOOK section 10 added as DRAFT — not frozen; no layer-1 scores until freeze.
+- Layer 1 (issue #2, review round): `election` fixed — accented `wybór` forms (confirmed false negatives, ~125 divisions) map via contains `wybór` / contains `wybor` (excluding `wyborcz`) / contains `nad wyborem`; `całość projektu rezolucji` and the `uchwaly` l-variant map to resolution_whole; repair map applied after casefold (case variants caught); dictionary v0.1.1-draft.
+- Coverage report: dual denominators (88.6% of the described universe; 14.0% of the corpus) + canonical-formula grouping + rule-conflict counts; per-term table retained; CI-diffed snapshot `docs/layer1-formula-buckets.json` (`layer1_formula_buckets.py --check`).
+- Metric v0.3 (CODEBOOK): additive `seed_rule.tie` flag (ties, including 0:0, explicit; never reportable as "passed"); MAE denominator rule for refusals/parse failures (section 8); ABSTAIN-never-decides clarification (section 3).
+- Validation sample split: tuning (112 head formulas + 88 seeded tail = 200; `docs/layer1-validation-sample.csv`) and held-out test set (100 seeded tail; `docs/layer1-test-set.csv`) — the test set is scored only at dictionary freeze.
+- Governance: `SECURITY.md` (vulnerability reporting), `docs/errata.md` (register), `CITATION.cff`; `DATA_LICENSE.md`: personal-data status of named votes + source reuse terms marked pending review.
+- Bucket-semantics axis decision recorded (CODEBOOK §10): act-dominant taxonomy; tension cases documented; the hand-coded sample arbitrates.
 
 ## [0.4.2] - 2026-10-26
 ### Fixed
