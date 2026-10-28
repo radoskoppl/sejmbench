@@ -204,4 +204,4 @@ def test_dictionary_structure():
                        "re_enactment", "appointment", "dismissal"}
     assert {r["match"] for r in D["rules"]} <= {"contains", "prefix"}
     assert D["fallback"] == "unspecified"
-    assert D["repairs"] == [["calość", "całość"], ["ccałość", "całość"]]
+    assert D["normalization"]["repairs"] == [["calość", "całość"], ["ccałość", "całość"]]

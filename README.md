@@ -70,7 +70,7 @@ legislative simulation, and the benchmark gap this repo fills.
 
 ```
 $ python -m pytest tests/ -v
-51 passed
+56 passed
 $ python scripts/verify_fixtures.py
 OK fixtures/term10-s1-v2-landslide.json 538f9709c664
 OK fixtures/term10-s6-v14-tight.json  1fd2601aeef2
