@@ -1,0 +1,33 @@
+{
+  "version": "0.1.0-draft",
+  "status": "draft - pending hand-coded validation sample (issue #2); layer-1 scores may not be published until the dictionary is frozen in CODEBOOK.md",
+  "source_of_truth": "CODEBOOK.md section 10 (this file is the executable mirror)",
+  "normalization": {
+    "unicode": "NFC",
+    "casefold": true,
+    "whitespace_collapse": true,
+    "repairs": [
+      ["calość", "całość"]
+    ],
+    "repair_note": "documented data repair for a known API encoding artifact (l for ł); each entry is explicit and curated - no general diacritic stripping"
+  },
+  "rules": [
+    {"bucket": "first_reading_rejection", "match": "contains", "needle": "odrzuceni", "and_any": ["pierwszym czytaniu", " i czytaniu"]},
+    {"bucket": "rejection", "match": "contains", "needle": "odrzuceni"},
+    {"bucket": "committee_composition", "match": "contains", "needle": "zmian w składach osobowych komisji"},
+    {"bucket": "bill_whole", "match": "prefix", "needle": "całość projektu ustaw"},
+    {"bucket": "resolution_whole", "match": "prefix", "needle": "całość projektu uchwał"},
+    {"bucket": "election", "match": "contains", "needle": "wybor"},
+    {"bucket": "wotum", "match": "contains", "needle": "wotum"},
+    {"bucket": "re_enactment", "match": "contains", "needle": "ponowne uchwalenie"},
+    {"bucket": "appointment", "match": "contains", "needle": "powołani"},
+    {"bucket": "dismissal", "match": "contains", "needle": "odwołani"}
+  ],
+  "fallback": "unspecified",
+  "notes": [
+    "rules are ordered; first match wins",
+    "needle normalization preserves leading/trailing whitespace (leading space = word-boundary anchor: ' i czytaniu' must not match 'w ii czytaniu')",
+    "empty, missing, or '-' descriptions are outside the layer-1 universe (inventory docs/inventory-description.json)",
+    "buckets with volume below the minimum count defined in the release PR are reported but not used in aggregates (CODEBOOK section 8)"
+  ]
+}

@@ -142,3 +142,49 @@ These rules do not alter any v0.2 metric definition.
    cutoff (`unknown` when unverifiable). SejmBench never certifies a model
    as "uncontaminated"; the temporal holdout (issue #5) is the primary
    contamination control.
+
+## 10. Layer 1 vote-type dictionary (v0.1-draft, added 2026-10-28)
+
+Status: **DRAFT** — pending the hand-coded validation sample (issue #2). No
+layer-1 scores may be submitted or published until this section is frozen
+(freeze = validation-sample agreement reported here + status change to
+"v0.1 frozen" with a changelog entry). Ground truth comes only from official
+Sejm API strings; no third-party labels.
+
+### Normalization (applied in order)
+
+1. Unicode NFC.
+2. Documented repair map (curated, explicit; no general diacritic stripping):
+   `calość` → `całość` (API encoding artifact: l for ł).
+3. Casefold.
+4. Collapse whitespace runs to a single space; strip.
+
+### Rules (ordered; first match wins; matched against the normalized string)
+
+| # | bucket | match | pattern | and_any |
+|---|---|---|---|---|
+| 1 | first_reading_rejection | contains | `odrzuceni` | `pierwszym czytaniu` or ` i czytaniu` |
+| 2 | rejection | contains | `odrzuceni` | — |
+| 3 | committee_composition | contains | `zmian w składach osobowych komisji` | — |
+| 4 | bill_whole | prefix | `całość projektu ustaw` | — |
+| 5 | resolution_whole | prefix | `całość projektu uchwał` | — |
+| 6 | election | contains | `wybor` | — |
+| 7 | wotum | contains | `wotum` | — |
+| 8 | re_enactment | contains | `ponowne uchwalenie` | — |
+| 9 | appointment | contains | `powołani` | — |
+| 10 | dismissal | contains | `odwołani` | — |
+
+Fallback: `unspecified`. Empty, missing, or `-` descriptions are outside the
+layer-1 universe. `and_any` requires at least one additional needle; needle
+normalization preserves leading/trailing whitespace, so a leading space is a
+word-boundary anchor — `w II/III czytaniu` does not match rule 1
+(unit-tested). Buckets below
+the minimum count (section 8, rule 3) are reported but not used in
+aggregates. Machine-readable mirror: `layer1_dictionary.json`
+(v0.1.0-draft); this section is the source of truth.
+
+### Open design decision (must freeze before layer-1 fixtures ship, section 9.2)
+
+The `description` (label source) is hidden from the model. Which fields are
+visible — `title`, `topic`, or votes alone — is decided on the validation
+sample with a leakage diagnostic before the input spec freezes.

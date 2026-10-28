@@ -11,6 +11,7 @@ Format follows Keep-a-Changelog; versions follow SemVer.
 - CODEBOOK: §3 tie-break marked as a scorer convention (0:0 is not "passed"); §8 statistical protocol; §9 model input and contamination contract.
 - `scripts/verify_fixtures.py`: duplicate-entry and schema checks; optional per-fixture `layers` eligibility field (consumed by #1).
 - `scripts/inventory_descriptions.py`: inventory of distinct official `description` formulas per term (input to the #2 dictionary).
+- Layer 1 (issue #2): draft dictionary v0.1.0-draft (`layer1_dictionary.json`, `layer1_classify.py`), unit tests, coverage report (`docs/layer1-coverage.md`), seeded validation-sample generator (`scripts/layer1_validation_sample.py`). CODEBOOK section 10 added as DRAFT — not frozen; no layer-1 scores until freeze.
 
 ## [0.4.2] - 2026-10-26
 ### Fixed
