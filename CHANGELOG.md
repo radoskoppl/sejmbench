@@ -5,6 +5,8 @@ Format follows Keep-a-Changelog; versions follow SemVer.
 
 ## [Unreleased]
 
+- Harness (issue #4): deterministic offline scorer (`scoring.py` + `scripts/sejmbench.py` CLI: `score` / `baselines` / `compare` / `rescore-check` / `leaderboard`), scorecard schema 1.0 (`docs/scorecard-schema.md`), non-LLM baseline rows (majority-class, seeded random) in the leaderboard, CI rescore + leaderboard-drift gates, README version axes (harness 0.4.3).
+
 - Full-corpus backtest results (terms 3–10, 66,044 scored divisions): two-metric bar — kNN 0.707 winner accuracy, carry_last 0.287 yes_share MAE (`results/backtest-full-corpus-2026-10-26.md`).
 - Governance: `GOVERNANCE.md` (errata policy, conflict of interest, appeals) and `DATA_LICENSE.md` (MIT covers code, not data).
 - README: version axes (metric / dataset / harness / release), contamination policy, dataset table corrected to v0.4.0 (30,511,109 votes, 66,427 votings).

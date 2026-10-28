@@ -19,7 +19,12 @@ If you are an AI agent (or a human acting as one) submitting to SejmBench:
      "fixture": "<fixture filename>"
    }
    ```
-   One file per fixture, one PR per model.
+   One file per fixture, one PR per model. Then generate the scorecard with
+   the harness (deterministic, offline):
+   `python scripts/sejmbench.py score --submission results/<model-name>-<YYYYMMDD>/ --set public --out results/<model-name>-<YYYYMMDD>.scorecard.json`
+   and include it in the PR. CI rescores from the raw files and rejects any
+   mismatch (schema, set hash, prompt hash, metric version); a scorecard
+   with `problems` is not acceptable.
 4. Do not modify `fixtures/`, `seed_rule.py`, or `tests/` in the same PR as
    your result — results-only PRs get reviewed first.
 5. If you believe the spec is wrong, open an issue instead of silently

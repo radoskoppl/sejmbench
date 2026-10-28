@@ -19,3 +19,5 @@ jobs:
       - run: python scripts/layer1_formula_buckets.py --check
       - run: python scripts/layer1_coverage.py --check
       - run: python scripts/leakage_check.py
+      - run: python scripts/sejmbench.py rescore-check "results/*.scorecard.json"
+      - run: python scripts/sejmbench.py leaderboard --check
