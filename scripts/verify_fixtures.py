@@ -4,8 +4,10 @@ Checks (exit 1 on any failure):
   * every manifest entry has `file` and `sha256` (64 hex chars)
   * no duplicate `file` entries
   * every listed file exists and matches its pin
-  * every fixture *.json file is listed in the manifest (no orphans)
-  * optional `layers` field, when present, is a non-empty list of known layers
+  * every fixture *.json file is listed in the manifest (no orphans; the
+    non-fixture support files manifest.json and selection.json are exempt)
+  * optional `layers` field: a dict of per-layer booleans keyed by layer id
+    (issue #1 eligibility format), or a legacy non-empty list of layer ids
 """
 
 import glob
@@ -42,7 +44,14 @@ def verify(fixtures_dir=FIXTURES):
 
         layers = fx.get("layers")
         if layers is not None:
-            if not isinstance(layers, list) or not layers or not set(map(str, layers)) <= KNOWN_LAYERS:
+            if isinstance(layers, dict):
+                valid = (bool(layers) and set(layers) <= KNOWN_LAYERS
+                         and all(isinstance(v, bool) for v in layers.values()))
+            elif isinstance(layers, list) and layers:
+                valid = set(map(str, layers)) <= KNOWN_LAYERS
+            else:
+                valid = False
+            if not valid:
                 print(f"FAIL invalid layers field for {fname}: {layers}")
                 ok = False
 
@@ -57,9 +66,10 @@ def verify(fixtures_dir=FIXTURES):
             ok = False
         print(f"{status} {fname} {h[:12]}")
 
+    support_files = {"manifest.json", "selection.json"}
     for path in sorted(glob.glob(os.path.join(fixtures_dir, "*.json"))):
         name = os.path.basename(path)
-        if name == "manifest.json":
+        if name in support_files:
             continue
         if name not in seen:
             print(f"FAIL orphan fixture file not in manifest: {name}")

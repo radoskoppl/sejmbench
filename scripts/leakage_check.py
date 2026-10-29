@@ -11,7 +11,6 @@ fixture - the per-field/per-bucket rates feed the input-spec decision
 (section 10).
 """
 
-import glob
 import json
 import os
 import sys
@@ -26,7 +25,7 @@ from layer1_classify import normalize, load_dictionary  # noqa: E402
 def build_prompt(division):
     """Reference prompt (CODEBOOK section 5): club | name | vote lines."""
     lines = []
-    for v in division["votes"]:
+    for v in (division.get("votes") or []):
         name = " ".join(x for x in (v.get("firstName"), v.get("secondName"), v.get("lastName")) if x)
         lines.append(f"{v.get('club', '')} | {name} | {v.get('vote', '')}")
     return ("You are analyzing a roll-call division (głosowanie imienne) of the Sejm\n"
@@ -41,10 +40,10 @@ def main():
     repairs = [tuple(x) for x in d["normalization"].get("repairs", [])]
     failures = 0
     leak_rates = {}
-    fixtures = sorted(glob.glob(os.path.join(ROOT, "fixtures", "*.json")))
+    with open(os.path.join(ROOT, "fixtures", "manifest.json"), encoding="utf-8") as fh:
+        manifest = json.load(fh)
+    fixtures = [os.path.join(ROOT, e["file"]) for e in manifest["fixtures"]]
     for path in fixtures:
-        if path.endswith("manifest.json"):
-            continue
         div = json.load(open(path, encoding="utf-8"))
         prompt = build_prompt(div)
         desc = (div.get("description") or "").strip()
@@ -62,7 +61,7 @@ def main():
                 if hit:
                     key = (field, rule["bucket"])
                     leak_rates[key] = leak_rates.get(key, 0) + 1
-    print(f"fixtures scanned: {sum(1 for p in fixtures if not p.endswith('manifest.json'))}")
+    print(f"fixtures scanned: {len(fixtures)}")
     print("needle hits in candidate visible fields (informational, feeds the input-spec decision):")
     for (field, bucket), n in sorted(leak_rates.items()):
         print(f"  {field:6s} {bucket:24s} {n}")

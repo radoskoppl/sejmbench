@@ -63,3 +63,18 @@ def test_layers_valid_and_invalid(tmp_path):
     sha = _sha(data)
     assert _make(tmp_path, [{"file": "a.json", "sha256": sha, "layers": ["0.1"]}], {"a.json": data}) is True
     assert _make(tmp_path, [{"file": "a.json", "sha256": sha, "layers": ["9.9"]}], {"a.json": data}) is False
+    assert _make(tmp_path, [{"file": "a.json", "sha256": sha,
+                             "layers": {"0.1": True, "0.2": True, "1": False}}], {"a.json": data}) is True
+    assert _make(tmp_path, [{"file": "a.json", "sha256": sha,
+                             "layers": {"9.9": True}}], {"a.json": data}) is False
+    assert _make(tmp_path, [{"file": "a.json", "sha256": sha,
+                             "layers": {"0.1": "yes"}}], {"a.json": data}) is False
+    assert _make(tmp_path, [{"file": "a.json", "sha256": sha,
+                             "layers": {}}], {"a.json": data}) is False
+
+
+def test_selection_file_is_not_an_orphan(tmp_path):
+    data = _data()
+    sha = _sha(data)
+    files = {"a.json": data, "selection.json": json.dumps({"seed": 20261027})}
+    assert _make(tmp_path, [{"file": "a.json", "sha256": sha}], files) is True

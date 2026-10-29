@@ -213,7 +213,7 @@
     }
   ],
   "generated_by": "sejmbench scorer (scorecard schema 1.1)",
-  "harness_version": "0.4.5",
+  "harness_version": "0.4.6",
   "items": [
     {
       "abstain_marker": false,
