@@ -230,3 +230,82 @@ change surfaces as a classification diff on concrete formulas.
 The `description` (label source) is hidden from the model. Which fields are
 visible — `title`, `topic`, or votes alone — is decided on the validation
 sample with a leakage diagnostic before the input spec freezes.
+
+## 11. Stratified fixture set (v0.3; strata frozen 2026-10-28, before sampling)
+
+Status: **FROZEN BEFORE SAMPLING.** The sampling frame is the public mirror
+snapshot (`votings` config, dataset v0.4.0); the frame file's sha256 is
+recorded in the committed selection output. The selection script
+(`scripts/select_fixtures.py`, seed `20261027`) is committed; its output
+list (`fixtures/selection.json`) is committed. This set is a regression and
+development set, not a model-ranking set (n=50 → CI half width ≈ 0.13).
+
+### Universe
+
+Eligible divisions: `totalVoted > 0` AND `yes + no + abstain == totalVoted`,
+terms 3–10. Zero-counter divisions (election-type) and counter-inconsistent
+rows are outside the sampled universe (curated eligibility cases may come
+from the zero-counter pool).
+
+### Margin buckets (ordered; m = |yes − no| over API headline counts)
+
+1. `tie` — yes == no, including 0:0. Curated only, never sampled.
+2. `unanimous` — no == 0 < yes.
+3. `edge` — 1 ≤ m ≤ 5.
+4. `narrow` — 6 ≤ m ≤ 20.
+5. `comfortable` — 21 ≤ m ≤ 100.
+6. `landslide` — m > 100 (no > 0).
+
+### Type bucket
+
+`layer1_classify(description)` when the description is a real formula;
+otherwise `unknown`. `unknown` here is a stratification label, distinct
+from the layer-1 `unspecified` bucket (present-but-unmatched formulas);
+empty/missing descriptions are outside the layer-1 universe.
+
+### Allocation (50 total = 2 anchors + 2 curated + 46 sampled)
+
+| stratum | total | anchor | curated | sampled |
+|---|---|---|---|---|
+| tie | 1 | — | 1 | 0 |
+| election (zero-counter) | 1 | — | 1 | 0 |
+| unanimous | 9 | 1 (term10-s1-v2) | — | 8 |
+| edge | 10 | — | — | 10 |
+| narrow | 10 | — | — | 10 |
+| comfortable | 9 | 1 (term10-s6-v14) | — | 8 |
+| landslide | 10 | — | — | 10 |
+
+If the eligible tie pool is empty, the tie cell is documented empty and the
+slot reallocates to `landslide` (noted in the selection output). Curated
+items are hand-picked edge classes tagged `curated` and kept separate from
+sampled items; club-split curated cases arrive with the club-mapping PR.
+
+### Within-bucket sampling rule (deterministic, frozen)
+
+Pool sorted by (term, sitting, votingNumber); `random.Random(20261027)`.
+
+1. Pass 1 (type diversity): type buckets sorted alphabetically; take the
+   first `min(|types|, quota − 3)` types; one item per type via
+   `rng.randrange` over that type's candidates.
+2. Pass 2 (term spread): round-robin over terms 3–10 (repeating cycles);
+   one item per visit via `rng.randrange` among that term's remaining pool,
+   until the quota is met.
+
+Within-bucket n ≈ 10 cannot guarantee full term × type coverage; the rule
+guarantees up to `quota − 3` distinct types and at least 3 term-spread
+slots per bucket. Cell counts per stratum and per (margin, type) cell are
+reported in the selection output; empty cells carry the reason.
+
+### Layer eligibility (manifest field)
+
+Per fixture: `layers.0.1` / `layers.0.2` — true iff headline counters are
+usable (false only for zero-counter divisions); `layers.1` — true iff a
+real description formula is present (layer-1 universe).
+
+### Provenance
+
+Each fixture carries `source_url` (API detail endpoint) and
+`response_sha256` (sha256 of the raw API response bytes at fetch time).
+`scripts/verify_provenance.py` re-fetches every fixture from the live API
+and compares field-by-field against both the fixture file and the mirror
+row.
