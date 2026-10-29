@@ -19,7 +19,95 @@
     "totalVoted": 458
    },
    "source_url": "https://api.sejm.gov.pl/sejm/term10/votings/1/2",
-   "n_vote_records": 460
+   "n_vote_records": 460,
+   "response_sha256": "81e78d523d45b536d3c92346d8581ee4cf36441c19a92db6eb785ff031b7b3d6"
+  },
+  {
+   "file": "fixtures/term10-s1-v47-comfortable.json",
+   "sha256": "fafb791807ddec7ad56e0909cca210d5b9e8d38892e4430f7a4e8c1291d69144",
+   "response_sha256": "12bee8a32515d2b45e9a171c6132d390169458c23b19f6b5905e3f72e1040e50",
+   "term": 10,
+   "sitting": 1,
+   "votingNumber": 47,
+   "title": "Pkt. 24 Odwołanie członków Państwowej Komisji do spraw badania wpływów rosyjskich na bezpieczeństwo wewnętrzne Rzeczypospolitej Polskiej w latach 2007-2022 (druk nr 62)",
+   "date": "2023-11-29T20:05:21",
+   "kind": "ELECTRONIC",
+   "description": "wniosek o odwołanie Marka Szymaniaka ze stanowiska członka Państwowej Komisji do spraw badania wpływów rosyjskich na bezpieczeństwo wewnętrzne Rzeczypospolitej Polskiej w latach 2007-2022",
+   "counts": {
+    "yes": 249,
+    "no": 187,
+    "abstain": 6,
+    "notParticipating": 18,
+    "totalVoted": 442
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term10/votings/1/47",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "comfortable",
+   "type_bucket": "dismissal",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term10-s17-v50-narrow.json",
+   "sha256": "3607c1d7d220c4da2320e5a28cfbcd48d589f47a737d2ce7ec03dec97daaa10e",
+   "response_sha256": "e8801fbf17afa7064da6cf48d218f9eb0be805d434cb8bee0842436b310f303e",
+   "term": 10,
+   "sitting": 17,
+   "votingNumber": 50,
+   "title": "Pkt. 18 Powołanie członków Państwowej Komisji do spraw przeciwdziałania wykorzystaniu seksualnemu małoletnich poniżej lat 15 (druki nr 592, 593, 594, 595, 596, 598, 624, 625, 626, 627, 628 i 630)",
+   "date": "2024-09-13T13:04:47",
+   "kind": "ELECTRONIC",
+   "description": "wniosek w sprawie powołania Aleksandry Krasowskiej na członka Państwowej Komisji do spraw przeciwdziałania wykorzystaniu seksualnemu małoletnich poniżej lat 15 (większość 3/5 głosów) - drugi wakat",
+   "counts": {
+    "yes": 209,
+    "no": 224,
+    "abstain": 3,
+    "notParticipating": 23,
+    "totalVoted": 436
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term10/votings/17/50",
+   "n_vote_records": 459,
+   "selection": "sampled",
+   "margin_bucket": "narrow",
+   "type_bucket": "appointment",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term10-s54-v31-unanimous.json",
+   "sha256": "522278f68e075d70afcdd7ce4ec30b7a537ada29cb89bf655f795bd044cd2749",
+   "response_sha256": "230fef768492f35a339cc0248d27878b42f818172b9f9a094515c1dd4551ecda",
+   "term": 10,
+   "sitting": 54,
+   "votingNumber": 31,
+   "title": "Pkt. 3 Sprawozdanie Komisji o rządowym projekcie ustawy o zmianie ustawy - Prawo o szkolnictwie wyższym i nauce (druki nr 2291 i 2310)",
+   "date": "2026-03-27T12:42:45",
+   "kind": "ELECTRONIC",
+   "description": "całość projektu ustawy",
+   "counts": {
+    "yes": 437,
+    "no": 0,
+    "abstain": 0,
+    "notParticipating": 23,
+    "totalVoted": 437
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term10/votings/54/31",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "unanimous",
+   "type_bucket": "bill_whole",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
   },
   {
    "file": "fixtures/term10-s6-v14-tight.json",
@@ -38,7 +126,1318 @@
     "totalVoted": 421
    },
    "source_url": "https://api.sejm.gov.pl/sejm/term10/votings/6/14",
-   "n_vote_records": 458
+   "n_vote_records": 458,
+   "response_sha256": "27ee7ef874bef8dfa494ad1621355eb35f88dd663a314513293f39a494c6821f"
+  },
+  {
+   "file": "fixtures/term3-s109-v18-edge.json",
+   "sha256": "b3e741f1692e3c2f9650cf73bdd76173a2bc56ca21d5566e79fe7d64ab6fd46a",
+   "response_sha256": "44ae61e232681f6296b74fd9abce29e822b01ced6058b273829526c409fbc923",
+   "term": 3,
+   "sitting": 109,
+   "votingNumber": 18,
+   "title": "PKT 18. PORZ. DZIEN. SPRAWOZDANIE KOMISJI O PROJEKCIE USTAWY O ZMIANIE USTAWY O O POLICJI, USTAWY O DZIAŁALN. UBEZP., USTAWYPRAWO BANKOWE - TRZECIE CZYTANIE",
+   "date": "2001-05-24T10:19:53",
+   "kind": "ELECTRONIC",
+   "description": " ",
+   "counts": {
+    "yes": 202,
+    "no": 198,
+    "abstain": 5,
+    "notParticipating": 55,
+    "totalVoted": 405
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term3/votings/109/18",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "edge",
+   "type_bucket": "unknown",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": false
+   }
+  },
+  {
+   "file": "fixtures/term3-s109-v26-edge.json",
+   "sha256": "ec09c513432b9dbaa8c8f05cc8c3f99af63a95a7ae7d894ffd244bc3c3b9b9de",
+   "response_sha256": "59b1f417b23047d07846c55cdbc379031f3bc12f4b61ce9fe19b767135fabd74",
+   "term": 3,
+   "sitting": 109,
+   "votingNumber": 26,
+   "title": "PKT 19. PORZ. DZIEN. SPRAWOZDANIE KOMISJI W SPRAWIE WNIOSKU PREZYDENTA RP O PONOWNE ROZPATRZENIE USTAWY Z DNIA 7 MARCA 2001 R. O REPRYWATYZACJI",
+   "date": "2001-05-25T09:24:38",
+   "kind": "ELECTRONIC",
+   "description": "wniosek o ponowne uchwalenie ustawy",
+   "counts": {
+    "yes": 211,
+    "no": 207,
+    "abstain": 3,
+    "notParticipating": 39,
+    "totalVoted": 421
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term3/votings/109/26",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "edge",
+   "type_bucket": "re_enactment",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term3-s117-v237-narrow.json",
+   "sha256": "a3502e37ca4c531231597d4d02ef6c990dc5fc159c2a6ad0188d6f0e7f62dbd9",
+   "response_sha256": "80bcdf67cc9c111271c84c4844497e5d7e1efe9f98f3bd95b0651b8c77ed86ed",
+   "term": 3,
+   "sitting": 117,
+   "votingNumber": 237,
+   "title": "PKT 38.PORZ. DZIEN. SPRAW.KOM.O PROJ.UST O ZM.UST.:KODEKS KA RNY,KPK, KKW ORAZ UST.O ZM.NIEKT.PRZEPISÓW DOT. KARY DOŻYWOTNIEGO POZB.WOL NOŚCIIII CZYTANIE",
+   "date": "2001-08-24T09:45:55",
+   "kind": "ELECTRONIC",
+   "description": " ",
+   "counts": {
+    "yes": 197,
+    "no": 184,
+    "abstain": 6,
+    "notParticipating": 73,
+    "totalVoted": 387
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term3/votings/117/237",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "narrow",
+   "type_bucket": "unknown",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": false
+   }
+  },
+  {
+   "file": "fixtures/term3-s65-v23-edge.json",
+   "sha256": "78d5750b502410322f0b6f30107102c5c20adb5dfed3bb39746cc1773da56207",
+   "response_sha256": "ff18b0f4d9db68739ec49ae1e7aee6a6d14ac29c207b3770769ff1d1abe92f2e",
+   "term": 3,
+   "sitting": 65,
+   "votingNumber": 23,
+   "title": "PKT 9. PORZ. DZIEN. SPRAWOZDANIE KOMISJI O PROJEKCIE USTAWY O ZMIANIE USTAWY O GOSPODARCE NIERUCHOMOŚCIAMI -TRZECIE CZYTANIE",
+   "date": "1999-12-02T09:38:29",
+   "kind": "ELECTRONIC",
+   "description": " ",
+   "counts": {
+    "yes": 188,
+    "no": 190,
+    "abstain": 24,
+    "notParticipating": 58,
+    "totalVoted": 402
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term3/votings/65/23",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "edge",
+   "type_bucket": "unknown",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": false
+   }
+  },
+  {
+   "file": "fixtures/term3-s69-v32-unanimous.json",
+   "sha256": "737c79e0d1e9957bd0a2d7a1a1fb224e710b8cb8316caec2186934174012405a",
+   "response_sha256": "97c2f9bc5a28b4f0217cdc6d7e0dd7c05aaefd1c2c1d6b76b30304a9fc9e967f",
+   "term": 3,
+   "sitting": 69,
+   "votingNumber": 32,
+   "title": "PKT 5. PORZ. DZIEN. SPRAWOZDANIE KOMISJI O PROJEKCIE USTAWY O ZMIANIE USTAWY O POMOCY SPOŁECZNEJ",
+   "date": "2000-01-07T09:17:49",
+   "kind": "ELECTRONIC",
+   "description": " ",
+   "counts": {
+    "yes": 412,
+    "no": 0,
+    "abstain": 0,
+    "notParticipating": 48,
+    "totalVoted": 412
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term3/votings/69/32",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "unanimous",
+   "type_bucket": "unknown",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": false
+   }
+  },
+  {
+   "file": "fixtures/term3-s7-v2-comfortable.json",
+   "sha256": "444048ce3a78b410f9d0be43af49159babecb387013a89325b400a1b879e4c47",
+   "response_sha256": "2c3032b4548c746246db5a386cf013d44c5b58e9da033735ac2f0f8561981637",
+   "term": 3,
+   "sitting": 7,
+   "votingNumber": 2,
+   "title": "PKT 2. PORZ. DZIEN. SPRAWOZDANIE KOMISJI W SPRAWIE WNIOSKU PREZYDENTA RP O PONOWNE ROZPATRZENIE USTAWY O ZMIANIE USTAWY O PLANOWANIU RODZINY",
+   "date": "1997-12-30T17:17:58",
+   "kind": "ELECTRONIC",
+   "description": "wniosek o ponowne uchwalenie ustawy",
+   "counts": {
+    "yes": 260,
+    "no": 172,
+    "abstain": 12,
+    "notParticipating": 16,
+    "totalVoted": 444
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term3/votings/7/2",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "comfortable",
+   "type_bucket": "re_enactment",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term3-s71-v40-edge.json",
+   "sha256": "e45767f23794648b907a70588b676edb4dce74647a90a3f71a42538b36692f09",
+   "response_sha256": "9006693caf0ce7f24c243d6ce9a80939fff336306e09eaadd015f0ff6a555f9a",
+   "term": 3,
+   "sitting": 71,
+   "votingNumber": 40,
+   "title": "PKT 7. PORZ. DZIEN. SPRAWOZDANIE KOMISJI O PROJEKCIE USTAWY O ZM. UST. O KOMERCJALIZACJI I PRYWATYZ. PRZEDSIĘB. PAŃSTW. ORAZ NIEKT. USTAW -TRZECIE CZYTANIE",
+   "date": "2000-02-18T12:39:09",
+   "kind": "ELECTRONIC",
+   "description": "całość projektu ustawy",
+   "counts": {
+    "yes": 203,
+    "no": 205,
+    "abstain": 7,
+    "notParticipating": 44,
+    "totalVoted": 415
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term3/votings/71/40",
+   "n_vote_records": 459,
+   "selection": "sampled",
+   "margin_bucket": "edge",
+   "type_bucket": "bill_whole",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term3-s73-v20-tie.json",
+   "sha256": "6ebd7ec2f35d1f4837ba5e088163b0cba78627e44eac82084e6b4fbb8df4e1ea",
+   "response_sha256": "84f7adc0a70142c57d4dced6aea2c4d8bf4956a41b4abf54adadc4af3d32d40c",
+   "term": 3,
+   "sitting": 73,
+   "votingNumber": 20,
+   "title": "PKT 11. PORZ. DZIEN. SPR. KOMISJI O STAN. SENATU W SPR. UST. O ZM.UST. O ZWALCZANIU NIEUCZCIWEJ KONKURENCJI ORAZ O ZM. USTAWY O RADIOFONII I TELEWIZJI",
+   "date": "2000-03-16T09:24:22",
+   "kind": "ELECTRONIC",
+   "description": " ",
+   "counts": {
+    "yes": 205,
+    "no": 205,
+    "abstain": 3,
+    "notParticipating": 47,
+    "totalVoted": 413
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term3/votings/73/20",
+   "n_vote_records": 460,
+   "selection": "curated",
+   "margin_bucket": "tie",
+   "type_bucket": "unknown",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": false
+   }
+  },
+  {
+   "file": "fixtures/term3-s78-v63-landslide.json",
+   "sha256": "e17df57474f9867f4baed1c559a4e3d7816abd49aa5c3947ab834ce371e1c06a",
+   "response_sha256": "369fadb9b75746e27a96eb43d05ad38012e868a1b28811b6e7c80db7624b306a",
+   "term": 3,
+   "sitting": 78,
+   "votingNumber": 63,
+   "title": "PKT 24. PORZ. DZIEN. SPRAWOZDANIE KOMISJI O STANOWISKU SENATU W SPRAWIE USTAWY O ZASADACH WSPIERANIA ROZWOJU REGIONALNEGO",
+   "date": "2000-05-12T10:08:00",
+   "kind": "ELECTRONIC",
+   "description": " ",
+   "counts": {
+    "yes": 6,
+    "no": 409,
+    "abstain": 1,
+    "notParticipating": 44,
+    "totalVoted": 416
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term3/votings/78/63",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "landslide",
+   "type_bucket": "unknown",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": false
+   }
+  },
+  {
+   "file": "fixtures/term3-s78-v7-narrow.json",
+   "sha256": "840334b837864e42a35aa25273e571b405301295e868c06c083985579a409c7d",
+   "response_sha256": "2478981bc43c6c1612fbce067b6f98a0034ba8103ed43b62fdd3775e33e99200",
+   "term": 3,
+   "sitting": 78,
+   "votingNumber": 7,
+   "title": "PKT 7. PORZ. DZIEN. SPRAWOZDANIE KOMISJI W SPRAWIE WNIOSKU PREZYDENTA RP O PONOWNE ROZPATRZENIE UST.Z 3 III 2000 O ZMIANIE USTAWY - KODEKS KARNY",
+   "date": "2000-05-11T09:20:00",
+   "kind": "ELECTRONIC",
+   "description": "wniosek o ponowne uchwalenie ustawy",
+   "counts": {
+    "yes": 214,
+    "no": 202,
+    "abstain": 6,
+    "notParticipating": 38,
+    "totalVoted": 422
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term3/votings/78/7",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "narrow",
+   "type_bucket": "re_enactment",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term4-s108-v8-landslide.json",
+   "sha256": "da64e3ee9ed77f4c1fd37b006d8e9f7f58586aebf0c7db9722b4875074bcee7f",
+   "response_sha256": "f14e856cb1eafd55cd04a07417402675de581cd7357a2398405895f1bfe6c189",
+   "term": 4,
+   "sitting": 108,
+   "votingNumber": 8,
+   "title": "Pkt 63. porz. dzien. Sprawozdanie Komisji o projektach ustaw: 1) o ustanowieniu 31 sierpnia  Dniem Solidarności i Wolności, 2) o ustanowieniu 31 sierpnia - rocznicy podpisania porozumień sierpniowych Dniem Solidarności i Wolności",
+   "date": "2005-07-27T17:07:34",
+   "kind": "ELECTRONIC",
+   "description": "calość projektu ustawy",
+   "counts": {
+    "yes": 364,
+    "no": 8,
+    "abstain": 2,
+    "notParticipating": 86,
+    "totalVoted": 374
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term4/votings/108/8",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "landslide",
+   "type_bucket": "bill_whole",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term4-s109-v2-unanimous.json",
+   "sha256": "26fd9be97ff2a3d4e0532338127808019ef5d814a3e42ccb485a1043cb225bac",
+   "response_sha256": "0974c9c58b74631182ec66e536f4fbeacbcdc51d1e6d8610e2be151beff5e066",
+   "term": 4,
+   "sitting": 109,
+   "votingNumber": 2,
+   "title": "Pkt 1. porz. dzien. Sprawozdanie Komisji w sprawie wniosku Prezydenta RP o ponowne rozpatrzenie ustawy z dnia 29 lipca 2005 r. o zwrocie osobom fizycznym niektórych wydatków związanych z budownictwem mieszkaniowym",
+   "date": "2005-08-29T19:33:18",
+   "kind": "ELECTRONIC",
+   "description": "wniosek Komisji o ponowne uchwalenie ustawy w brzmieniu dotychczasowym",
+   "counts": {
+    "yes": 388,
+    "no": 0,
+    "abstain": 3,
+    "notParticipating": 69,
+    "totalVoted": 391
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term4/votings/109/2",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "unanimous",
+   "type_bucket": "re_enactment",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term4-s22-v57-comfortable.json",
+   "sha256": "db794a36e2a832d85b087e30ef78eac37765a27b6a7c06e3026464cf98f4c9a7",
+   "response_sha256": "6c799262d18d32ffe5c49477ff9e56de25c6cfe7e343452331a559cfbbaea4ed",
+   "term": 4,
+   "sitting": 22,
+   "votingNumber": 57,
+   "title": "Pkt 9. porz. dzien. Sprawozdanie Komisji o projekcie ustawy o zmianie ustawy o uprawnieniach do ulgowych przejazdów środkami publicznego transportu zbiorowego",
+   "date": "2002-05-22T19:46:06",
+   "kind": "ELECTRONIC",
+   "description": " ",
+   "counts": {
+    "yes": 184,
+    "no": 233,
+    "abstain": 2,
+    "notParticipating": 41,
+    "totalVoted": 419
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term4/votings/22/57",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "comfortable",
+   "type_bucket": "unknown",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": false
+   }
+  },
+  {
+   "file": "fixtures/term4-s30-v12-unanimous.json",
+   "sha256": "6116b0128925c4b1845d3b9dc0c0c24ecc90ab33441b73eda1c56dfcd395d953",
+   "response_sha256": "6ece6ebbe4f7bad431daa4114ca11a21adead9bb7525f064b14689e4bb0ab54d",
+   "term": 4,
+   "sitting": 30,
+   "votingNumber": 12,
+   "title": "Pkt 1. porz. dzien. Sprawozdanie Komisji o projekcie ustawy o jednorazowym opodatkowaniu nieujawnionego dochodu oraz o zmianie ustawy - Ordynacja podatkowa i ustawy - Kodeks karny skarbowy",
+   "date": "2002-09-26T17:27:44",
+   "kind": "ELECTRONIC",
+   "description": " ",
+   "counts": {
+    "yes": 382,
+    "no": 0,
+    "abstain": 0,
+    "notParticipating": 78,
+    "totalVoted": 382
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term4/votings/30/12",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "unanimous",
+   "type_bucket": "unknown",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": false
+   }
+  },
+  {
+   "file": "fixtures/term4-s49-v5-landslide.json",
+   "sha256": "9ea7f65e3f72f51b3bb79cf92b138c294556d1dca9a8dc4fc96b95c6f4673b1e",
+   "response_sha256": "6455ef41cf8084d84cf1504c32623ecad0257e525080b82eef3f3048c54d2970",
+   "term": 4,
+   "sitting": 49,
+   "votingNumber": 5,
+   "title": "Pkt 4. porz. dzien. Sprawozdanie Komisji o projekcie ustawy o utworzeniu Wojewódzkich Kolegiów Skarbowych oraz o zmianie niektórych ustaw regulujących zadania i kompetencje organów oraz organizację jednostek organizacyjnych podległych ministrowi właściwem",
+   "date": "2003-05-20T17:17:05",
+   "kind": "ELECTRONIC",
+   "description": " ",
+   "counts": {
+    "yes": 124,
+    "no": 265,
+    "abstain": 0,
+    "notParticipating": 71,
+    "totalVoted": 389
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term4/votings/49/5",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "landslide",
+   "type_bucket": "unknown",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": false
+   }
+  },
+  {
+   "file": "fixtures/term4-s67-v100-edge.json",
+   "sha256": "6522e59d72dff969522ac4f8388f8b627f0ebd219ee0f8017b9a1eb980ee2fae",
+   "response_sha256": "10e768e2e7d05ac679118aa7da6d68184c58c8aa4a7c4c8e098f379aec32f7eb",
+   "term": 4,
+   "sitting": 67,
+   "votingNumber": 100,
+   "title": "Pkt 17. porz. dzien. Sprawozdanie Komisji o stanowisku Senatu w sprawie ustawy budżetowej na rok 2004",
+   "date": "2004-01-23T17:55:52",
+   "kind": "ELECTRONIC",
+   "description": " ",
+   "counts": {
+    "yes": 213,
+    "no": 216,
+    "abstain": 10,
+    "notParticipating": 21,
+    "totalVoted": 439
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term4/votings/67/100",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "edge",
+   "type_bucket": "unknown",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": false
+   }
+  },
+  {
+   "file": "fixtures/term4-s69-v39-narrow.json",
+   "sha256": "a8a5478db481262475fdb660d1f6bb67c3741c3babed079baa7ef42fd8d8b571",
+   "response_sha256": "d46e8f9a1dcd6b85017935e28b6d3802be99c471020faca3ade47cc8c15bafa8",
+   "term": 4,
+   "sitting": 69,
+   "votingNumber": 39,
+   "title": "Pkt 28. porz. dzien. Głosowanie nad wnioskiem o odrzucenie informacji Rządu w sprawie możliwych zagrożeń i działań zapobiegających destabilizacji bilansu energetycznego kraju",
+   "date": "2004-03-04T21:31:03",
+   "kind": "ELECTRONIC",
+   "description": " ",
+   "counts": {
+    "yes": 206,
+    "no": 225,
+    "abstain": 1,
+    "notParticipating": 28,
+    "totalVoted": 432
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term4/votings/69/39",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "narrow",
+   "type_bucket": "unknown",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": false
+   }
+  },
+  {
+   "file": "fixtures/term4-s73-v386-edge.json",
+   "sha256": "eed46ec5ecdd15162e09b9a799cfef7560300dae3a30d4ae13fc8f9e631900fa",
+   "response_sha256": "7d49a9f00df515ca96c71e5886400b009ab4283e9d8b6d12108df14bfbc2c918",
+   "term": 4,
+   "sitting": 73,
+   "votingNumber": 386,
+   "title": "Pkt 76. porz. dzien. Zmiana na stanowisku Marszałka Sejmu",
+   "date": "2004-04-21T00:21:24",
+   "kind": "ELECTRONIC",
+   "description": "wybór posła Józefa Oleksego na stanowisko Marszałka Sejmu",
+   "counts": {
+    "yes": 189,
+    "no": 185,
+    "abstain": 1,
+    "notParticipating": 85,
+    "totalVoted": 375
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term4/votings/73/386",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "edge",
+   "type_bucket": "election",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term4-s98-v64-edge.json",
+   "sha256": "686e3b2e0310c79e48f86f45ed60f10e4b596eaacdea4130359e532b70a893c7",
+   "response_sha256": "58ca10cd7f4985aaec3364b50560fefc9f7e38a35a8f2e8deb501cfe61b26380",
+   "term": 4,
+   "sitting": 98,
+   "votingNumber": 64,
+   "title": "Pkt 12. porz. dzien. Pierwsze czytanie poselskiego projektu uchwały wzywającej Premiera Marka Belkę do rezygnacji z zajmowanego stanowiska",
+   "date": "2005-03-04T09:10:23",
+   "kind": "ELECTRONIC",
+   "description": "całość projektu uchwały",
+   "counts": {
+    "yes": 213,
+    "no": 215,
+    "abstain": 7,
+    "notParticipating": 25,
+    "totalVoted": 435
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term4/votings/98/64",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "edge",
+   "type_bucket": "resolution_whole",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term5-s15-v11-landslide.json",
+   "sha256": "31f66316e92493ae6454eca93968eaaa205e5df9265e400a4853addeefec1d59",
+   "response_sha256": "4c308488aada7cc4a108c9e36141159d5478971ed74cbc9bd65af9f71824502f",
+   "term": 5,
+   "sitting": 15,
+   "votingNumber": 11,
+   "title": "Pkt 5. porz. dzien. Sprawozdanie Komisji o projekcie ustawy o finansowaniu Wyższej Szkoły Filozoficzno-Pedagogicznej \"Ignatianum\" w Krakowie z budżetu państwa",
+   "date": "2006-04-05T09:18:09",
+   "kind": "ELECTRONIC",
+   "description": "wniosek o nieodsyłanie projektu ustawy ponownie do Komisji w celu rozpatrzenia wniosku o odrzucenie projektu ustawy w całości",
+   "counts": {
+    "yes": 367,
+    "no": 49,
+    "abstain": 2,
+    "notParticipating": 41,
+    "totalVoted": 418
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term5/votings/15/11",
+   "n_vote_records": 459,
+   "selection": "sampled",
+   "margin_bucket": "landslide",
+   "type_bucket": "rejection",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term5-s22-v144-unanimous.json",
+   "sha256": "9032a48edbe6a99c34e146c43d33a2cc0cae47ec65b4e6aa3c553e186846e73d",
+   "response_sha256": "8aebe8b52f8711054ad3b6170c083646518d4fdac8f2a5efeb1f447e944bdf4d",
+   "term": 5,
+   "sitting": 22,
+   "votingNumber": 144,
+   "title": "Pkt 49. porz. dzien. Sprawozdanie Komisji o stanowisku Senatu w sprawie ustawy o zmianie ustawy o transporcie kolejowym",
+   "date": "2006-07-22T11:54:13",
+   "kind": "ELECTRONIC",
+   "description": " ",
+   "counts": {
+    "yes": 392,
+    "no": 0,
+    "abstain": 0,
+    "notParticipating": 67,
+    "totalVoted": 392
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term5/votings/22/144",
+   "n_vote_records": 459,
+   "selection": "sampled",
+   "margin_bucket": "unanimous",
+   "type_bucket": "unknown",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": false
+   }
+  },
+  {
+   "file": "fixtures/term5-s27-v118-unanimous.json",
+   "sha256": "cff4bbdb37fd3cf1c9b21e51ddb08c59dab488b559feca43c18d9947b39c3f34",
+   "response_sha256": "c33aedd327f1c2ac518c028b820365afd043c879c20b3ed043c954da84a465a4",
+   "term": 5,
+   "sitting": 27,
+   "votingNumber": 118,
+   "title": "Pkt 28. porz. dzien. Zmiany w składach osobowych komisji sejmowych",
+   "date": "2006-10-27T16:40:01",
+   "kind": "ELECTRONIC",
+   "description": "wniosek w sprawie zmian w składach osobowych komisji sejmowych",
+   "counts": {
+    "yes": 305,
+    "no": 0,
+    "abstain": 4,
+    "notParticipating": 151,
+    "totalVoted": 309
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term5/votings/27/118",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "unanimous",
+   "type_bucket": "committee_composition",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term5-s31-v52-edge.json",
+   "sha256": "a5a34c136ab5034c381a94ca81b6ddd8cd9288106e823a7065ea60d14a53ee15",
+   "response_sha256": "4112313ec5bf5d41f7ff2fb9e97e677a468845d092c160581da6b767817185a5",
+   "term": 5,
+   "sitting": 31,
+   "votingNumber": 52,
+   "title": "Pkt 9. porz. dzien. Sprawozdanie Komisji o projekcie ustawy budżetowej na rok 2007 - trzecie czytanie",
+   "date": "2006-12-15T15:45:45",
+   "kind": "ELECTRONIC",
+   "description": " ",
+   "counts": {
+    "yes": 213,
+    "no": 209,
+    "abstain": 2,
+    "notParticipating": 35,
+    "totalVoted": 424
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term5/votings/31/52",
+   "n_vote_records": 459,
+   "selection": "sampled",
+   "margin_bucket": "edge",
+   "type_bucket": "unknown",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": false
+   }
+  },
+  {
+   "file": "fixtures/term5-s38-v81-narrow.json",
+   "sha256": "3b7ef746ea6574cfcbb8826e01e7695500cd9536c63d2a46a3640188f01a1892",
+   "response_sha256": "e00e381d224ce5125c29d32a782bf9f7adf3b2dfee6474698e58007faa4e3005",
+   "term": 5,
+   "sitting": 38,
+   "votingNumber": 81,
+   "title": "Pkt 21. porz. dzien. Sprawozdanie Komisji o stanowisku Senatu w sprawie ustawy o zmianie ustawy - Prawo farmaceutyczne oraz o zmianie niektórych innych ustaw",
+   "date": "2007-03-30T12:38:56",
+   "kind": "ELECTRONIC",
+   "description": " ",
+   "counts": {
+    "yes": 193,
+    "no": 213,
+    "abstain": 0,
+    "notParticipating": 54,
+    "totalVoted": 406
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term5/votings/38/81",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "narrow",
+   "type_bucket": "unknown",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": false
+   }
+  },
+  {
+   "file": "fixtures/term5-s41-v163-comfortable.json",
+   "sha256": "1cef26742fcfed337600e10488bed2a19cfa071c8ffaa2ef6e4aca847a96ccf8",
+   "response_sha256": "aecbfff2a5bc88a71e878f2298d95f25445dfc679a54d3e6cc9a1c594dcf9edc",
+   "term": 5,
+   "sitting": 41,
+   "votingNumber": 163,
+   "title": "Pkt 35. porz. dzien. Sprawozdanie Komisji o projekcie ustawy o wielkopowierzchniowych obiektach handlowych - trzecie czytanie ",
+   "date": "2007-05-11T01:03:08",
+   "kind": "ELECTRONIC",
+   "description": null,
+   "counts": {
+    "yes": 233,
+    "no": 158,
+    "abstain": 5,
+    "notParticipating": 64,
+    "totalVoted": 396
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term5/votings/41/163",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "comfortable",
+   "type_bucket": "unknown",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": false
+   }
+  },
+  {
+   "file": "fixtures/term6-s51-v15-narrow.json",
+   "sha256": "817c7a9791a2e7e51d48b5a28ce8f64f8ec6f34b29db176982089aa272d45c34",
+   "response_sha256": "a3656295e4da3b917b4d1ad6d2a47baee7536b2e4485d97d418f140c570381df",
+   "term": 6,
+   "sitting": 51,
+   "votingNumber": 15,
+   "title": "Pkt 11. porz. dzien. Sprawozdanie Komisji o poselskim projekcie ustawy o uregulowaniu niektórych stosunków prawnych dotyczących opcji walutowych i zmianie innych ustaw ",
+   "date": "2009-10-09T09:59:55",
+   "kind": "ELECTRONIC",
+   "description": "wniosek Komisji o odrzucenie projektu ustawy",
+   "counts": {
+    "yes": 202,
+    "no": 217,
+    "abstain": 2,
+    "notParticipating": 39,
+    "totalVoted": 421
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term6/votings/51/15",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "narrow",
+   "type_bucket": "rejection",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term6-s51-v2-landslide.json",
+   "sha256": "7af57f4fef05378a7b379e7a76208a44614dccc7121814a0ced78f32245c1dc0",
+   "response_sha256": "f3caa20016749b9006c4bbe7f9062dbb0403c27e5204e7153c4d8d52eb760094",
+   "term": 6,
+   "sitting": 51,
+   "votingNumber": 2,
+   "title": "Pkt 1. porz. dzien. Sprawozdanie Komisji o wniosku Prezydenta Rzeczypospolitej Polskiej o ponowne rozpatrzenie ustawy z dnia 28 sierpnia 2009 r. o zmianie ustawy o prokuraturze oraz niektórych innych ustaw",
+   "date": "2009-10-09T09:24:01",
+   "kind": "ELECTRONIC",
+   "description": "wniosek o ponowne uchwalenie ustawy",
+   "counts": {
+    "yes": 264,
+    "no": 156,
+    "abstain": 0,
+    "notParticipating": 40,
+    "totalVoted": 420
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term6/votings/51/2",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "landslide",
+   "type_bucket": "re_enactment",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term6-s9-v13-election.json",
+   "sha256": "6fb2471922b61f0ed217a54cfdbcfd103ad162eb4e9b08f701b3a1644f1a7465",
+   "response_sha256": "736aff50e87cb77eae9dd86442177a1edfd6b611d4e79c8cd3b1ae59e476604c",
+   "term": 6,
+   "sitting": 9,
+   "votingNumber": 13,
+   "title": "Wyniki głosowania nad poprawką nr 3. do pilnego projektu ustawy o zmianie ustawy o Służbie Celnej.",
+   "date": "2008-02-29T15:00:00",
+   "kind": "TRADITIONAL",
+   "description": null,
+   "counts": {
+    "yes": 0,
+    "no": 0,
+    "abstain": 0,
+    "notParticipating": 0,
+    "totalVoted": 0
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term6/votings/9/13",
+   "n_vote_records": 0,
+   "selection": "curated",
+   "margin_bucket": "election",
+   "type_bucket": "election-zero-counter",
+   "layers": {
+    "0.1": false,
+    "0.2": false,
+    "1": false
+   }
+  },
+  {
+   "file": "fixtures/term7-s1-v21-unanimous.json",
+   "sha256": "888fc2038f4f6627ee43e71b6efd7c23c3be6636c6a3eae702e69abd1465326c",
+   "response_sha256": "67e350371b6a2bf766864cda32b3e0d5ca180bb65468a58269d80dcd62e61e58",
+   "term": 7,
+   "sitting": 1,
+   "votingNumber": 21,
+   "title": "Pkt 9. porz. dzien. Wybór członków Trybunału Stanu",
+   "date": "2011-11-17T12:20:02",
+   "kind": "ELECTRONIC",
+   "description": "nad wyborem pani Anny Boguckiej-Skowrońskiej na członka Trybunału Stanu",
+   "counts": {
+    "yes": 438,
+    "no": 0,
+    "abstain": 8,
+    "notParticipating": 14,
+    "totalVoted": 446
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term7/votings/1/21",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "unanimous",
+   "type_bucket": "election",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term7-s17-v6-narrow.json",
+   "sha256": "83856f94813c01a91939df6581aaadb5cb36785e88a8c16e2614c95434a455b0",
+   "response_sha256": "0033d687449caeccb02ab0fba96e59587c44831548a6baad1fbaaecffef0fd26",
+   "term": 7,
+   "sitting": 17,
+   "votingNumber": 6,
+   "title": "Pkt 1. porz. dzien. Sprawozdanie Komisji o projekcie ustawy o zmianie ustawy - Prawo o zgromadzeniach ",
+   "date": "2012-06-28T09:19:21",
+   "kind": "ELECTRONIC",
+   "description": "całość projektu ustawy",
+   "counts": {
+    "yes": 224,
+    "no": 209,
+    "abstain": 0,
+    "notParticipating": 27,
+    "totalVoted": 433
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term7/votings/17/6",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "narrow",
+   "type_bucket": "bill_whole",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term7-s35-v15-narrow.json",
+   "sha256": "68c7ff73141acba60c0a15e3ab123b38d93e21a55af5c3d82c7db6245a1c7c58",
+   "response_sha256": "f7919ad03b1e552aefc830fe0916afae39b8a0f90d16abdf81b76013e1c5d5c6",
+   "term": 7,
+   "sitting": 35,
+   "votingNumber": 15,
+   "title": "Pkt 11. porz. dzien. Pierwsze czytanie rządowego projektu ustawy o zmianie ustawy - Kodeks pracy oraz ustawy o związkach zawodowych",
+   "date": "2013-03-08T09:45:44",
+   "kind": "ELECTRONIC",
+   "description": "wniosek o odrzucenie projektu ustawy w pierwszym czytaniu",
+   "counts": {
+    "yes": 216,
+    "no": 234,
+    "abstain": 1,
+    "notParticipating": 9,
+    "totalVoted": 451
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term7/votings/35/15",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "narrow",
+   "type_bucket": "first_reading_rejection",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term7-s35-v3-landslide.json",
+   "sha256": "c27caa2ff3be48211fcdc80f335b81e2b5f520da769eca91af8dd7a6a63ddd73",
+   "response_sha256": "945c5191d2638a542c27e8179c59f89ef7601bb42b613668043738887b77873a",
+   "term": 7,
+   "sitting": 35,
+   "votingNumber": 3,
+   "title": "Pkt 3. porz. dzien. Pierwsze czytanie poselskiego projektu ustawy o Korpusie Weteranów Walk o Niepodległość Rzeczypospolitej Polskiej ",
+   "date": "2013-03-08T09:14:58",
+   "kind": "ELECTRONIC",
+   "description": "wniosek o odrzucenie projektu ustawy w pierwszym czytaniu",
+   "counts": {
+    "yes": 61,
+    "no": 389,
+    "abstain": 2,
+    "notParticipating": 8,
+    "totalVoted": 452
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term7/votings/35/3",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "landslide",
+   "type_bucket": "first_reading_rejection",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term7-s53-v77-landslide.json",
+   "sha256": "76432650ffc37a2deb554f3227bce976e237df564fb29a185760e0274832e37e",
+   "response_sha256": "22d9694f54549ca7c5ea035e0b2d7273fc99567aae9b37da3dd9f1718c85add1",
+   "term": 7,
+   "sitting": 53,
+   "votingNumber": 77,
+   "title": "Pkt 33. porz. dzien. Zmiany w składach osobowych komisji sejmowych ",
+   "date": "2013-11-08T13:10:47",
+   "kind": "ELECTRONIC",
+   "description": "wniosek w sprawie zmian w składach osobowych komisji sejmowych",
+   "counts": {
+    "yes": 279,
+    "no": 129,
+    "abstain": 6,
+    "notParticipating": 46,
+    "totalVoted": 414
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term7/votings/53/77",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "landslide",
+   "type_bucket": "committee_composition",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term7-s69-v51-comfortable.json",
+   "sha256": "d90a28025c76e8eca27fdcb44f0851912f77f07b60fa265fbe257e67008e42ae",
+   "response_sha256": "67acfa9f3fa81bd92c81b2674a30104b64f01bc57bb6012b4bd7852cd29632f0",
+   "term": 7,
+   "sitting": 69,
+   "votingNumber": 51,
+   "title": "Pkt 10. porz. dzien. Sprawozdanie Komisji o poselskim projekcie ustawy o zmianie ustawy o Krajowej Szkole Sądownictwa i Prokuratury oraz ustawy - Prawo o ustroju sądów powszechnych ",
+   "date": "2014-06-10T17:16:35",
+   "kind": "ELECTRONIC",
+   "description": "całość projektu ustawy",
+   "counts": {
+    "yes": 254,
+    "no": 179,
+    "abstain": 1,
+    "notParticipating": 25,
+    "totalVoted": 434
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term7/votings/69/51",
+   "n_vote_records": 459,
+   "selection": "sampled",
+   "margin_bucket": "comfortable",
+   "type_bucket": "bill_whole",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term7-s79-v4-comfortable.json",
+   "sha256": "7acb0564fbf58f2b8505fe425ea0d5f1a0e65c619e6d5caed40dfd83b23af901",
+   "response_sha256": "95c7ef1cdcf5cc017d22e0c2f4dc362018ee657b231d99d58a31bfa22a65920d",
+   "term": 7,
+   "sitting": 79,
+   "votingNumber": 4,
+   "title": "Pkt 15. porz. dzien. Wniosek o odwołanie posła Radosława Sikorskiego z funkcji Marszałka Sejmu Rzeczypospolitej Polskiej ",
+   "date": "2014-11-07T09:09:03",
+   "kind": "ELECTRONIC",
+   "description": "wniosek o odwołanie posła Radosława Sikorskiego z funkcji Marszałka Sejmu RP i wybór posła Andrzeja Smirnowa na Marszałka Sejmu",
+   "counts": {
+    "yes": 146,
+    "no": 240,
+    "abstain": 48,
+    "notParticipating": 26,
+    "totalVoted": 434
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term7/votings/79/4",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "comfortable",
+   "type_bucket": "election",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term7-s81-v1-unanimous.json",
+   "sha256": "a9a970c73b0a14d8a6b7a4b50d047057745c7cf811fa99ba8e405278c5f0e563",
+   "response_sha256": "061ac7f116f2e4786a1bd17cf7997c0bd2d4a9d268a3b25283770ec9808e8f77",
+   "term": 7,
+   "sitting": 81,
+   "votingNumber": 1,
+   "title": "Pkt 1. porz. dzien. Odwołanie Pana Wojciecha Rafała Wiewiórowskiego ze stanowiska Generalnego Inspektora Ochrony Danych Osobowych",
+   "date": "2014-12-03T09:11:35",
+   "kind": "ELECTRONIC",
+   "description": "wniosek o odwołanie Pana Wojciecha Rafała Wiewiórowskiego ze stanowiska Generalnego Inspektora Ochrony Danych Osobowych",
+   "counts": {
+    "yes": 358,
+    "no": 0,
+    "abstain": 1,
+    "notParticipating": 95,
+    "totalVoted": 359
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term7/votings/81/1",
+   "n_vote_records": 454,
+   "selection": "sampled",
+   "margin_bucket": "unanimous",
+   "type_bucket": "dismissal",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term8-s14-v52-comfortable.json",
+   "sha256": "0a7e18b1c62c750360998c9f85302138cbe33158994c57c673c462539eb6700b",
+   "response_sha256": "2f150ef3db37df2e3b9db2fff9a693c888816b56f9bb3c301bb6f4964ee06b8a",
+   "term": 8,
+   "sitting": 14,
+   "votingNumber": 52,
+   "title": "Pkt 19. porz. dzien. Powołanie członka Rady Polityki Pieniężnej ",
+   "date": "2016-03-18T11:34:14",
+   "kind": "ELECTRONIC",
+   "description": "wniosek w sprawie powołania Jerzego Żyżyńskiego na członka Rady Polityki Pieniężnej",
+   "counts": {
+    "yes": 234,
+    "no": 182,
+    "abstain": 13,
+    "notParticipating": 31,
+    "totalVoted": 429
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term8/votings/14/52",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "comfortable",
+   "type_bucket": "appointment",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term8-s25-v13-landslide.json",
+   "sha256": "e76e2f99cccac6afca2c860e767608e62c908efaefacc35e356fd2d816dd012e",
+   "response_sha256": "bbb44920fae52afb4079245e18a9ec7659a06fab026e62b662d39bfec2ad60ac",
+   "term": 8,
+   "sitting": 25,
+   "votingNumber": 13,
+   "title": "Pkt 11. porz. dzien. Powołanie Prezesa Urzędu Komunikacji Elektronicznej ",
+   "date": "2016-09-14T10:35:15",
+   "kind": "ELECTRONIC",
+   "description": "wniosek w sprawie powołania Marcina Cichego na Prezesa Urzędu Komunikacji Elektronicznej",
+   "counts": {
+    "yes": 293,
+    "no": 117,
+    "abstain": 19,
+    "notParticipating": 31,
+    "totalVoted": 429
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term8/votings/25/13",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "landslide",
+   "type_bucket": "appointment",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term8-s59-v41-landslide.json",
+   "sha256": "1689bc401e22717dbf55fe324afd3e5b098d423d9a5f207a4d5f4175554578eb",
+   "response_sha256": "7e50c6a732a9caef525a649466433b497719a9d9cdd28a6d7628649c2b8944d1",
+   "term": 8,
+   "sitting": 59,
+   "votingNumber": 41,
+   "title": "Pkt 24. porz. dzien. Wybór uzupełniający członka Trybunału Stanu",
+   "date": "2018-02-28T18:19:08",
+   "kind": "ELECTRONIC",
+   "description": "wybór Macieja Gustawa Zaborowskiego na członka Trybunału Stanu",
+   "counts": {
+    "yes": 261,
+    "no": 149,
+    "abstain": 16,
+    "notParticipating": 34,
+    "totalVoted": 426
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term8/votings/59/41",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "landslide",
+   "type_bucket": "election",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term8-s7-v42-comfortable.json",
+   "sha256": "6e7d9d3ce814b323aac04311f1cbc1d4dab8d32537c51ce5eb579f129c3ad0f7",
+   "response_sha256": "cb62745eda6a91cd8c70d28d890b4ce34962bd096e3df7d617914511f04f7785",
+   "term": 8,
+   "sitting": 7,
+   "votingNumber": 42,
+   "title": "Pkt 7. porz. dzien. Zmiany w składach osobowych komisji sejmowych",
+   "date": "2015-12-29T23:40:21",
+   "kind": "ELECTRONIC",
+   "description": "wniosek w sprawie zmian w składach osobowych komisji sejmowych",
+   "counts": {
+    "yes": 231,
+    "no": 206,
+    "abstain": 2,
+    "notParticipating": 21,
+    "totalVoted": 439
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term8/votings/7/42",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "comfortable",
+   "type_bucket": "committee_composition",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term9-s1-v17-landslide.json",
+   "sha256": "5cdbc5d2543b7d574253bb9a1d6bca86e12d28a2824cdecddcef9988fede3a7c",
+   "response_sha256": "3e8dcf2e73783b748b11ad83e03b71b28b2abe3e76ef18b6e6f58df3159e2e79",
+   "term": 9,
+   "sitting": 1,
+   "votingNumber": 17,
+   "title": "Pkt 11. porz. dzien. Zmiany w składach osobowych komisji sejmowych ",
+   "date": "2019-11-19T21:37:49",
+   "kind": "ELECTRONIC",
+   "description": "Wniosek o odwołanie poseł \nAnny Pieczarki ze składu Komisji Finansów Publicznych",
+   "counts": {
+    "yes": 336,
+    "no": 49,
+    "abstain": 37,
+    "notParticipating": 38,
+    "totalVoted": 422
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term9/votings/1/17",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "landslide",
+   "type_bucket": "dismissal",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term9-s21-v117-narrow.json",
+   "sha256": "82ce8e92b45a9a8479c3ce863520417fd5da76c699300d8a552ef740a0d86374",
+   "response_sha256": "cd2ca5988b96e20ec4f0711c22543a50146ba078f4a08d27c8724741aaaac162",
+   "term": 9,
+   "sitting": 21,
+   "votingNumber": 117,
+   "title": "Pkt 7. porz. dzien. Informacja dla Sejmu i Senatu Rzeczypospolitej Polskiej o udziale Rzeczypospolitej Polskiej w pracach Unii Europejskiej w okresie styczeń-czerwiec 2020 r. (przewodnictwo Chorwacji w Radzie Unii Europejskiej) oraz komisyjnym projektem uchwały ",
+   "date": "2020-11-19T23:11:09",
+   "kind": "ELECTRONIC",
+   "description": "całość projektu uchwały",
+   "counts": {
+    "yes": 235,
+    "no": 216,
+    "abstain": 1,
+    "notParticipating": 7,
+    "totalVoted": 452
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term9/votings/21/117",
+   "n_vote_records": 459,
+   "selection": "sampled",
+   "margin_bucket": "narrow",
+   "type_bucket": "resolution_whole",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term9-s48-v33-narrow.json",
+   "sha256": "bd4c5211103744fc84c50f644b7c9f9f08a3f2697d8dc5ee595bb06ebf6c0aa6",
+   "response_sha256": "d2e67a86ffa7e5652950d609afd0c46f5d2d5ac8bca7a1de0b05ec54a740bc69",
+   "term": 9,
+   "sitting": 48,
+   "votingNumber": 33,
+   "title": "Pkt. 9 Wybór sędziego Trybunału Konstytucyjnego (druki nr 1982 i 1987)",
+   "date": "2022-02-08T22:29:41",
+   "kind": "ELECTRONIC",
+   "description": "Wybór Bogdana Święczkowskiego na stanowisko sędziego Trybunału Konstytucyjnego ",
+   "counts": {
+    "yes": 233,
+    "no": 219,
+    "abstain": 2,
+    "notParticipating": 6,
+    "totalVoted": 454
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term9/votings/48/33",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "narrow",
+   "type_bucket": "election",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term9-s9-v39-edge.json",
+   "sha256": "fa464e4a87c74e256ba69e7f3c57cf1d6c05e1204601da8bed9fbc530e76a4bd",
+   "response_sha256": "ae2e2b6d909e183cda7242385a6fab99b473c61e03f83354318667f5cecd6480",
+   "term": 9,
+   "sitting": 9,
+   "votingNumber": 39,
+   "title": "Pkt 7. porz. dzien. Pierwsze czytanie poselskiego projektu ustawy o szczególnych zasadach przeprowadzania wyborów powszechnych na Prezydenta Rzeczypospolitej Polskiej zarządzonych w 2020 r.",
+   "date": "2020-04-06T20:19:38",
+   "kind": "ELECTRONIC",
+   "description": "Wniosek o odrzucenie projektu ustawy w pierwszym czytaniu",
+   "counts": {
+    "yes": 225,
+    "no": 230,
+    "abstain": 2,
+    "notParticipating": 3,
+    "totalVoted": 457
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term9/votings/9/39",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "edge",
+   "type_bucket": "first_reading_rejection",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
+  },
+  {
+   "file": "fixtures/term9-s9-v40-edge.json",
+   "sha256": "98b2304a0f6fc00dfd6b1089b2cc5c8186521fc2c62608ad3d0d47822b68a0f7",
+   "response_sha256": "c7f8a3341a8e08923d071814503819fa9e8e0610fadf676e525545e60cdb9009",
+   "term": 9,
+   "sitting": 9,
+   "votingNumber": 40,
+   "title": "Pkt 7. porz. dzien. Pierwsze czytanie poselskiego projektu ustawy o szczególnych zasadach przeprowadzania wyborów powszechnych na Prezydenta Rzeczypospolitej Polskiej zarządzonych w 2020 r.",
+   "date": "2020-04-06T21:49:43",
+   "kind": "ELECTRONIC",
+   "description": "Wniosek o odrzucenie projektu ustawy w drugim czytaniu",
+   "counts": {
+    "yes": 227,
+    "no": 230,
+    "abstain": 2,
+    "notParticipating": 1,
+    "totalVoted": 459
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term9/votings/9/40",
+   "n_vote_records": 460,
+   "selection": "sampled",
+   "margin_bucket": "edge",
+   "type_bucket": "rejection",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": true
+   }
   }
- ]
+ ],
+ "v03_selection": {
+  "selection_file": "fixtures/selection.json",
+  "seed": 20261027,
+  "frame_votings_sha256": "3b3a659a2fddb0df1e6ea6b4474448110cb1014f9434f562b3b44e31978c0a6b"
+ }
 }

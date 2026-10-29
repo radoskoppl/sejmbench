@@ -19,7 +19,7 @@ import seed_rule
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 PROMPT_HASH = "d937dfcbe2e92cef97c292353371cd40017da7c226587f7da31a09682db20dc6"
-SET_HASH = "d465a66a92ec27f779f0fb75f6ed2e1a51cc7a66d64cf62eb2bfb469e07a9f02"
+SET_HASH = "018ddcb9ec32cfae977cf176c55f5043240907fcbe0b42827ad9c8381001457b"
 LANDSLIDE = "term10-s1-v2-landslide.json"
 TIGHT = "term10-s6-v14-tight.json"
 
@@ -46,7 +46,7 @@ def item(fixture, raw_output, **extra):
 def meta_for(fixtures_dict, manifest):
     return {
         "benchmark_version": "0.3", "metric_version": "0.3", "harness_version": "test",
-        "set": "public", "set_hash": scoring.canonical_set_hash(manifest),
+        "set": "public", "set_hash": scoring.canonical_set_hash(manifest, files=list(fixtures_dict)),
         "fixture_entries": {os.path.basename(e["file"]): e for e in manifest["fixtures"]},
         "model": {"id": "test-model", "provider": "test", "revision": "rev-1",
                   "identity_mutable_alias": False, "call_date": "2026-10-28",
@@ -262,8 +262,9 @@ def test_scorecard_validation(manifest, fixtures):
                scoring.validate_scorecard(broken, expected_set_hash="bad"))
     assert any("fixtures list" in e for e in
                scoring.validate_scorecard(card, expected_fixtures=[]))
+    two = [e for e in manifest["fixtures"] if os.path.basename(e["file"]) in (LANDSLIDE, TIGHT)]
     assert scoring.validate_scorecard(card, expected_set_hash=card["set_hash"],
-                                      expected_fixtures=manifest["fixtures"]) == []
+                                      expected_fixtures=two) == []
 
 
 def test_perfect_submission_full_pipeline(fixtures, manifest):
@@ -308,9 +309,10 @@ def test_unknown_baseline_raises(fixtures, manifest):
 # ------------------------------------------------------------------ rescore ----
 
 def test_rescore_reproduces_baseline(fixtures, manifest):
+    meta = scoring.baseline_meta("majority-class", "public", manifest, "test")
+    meta["set_hash"] = scoring.canonical_set_hash(manifest, files=[LANDSLIDE, TIGHT])
     items = scoring.baseline_items("majority-class", fixtures, manifest)
-    card = scoring.build_scorecard(fixtures, items, [], scoring.baseline_meta(
-        "majority-class", "public", manifest, "test"))
+    card = scoring.build_scorecard(fixtures, items, [], meta)
     assert scoring.rescore_matches(card, scoring.rescore(card, ROOT, manifest)) == []
 
 
@@ -333,8 +335,10 @@ def test_cli_rescore_check_and_layer1_refusal(fixtures, manifest, tmp_path):
     with pytest.raises(SystemExit):
         cli.main(["score", "--submission", "x", "--layers", "1"])
 
-    items = scoring.baseline_items("majority-class", fixtures, manifest)
-    card = scoring.build_scorecard(fixtures, items, [], scoring.baseline_meta(
+    fixtures_all = {os.path.basename(e["file"]): scoring.load_fixture(ROOT, e["file"], manifest)
+                    for e in manifest["fixtures"]}
+    items = scoring.baseline_items("majority-class", fixtures_all, manifest)
+    card = scoring.build_scorecard(fixtures_all, items, [], scoring.baseline_meta(
         "majority-class", "public", manifest, "test"))
     good = tmp_path / "baseline.scorecard.json"
     good.write_text(json.dumps(card, sort_keys=True, ensure_ascii=False), encoding="utf-8")
@@ -367,6 +371,22 @@ def test_unknown_fixture_rejected(fixtures, manifest):
     assert any("unknown fixture" in p and "bogus-fixture" in p for p in card["problems"])
     # the unknown record never enters scoring: TIGHT still counts as missing
     assert card["layers"]["0.1"]["n_missing_files"] == 1
+
+
+def test_ineligible_fixture_excluded(fixtures, manifest):
+    meta = meta_for(fixtures, manifest)
+    entry = dict(meta["fixture_entries"][TIGHT])
+    entry["layers"] = {"0.1": False, "0.2": False, "1": False}
+    meta["fixture_entries"][TIGHT] = entry
+    items = {n: item(n, perfect_answer(d)) for n, d in fixtures.items()}
+    card = scoring.build_scorecard(fixtures, items, [], meta)
+    l01, l02 = card["layers"]["0.1"], card["layers"]["0.2"]
+    assert l01["n_excluded_ineligible"] == 1 and l01["n_eligible"] == 1
+    assert l01["accuracy"] == 1.0  # only the eligible fixture counts
+    excluded = next(it for it in card["items"] if it["status"] == "excluded")
+    assert "zero-counter" in excluded["exclusion_reason"]
+    assert excluded["layer0_1"]["correct"] is None and excluded["layer0_2"] is None
+    assert l02["answer_coverage"] == 1.0  # scored/eligible, not scored/total
 
 
 def test_duplicate_club_labels_void_the_club(fixtures):
@@ -408,9 +428,10 @@ def test_exact_track_set_rate(fixtures, manifest):
 
 
 def test_rescore_catches_text_tamper(fixtures, manifest):
+    meta = scoring.baseline_meta("majority-class", "public", manifest, "test")
+    meta["set_hash"] = scoring.canonical_set_hash(manifest, files=[LANDSLIDE, TIGHT])
     items = scoring.baseline_items("majority-class", fixtures, manifest)
-    card = scoring.build_scorecard(fixtures, items, [], scoring.baseline_meta(
-        "majority-class", "public", manifest, "test"))
+    card = scoring.build_scorecard(fixtures, items, [], meta)
     mutations = (
         lambda c: c["model"].__setitem__("id", "baseline:evil"),
         lambda c: c.__setitem__("set_hash", "0" * 64),

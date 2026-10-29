@@ -364,6 +364,7 @@ def _counts_by_status(statuses):
         "n_parse_failures": sum(1 for s in statuses if s == "parse_failure"),
         "n_refusals": sum(1 for s in statuses if s == "refusal"),
         "n_missing_files": sum(1 for s in statuses if s == "missing"),
+        "n_excluded_ineligible": sum(1 for s in statuses if s == "excluded"),
     }
 
 
@@ -379,6 +380,18 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
         problems.extend(f"unknown fixture (not in the set): {u}" for u in unknown)
     per_item, statuses = [], {}
     for name in names:
+        entry_meta = meta["fixture_entries"][name]
+        if entry_meta.get("layers", {}).get("0.1", True) is False:
+            # zero-counter division: layer 0.1/0.2 not eligible (CODEBOOK §11);
+            # an exclusion is not an incorrect answer — it leaves the denominators
+            statuses[name] = "excluded"
+            per_item.append({
+                "fixture": name, "status": "excluded",
+                "exclusion_reason": "layers 0.1/0.2 not eligible (zero-counter division)",
+                "layer0_1": {"pred": None, "gt": None, "gt_tie": None, "correct": None},
+                "layer0_2": None,
+            })
+            continue
         data = items.get(name)
         if data is None:
             statuses[name] = "missing"
@@ -402,10 +415,11 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
 
     counts = _counts_by_status(statuses.values())
     n_total = len(names)
+    n_eligible = n_total - counts["n_excluded_ineligible"]
     n_ties = sum(1 for it in per_item if it["layer0_1"].get("gt_tie") is True)
     exact_set = sum(1 for it in per_item if it["layer0_2"] and it["layer0_2"]["n_missing"] == 0
                     and it["layer0_2"]["n_extra"] == 0 and it["layer0_2"]["n_invalid_entries"] == 0)
-    correct = [it["layer0_1"]["correct"] for it in per_item]
+    correct = [it["layer0_1"]["correct"] for it in per_item if it["status"] != "excluded"]
     acc, acc_lo, acc_hi = bootstrap_ci(correct)
 
     mae_ys_vals = [it["layer0_2"]["mae_yes_share"] for it in per_item
@@ -435,15 +449,18 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
         "cost_estimate": meta.get("cost_estimate"),
         "layers": {
             "0.1": {
-                "n_total": n_total, **counts,
+                "n_total": n_total,
+                "n_eligible": n_eligible,
+                **counts,
                 "n_ties": n_ties,
                 "accuracy": acc, "ci95": [acc_lo, acc_hi],
                 "bootstrap": {"replicates": BOOTSTRAP_REPLICATES, "seed": BOOTSTRAP_SEED},
             },
             "0.2": {
                 "n_total": n_total,
+                "n_eligible": n_eligible,
                 "n_scored": n_scored,
-                "answer_coverage": (n_scored / n_total) if n_total else None,
+                "answer_coverage": (n_scored / n_eligible) if n_eligible else None,
                 "n_exact_track_set": exact_set,
                 "exact_track_set_rate": (exact_set / n_scored) if n_scored else None,
                 "mae_yes_share": ys_stat[0], "ci95_yes_share": [ys_stat[1], ys_stat[2]],
@@ -499,7 +516,8 @@ def validate_scorecard(card: dict, expected_set_hash: str | None = None,
             errs.append("fixtures list does not match the manifest (files or sha256)")
     l01 = card.get("layers", {}).get("0.1", {})
     counted = sum(l01.get(k, 0) for k in
-                  ("n_scored", "n_abstained", "n_parse_failures", "n_refusals", "n_missing_files"))
+                  ("n_scored", "n_abstained", "n_parse_failures", "n_refusals",
+                   "n_missing_files", "n_excluded_ineligible"))
     if l01 and counted != l01.get("n_total"):
         errs.append(f"layer 0.1 counts sum to {counted}, n_total={l01.get('n_total')}")
     for it in card.get("items", []):
@@ -660,7 +678,7 @@ def leaderboard_rows(scorecards: list) -> list:
             "model": card["model"]["id"],
             "provider": card["model"].get("provider"),
             "set": card["set"],
-            "n": l01["n_total"],
+            "n": l01.get("n_eligible", l01["n_total"]),
             "accuracy": l01["accuracy"],
             "accuracy_ci95": l01["ci95"],
             "mae_yes_share": l02["mae_yes_share"],

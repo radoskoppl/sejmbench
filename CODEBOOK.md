@@ -14,7 +14,16 @@ Fields used by v0.2: `term`, `sitting`, `votingNumber`, `title`, `date`,
 
 **Vote record** — one element of `votes`:
 `{MP, club, firstName, lastName, secondName, vote}` where `vote` is one of
-`YES`, `NO`, `ABSTAIN`, `ABSENT`.
+`YES`, `NO`, `ABSTAIN`, `ABSENT` — or, in the term-3 era data, `NO_VOTE`
+(added 2026-10-28 when the 50-fixture set surfaced it). Evidence for the
+treatment: in every NO_VOTE division the headline reconstruction holds with
+NO_VOTE excluded (`YES + NO + ABSTAIN == totalVoted`, vote-record tallies
+equal the API headline), `ABSTAIN` is counted separately in the same
+divisions, and `ABSENT + NO_VOTE == notParticipating`. `NO_VOTE` is
+therefore a non-active vote, handled exactly like `ABSENT`: it never enters
+`yes_share` or `polarization` and never decides the winner, but it counts
+toward the ≥ 5 vote-record track threshold. No previously-scored division
+changes value, so no metric version bump.
 
 **Club** — the `club` string on the vote record, taken verbatim. v0.2 does
 not normalize club labels (see §6).

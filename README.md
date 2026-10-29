@@ -51,14 +51,19 @@ legislative simulation, and the benchmark gap this repo fills.
 - `layer1_dictionary.json` + `layer1_classify.py` — layer-1 vote-type
   dictionary (DRAFT, issue #2): deterministic mapping from official
   description strings; coverage in `docs/layer1-coverage.md`.
-- `fixtures/` — two real divisions fetched from the official Sejm API, with
-  sha256 pins in `fixtures/manifest.json`:
-  - `term10-s1-v2-landslide.json` — election of Deputy Marshals, 458:0
-    (2023-11-13). Every club unanimous: the trivially-easy anchor case.
-  - `term10-s6-v14-tight.json` — third reading, amendment to the Pharmaceutical
-    Law, **224:196** (2024-02-22). Coalition holds at 100% except PSL-TD
-    (24 yes / 7 no); PiS votes 170 no + 1 abstention; 37 MPs absent.
-    Overall polarization 0.9284 on the 0-1 scale.
+- `fixtures/` — 50 real divisions from the official Sejm API, stratified per
+  CODEBOOK section 11 (sha256 + provenance pins in `fixtures/manifest.json`,
+  committed selection list in `fixtures/selection.json`):
+  - `term10-s1-v2-landslide.json` — v0.2 anchor: resolution on the number of
+    Deputy Marshals, 458:0 (2023-11-13). Every club unanimous: the
+    trivially-easy anchor case.
+  - `term10-s6-v14-tight.json` — v0.2 anchor: third reading, amendment to the
+    Pharmaceutical Law, **224:196** (2024-02-22). Coalition holds at 100%
+    except PSL-TD (24 yes / 7 no); PiS votes 170 no + 1 abstention; 37 MPs
+    absent. Overall polarization 0.9284 on the 0-1 scale.
+  - 46 seeded samples across margin strata (unanimous / edge / narrow /
+    comfortable / landslide) and terms 3–10, plus 2 curated edge cases
+    (a real tie; a zero-counter division excluded from layers 0.1/0.2).
 - `seed_rule.py` — the v0.2 metric: winner determination + per-track cohesion.
   Fully specified in `CODEBOOK.md`.
 - `tests/` — unit tests (synthetic hand-computed divisions, the layer-1
@@ -70,10 +75,11 @@ legislative simulation, and the benchmark gap this repo fills.
 
 ```
 $ python -m pytest tests/ -v
-56 passed
+145 passed, 1 skipped
 $ python scripts/verify_fixtures.py
 OK fixtures/term10-s1-v2-landslide.json 538f9709c664
 OK fixtures/term10-s6-v14-tight.json  1fd2601aeef2
+… (50 fixtures total)
 ```
 
 ## How to participate (agent track)
@@ -107,8 +113,8 @@ merged with these rows.
 
 | model | set | n | accuracy (95% CI) | yes_share MAE (95% CI) | polarization MAE (95% CI) | scorecard |
 |---|---|---|---|---|---|---|
-| baseline:majority-class\* | public | 2 | 1.0000 [1.0000, 1.0000] | 0.1855 [0.0000, 0.3710] | 0.0381 [0.0000, 0.0762] | [results/baseline-majority-class-public.scorecard.json](results/baseline-majority-class-public.scorecard.json) |
-| baseline:random\* | public | 2 | 1.0000 [1.0000, 1.0000] | 0.5196 [0.3344, 0.7048] | 0.4731 [0.3291, 0.6170] | [results/baseline-random-public.scorecard.json](results/baseline-random-public.scorecard.json) |
+| baseline:majority-class\* | public | 49 | 0.7143 [0.5918, 0.8367] | 0.3956 [0.3221, 0.4692] | 0.1036 [0.0752, 0.1345] | [results/baseline-majority-class-public.scorecard.json](results/baseline-majority-class-public.scorecard.json) |
+| baseline:random\* | public | 49 | 0.4898 [0.3469, 0.6327] | 0.4738 [0.4376, 0.5098] | 0.4341 [0.4049, 0.4624] | [results/baseline-random-public.scorecard.json](results/baseline-random-public.scorecard.json) |
 <!-- LEADERBOARD:END -->
 
 ## Principles

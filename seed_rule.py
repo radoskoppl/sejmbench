@@ -3,7 +3,8 @@
 Scope (CODEBOOK.md 0.2, frozen):
   * A "track" is a club label appearing on >= 5 vote records in the division.
     Labels with fewer records are grouped as "inni" (not scored separately).
-  * Track activity n = YES + NO + ABSTAIN (ABSENT excluded).
+  * Track activity n = YES + NO + ABSTAIN (ABSENT and NO_VOTE excluded;
+    NO_VOTE is a term-3-era non-active value - CODEBOOK section 1).
   * yes_share = YES / n  (abstention counts in the denominator, stated openly).
   * polarization = 1 - |YES - NO| / n  (0 = unanimous, ->1 = 50/50;
     ABSTAIN dilutes the split, it never inflates polarization).
@@ -32,13 +33,14 @@ def compute_metric(division: dict) -> dict:
     club_counts: dict[str, dict[str, int]] = {}
     for v in votes:
         club = v["club"]
-        c = club_counts.setdefault(club, {"YES": 0, "NO": 0, "ABSTAIN": 0, "ABSENT": 0})
+        c = club_counts.setdefault(club, {"YES": 0, "NO": 0, "ABSTAIN": 0, "ABSENT": 0,
+                                          "NO_VOTE": 0})
         c[v["vote"]] += 1
 
     tracks = {c: t for c, t in club_counts.items() if sum(t.values()) >= MIN_TRACK_RECORDS}
     inni = {c: t for c, t in club_counts.items() if c not in tracks}
 
-    inni_totals = {"YES": 0, "NO": 0, "ABSTAIN": 0, "ABSENT": 0}
+    inni_totals = {"YES": 0, "NO": 0, "ABSTAIN": 0, "ABSENT": 0, "NO_VOTE": 0}
     for t in inni.values():
         for k in inni_totals:
             inni_totals[k] += t[k]

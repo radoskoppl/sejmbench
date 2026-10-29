@@ -50,7 +50,11 @@ acceptable (CI rejects it).
 Layer 0.1 (winner): exact match against the seed rule (CODEBOOK §3,
 including the tie convention — a tie is never "passed"). The headline
 denominator is the full set: abstain, parse failure, refusal and missing
-count as incorrect (§9.4) and are reported separately.
+count as incorrect (§9.4) and are reported separately. Fixtures with
+`layers.0.1 = false` (zero-counter divisions, CODEBOOK §11) are excluded
+with a reason; an exclusion is not an incorrect answer — it leaves both
+denominators (accuracy and MAE), tracked as `n_eligible` /
+`n_excluded_ineligible`.
 
 Layer 0.2 (tracks): per-item mean absolute deviation of `yes_share` and
 `polarization` over the fixture's ground-truth tracks (`seed_rule.py`,
@@ -94,9 +98,9 @@ Layer 0.2 (tracks): per-item mean absolute deviation of `yes_share` and
 - `prompt.hash` — sha256 of the reference prompt template (CODEBOOK §5,
   pinned constant in `scoring.py`). Current value:
   `d937dfcbe2e92cef97c292353371cd40017da7c226587f7da31a09682db20dc6`.
-- `set_hash` — sha256 over the sorted `file:sha256\n` lines of the fixture
-  manifest. Current public set (2 fixtures):
-  `d465a66a92ec27f779f0fb75f6ed2e1a51cc7a66d64cf62eb2bfb469e07a9f02`.
+- `set_hash` — sha256 over the sorted `file:sha256` lines of the fixture
+  manifest. Current public set (50 fixtures):
+  `018ddcb9ec32cfae977cf176c55f5043240907fcbe0b42827ad9c8381001457b`.
 - Every item carries the submission file path and its sha256.
 - Changing the prompt template or the fixture set changes these hashes by
   design; that is a version event, not a silent edit (enforced by tests).
@@ -117,7 +121,7 @@ Layer 0.2 (tracks): per-item mean absolute deviation of `yes_share` and
 | `evaluation_date` | evaluation date |
 | `contamination` | `declared_cutoff` (`unknown` when unverifiable), temporal-holdout flag (issue #5) |
 | `token_usage` / `cost_estimate` | as reported by the adapter; `null` when not supplied |
-| `layers` | per layer: `n_total`, `n_scored`, `n_abstained`, `n_parse_failures`, `n_refusals`, `n_missing_files`; layer 0.1 adds `n_ties` (and per-item `gt_tie`, so a convention-winner on a tied division is never readable as "the motion passed"); layer 0.2 adds `n_exact_track_set` / `exact_track_set_rate`; accuracy/MAE with bootstrap 95% CI |
+| `layers` | per layer: `n_total`, `n_eligible`, `n_scored`, `n_abstained`, `n_parse_failures`, `n_refusals`, `n_missing_files`, `n_excluded_ineligible` (zero-counter divisions — excluded from both denominators, not counted as incorrect); layer 0.1 adds `n_ties` (and per-item `gt_tie`, so a convention-winner on a tied division is never readable as "the motion passed"); layer 0.2 adds `n_exact_track_set` / `exact_track_set_rate`; accuracy/MAE with bootstrap 95% CI |
 | `items` | per fixture: status, layer-0.1 pred/gt/correct, layer-0.2 track detail, submission file + sha256 |
 | `problems` | contract violations (temperature ≠ 0, missing fields, prompt-hash mismatch); a scorecard with problems is not acceptable |
 

@@ -1,0 +1,25 @@
+{
+ "abstain": 0,
+ "date": "2008-02-29T15:00:00",
+ "kind": "TRADITIONAL",
+ "links": [
+  {
+   "href": "https://api.sejm.gov.pl/sejm/term6/votings/9/13/pdf",
+   "rel": "pdf"
+  }
+ ],
+ "majorityType": "SIMPLE_MAJORITY",
+ "majorityVotes": 1,
+ "no": 0,
+ "notParticipating": 0,
+ "present": 0,
+ "sitting": 9,
+ "sittingDay": 3,
+ "term": 6,
+ "title": "Wyniki głosowania nad poprawką nr 3. do pilnego projektu ustawy o zmianie ustawy o Służbie Celnej.",
+ "topic": "głosowanie nad przyjęciem poprawki 3.",
+ "totalVoted": 0,
+ "votes": [],
+ "votingNumber": 13,
+ "yes": 0
+}

@@ -1,0 +1,583 @@
+{
+ "seed": 20261027,
+ "codebook": "section 11 (strata frozen 2026-10-28, before sampling)",
+ "frame": {
+  "dump_dir": "/home/porwat/sejm-dump",
+  "votings_rows": 66427,
+  "votings_sha256": "3b3a659a2fddb0df1e6ea6b4474448110cb1014f9434f562b3b44e31978c0a6b",
+  "universe_eligible": 66113,
+  "excluded_zero_counter": 61,
+  "excluded_inconsistent": 253
+ },
+ "cell_counts": {
+  "tie": {
+   "pool": 43,
+   "by_type": {
+    "first_reading_rejection": 3,
+    "rejection": 2,
+    "resolution_whole": 2,
+    "unknown": 36
+   }
+  },
+  "unanimous": {
+   "pool": 4277,
+   "by_type": {
+    "bill_whole": 1696,
+    "committee_composition": 66,
+    "dismissal": 2,
+    "election": 62,
+    "re_enactment": 2,
+    "rejection": 2,
+    "resolution_whole": 229,
+    "unknown": 2123,
+    "unspecified": 95
+   }
+  },
+  "edge": {
+   "pool": 461,
+   "by_type": {
+    "bill_whole": 10,
+    "election": 3,
+    "first_reading_rejection": 18,
+    "re_enactment": 2,
+    "rejection": 18,
+    "resolution_whole": 2,
+    "unknown": 399,
+    "unspecified": 8,
+    "wotum": 1
+   }
+  },
+  "narrow": {
+   "pool": 3630,
+   "by_type": {
+    "appointment": 8,
+    "bill_whole": 86,
+    "election": 6,
+    "first_reading_rejection": 112,
+    "re_enactment": 3,
+    "rejection": 109,
+    "resolution_whole": 28,
+    "unknown": 3164,
+    "unspecified": 91,
+    "wotum": 23
+   }
+  },
+  "comfortable": {
+   "pool": 18414,
+   "by_type": {
+    "appointment": 61,
+    "bill_whole": 734,
+    "committee_composition": 2,
+    "dismissal": 18,
+    "election": 49,
+    "first_reading_rejection": 497,
+    "re_enactment": 17,
+    "rejection": 270,
+    "resolution_whole": 119,
+    "unknown": 16169,
+    "unspecified": 390,
+    "wotum": 88
+   }
+  },
+  "landslide": {
+   "pool": 39288,
+   "by_type": {
+    "appointment": 55,
+    "bill_whole": 3283,
+    "committee_composition": 190,
+    "dismissal": 12,
+    "election": 193,
+    "first_reading_rejection": 457,
+    "re_enactment": 12,
+    "rejection": 301,
+    "resolution_whole": 511,
+    "unknown": 33800,
+    "unspecified": 464,
+    "wotum": 10
+   }
+  }
+ },
+ "notes": [],
+ "selected": [
+  {
+   "term": 3,
+   "sitting": 7,
+   "votingNumber": 2,
+   "type": "re_enactment",
+   "title": "PKT 2. PORZ. DZIEN. SPRAWOZDANIE KOMISJI W SPRAWIE WNIOSKU PREZYDENTA RP O PONOWNE ROZPATRZENIE USTAWY O ZMIANIE USTAWY O PLANOWANIU RODZINY",
+   "date": "1997-12-30T17:17:58",
+   "bucket": "comfortable",
+   "selection": "sampled"
+  },
+  {
+   "term": 3,
+   "sitting": 65,
+   "votingNumber": 23,
+   "type": "unknown",
+   "title": "PKT 9. PORZ. DZIEN. SPRAWOZDANIE KOMISJI O PROJEKCIE USTAWY O ZMIANIE USTAWY O GOSPODARCE NIERUCHOMOŚCIAMI -TRZECIE CZYTANIE",
+   "date": "1999-12-02T09:38:29",
+   "bucket": "edge",
+   "selection": "sampled"
+  },
+  {
+   "term": 3,
+   "sitting": 69,
+   "votingNumber": 32,
+   "type": "unknown",
+   "title": "PKT 5. PORZ. DZIEN. SPRAWOZDANIE KOMISJI O PROJEKCIE USTAWY O ZMIANIE USTAWY O POMOCY SPOŁECZNEJ",
+   "date": "2000-01-07T09:17:49",
+   "bucket": "unanimous",
+   "selection": "sampled"
+  },
+  {
+   "term": 3,
+   "sitting": 71,
+   "votingNumber": 40,
+   "type": "bill_whole",
+   "title": "PKT 7. PORZ. DZIEN. SPRAWOZDANIE KOMISJI O PROJEKCIE USTAWY O ZM. UST. O KOMERCJALIZACJI I PRYWATYZ. PRZEDSIĘB. PAŃSTW. ORAZ NIEKT. USTAW -TRZECIE CZYTANIE",
+   "date": "2000-02-18T12:39:09",
+   "bucket": "edge",
+   "selection": "sampled"
+  },
+  {
+   "term": 3,
+   "sitting": 73,
+   "votingNumber": 20,
+   "type": "unknown",
+   "title": "PKT 11. PORZ. DZIEN. SPR. KOMISJI O STAN. SENATU W SPR. UST. O ZM.UST. O ZWALCZANIU NIEUCZCIWEJ KONKURENCJI ORAZ O ZM. USTAWY O RADIOFONII I TELEWIZJI",
+   "date": "2000-03-16T09:24:22",
+   "bucket": "tie",
+   "selection": "curated"
+  },
+  {
+   "term": 3,
+   "sitting": 78,
+   "votingNumber": 7,
+   "type": "re_enactment",
+   "title": "PKT 7. PORZ. DZIEN. SPRAWOZDANIE KOMISJI W SPRAWIE WNIOSKU PREZYDENTA RP O PONOWNE ROZPATRZENIE UST.Z 3 III 2000 O ZMIANIE USTAWY - KODEKS KARNY",
+   "date": "2000-05-11T09:20:00",
+   "bucket": "narrow",
+   "selection": "sampled"
+  },
+  {
+   "term": 3,
+   "sitting": 78,
+   "votingNumber": 63,
+   "type": "unknown",
+   "title": "PKT 24. PORZ. DZIEN. SPRAWOZDANIE KOMISJI O STANOWISKU SENATU W SPRAWIE USTAWY O ZASADACH WSPIERANIA ROZWOJU REGIONALNEGO",
+   "date": "2000-05-12T10:08:00",
+   "bucket": "landslide",
+   "selection": "sampled"
+  },
+  {
+   "term": 3,
+   "sitting": 109,
+   "votingNumber": 18,
+   "type": "unknown",
+   "title": "PKT 18. PORZ. DZIEN. SPRAWOZDANIE KOMISJI O PROJEKCIE USTAWY O ZMIANIE USTAWY O O POLICJI, USTAWY O DZIAŁALN. UBEZP., USTAWYPRAWO BANKOWE - TRZECIE CZYTANIE",
+   "date": "2001-05-24T10:19:53",
+   "bucket": "edge",
+   "selection": "sampled"
+  },
+  {
+   "term": 3,
+   "sitting": 109,
+   "votingNumber": 26,
+   "type": "re_enactment",
+   "title": "PKT 19. PORZ. DZIEN. SPRAWOZDANIE KOMISJI W SPRAWIE WNIOSKU PREZYDENTA RP O PONOWNE ROZPATRZENIE USTAWY Z DNIA 7 MARCA 2001 R. O REPRYWATYZACJI",
+   "date": "2001-05-25T09:24:38",
+   "bucket": "edge",
+   "selection": "sampled"
+  },
+  {
+   "term": 3,
+   "sitting": 117,
+   "votingNumber": 237,
+   "type": "unknown",
+   "title": "PKT 38.PORZ. DZIEN. SPRAW.KOM.O PROJ.UST O ZM.UST.:KODEKS KA RNY,KPK, KKW ORAZ UST.O ZM.NIEKT.PRZEPISÓW DOT. KARY DOŻYWOTNIEGO POZB.WOL NOŚCIIII CZYTANIE",
+   "date": "2001-08-24T09:45:55",
+   "bucket": "narrow",
+   "selection": "sampled"
+  },
+  {
+   "term": 4,
+   "sitting": 22,
+   "votingNumber": 57,
+   "type": "unknown",
+   "title": "Pkt 9. porz. dzien. Sprawozdanie Komisji o projekcie ustawy o zmianie ustawy o uprawnieniach do ulgowych przejazdów środkami publicznego transportu zbiorowego",
+   "date": "2002-05-22T19:46:06",
+   "bucket": "comfortable",
+   "selection": "sampled"
+  },
+  {
+   "term": 4,
+   "sitting": 30,
+   "votingNumber": 12,
+   "type": "unknown",
+   "title": "Pkt 1. porz. dzien. Sprawozdanie Komisji o projekcie ustawy o jednorazowym opodatkowaniu nieujawnionego dochodu oraz o zmianie ustawy - Ordynacja podatkowa i ustawy - Kodeks karny skarbowy",
+   "date": "2002-09-26T17:27:44",
+   "bucket": "unanimous",
+   "selection": "sampled"
+  },
+  {
+   "term": 4,
+   "sitting": 49,
+   "votingNumber": 5,
+   "type": "unknown",
+   "title": "Pkt 4. porz. dzien. Sprawozdanie Komisji o projekcie ustawy o utworzeniu Wojewódzkich Kolegiów Skarbowych oraz o zmianie niektórych ustaw regulujących zadania i kompetencje organów oraz organizację jednostek organizacyjnych podległych ministrowi właściwem",
+   "date": "2003-05-20T17:17:05",
+   "bucket": "landslide",
+   "selection": "sampled"
+  },
+  {
+   "term": 4,
+   "sitting": 67,
+   "votingNumber": 100,
+   "type": "unknown",
+   "title": "Pkt 17. porz. dzien. Sprawozdanie Komisji o stanowisku Senatu w sprawie ustawy budżetowej na rok 2004",
+   "date": "2004-01-23T17:55:52",
+   "bucket": "edge",
+   "selection": "sampled"
+  },
+  {
+   "term": 4,
+   "sitting": 69,
+   "votingNumber": 39,
+   "type": "unknown",
+   "title": "Pkt 28. porz. dzien. Głosowanie nad wnioskiem o odrzucenie informacji Rządu w sprawie możliwych zagrożeń i działań zapobiegających destabilizacji bilansu energetycznego kraju",
+   "date": "2004-03-04T21:31:03",
+   "bucket": "narrow",
+   "selection": "sampled"
+  },
+  {
+   "term": 4,
+   "sitting": 73,
+   "votingNumber": 386,
+   "type": "election",
+   "title": "Pkt 76. porz. dzien. Zmiana na stanowisku Marszałka Sejmu",
+   "date": "2004-04-21T00:21:24",
+   "bucket": "edge",
+   "selection": "sampled"
+  },
+  {
+   "term": 4,
+   "sitting": 98,
+   "votingNumber": 64,
+   "type": "resolution_whole",
+   "title": "Pkt 12. porz. dzien. Pierwsze czytanie poselskiego projektu uchwały wzywającej Premiera Marka Belkę do rezygnacji z zajmowanego stanowiska",
+   "date": "2005-03-04T09:10:23",
+   "bucket": "edge",
+   "selection": "sampled"
+  },
+  {
+   "term": 4,
+   "sitting": 108,
+   "votingNumber": 8,
+   "type": "bill_whole",
+   "title": "Pkt 63. porz. dzien. Sprawozdanie Komisji o projektach ustaw: 1) o ustanowieniu 31 sierpnia  Dniem Solidarności i Wolności, 2) o ustanowieniu 31 sierpnia - rocznicy podpisania porozumień sierpniowych Dniem Solidarności i Wolności",
+   "date": "2005-07-27T17:07:34",
+   "bucket": "landslide",
+   "selection": "sampled"
+  },
+  {
+   "term": 4,
+   "sitting": 109,
+   "votingNumber": 2,
+   "type": "re_enactment",
+   "title": "Pkt 1. porz. dzien. Sprawozdanie Komisji w sprawie wniosku Prezydenta RP o ponowne rozpatrzenie ustawy z dnia 29 lipca 2005 r. o zwrocie osobom fizycznym niektórych wydatków związanych z budownictwem mieszkaniowym",
+   "date": "2005-08-29T19:33:18",
+   "bucket": "unanimous",
+   "selection": "sampled"
+  },
+  {
+   "term": 5,
+   "sitting": 15,
+   "votingNumber": 11,
+   "type": "rejection",
+   "title": "Pkt 5. porz. dzien. Sprawozdanie Komisji o projekcie ustawy o finansowaniu Wyższej Szkoły Filozoficzno-Pedagogicznej \"Ignatianum\" w Krakowie z budżetu państwa",
+   "date": "2006-04-05T09:18:09",
+   "bucket": "landslide",
+   "selection": "sampled"
+  },
+  {
+   "term": 5,
+   "sitting": 22,
+   "votingNumber": 144,
+   "type": "unknown",
+   "title": "Pkt 49. porz. dzien. Sprawozdanie Komisji o stanowisku Senatu w sprawie ustawy o zmianie ustawy o transporcie kolejowym",
+   "date": "2006-07-22T11:54:13",
+   "bucket": "unanimous",
+   "selection": "sampled"
+  },
+  {
+   "term": 5,
+   "sitting": 27,
+   "votingNumber": 118,
+   "type": "committee_composition",
+   "title": "Pkt 28. porz. dzien. Zmiany w składach osobowych komisji sejmowych",
+   "date": "2006-10-27T16:40:01",
+   "bucket": "unanimous",
+   "selection": "sampled"
+  },
+  {
+   "term": 5,
+   "sitting": 31,
+   "votingNumber": 52,
+   "type": "unknown",
+   "title": "Pkt 9. porz. dzien. Sprawozdanie Komisji o projekcie ustawy budżetowej na rok 2007 - trzecie czytanie",
+   "date": "2006-12-15T15:45:45",
+   "bucket": "edge",
+   "selection": "sampled"
+  },
+  {
+   "term": 5,
+   "sitting": 38,
+   "votingNumber": 81,
+   "type": "unknown",
+   "title": "Pkt 21. porz. dzien. Sprawozdanie Komisji o stanowisku Senatu w sprawie ustawy o zmianie ustawy - Prawo farmaceutyczne oraz o zmianie niektórych innych ustaw",
+   "date": "2007-03-30T12:38:56",
+   "bucket": "narrow",
+   "selection": "sampled"
+  },
+  {
+   "term": 5,
+   "sitting": 41,
+   "votingNumber": 163,
+   "type": "unknown",
+   "title": "Pkt 35. porz. dzien. Sprawozdanie Komisji o projekcie ustawy o wielkopowierzchniowych obiektach handlowych - trzecie czytanie ",
+   "date": "2007-05-11T01:03:08",
+   "bucket": "comfortable",
+   "selection": "sampled"
+  },
+  {
+   "term": 6,
+   "sitting": 9,
+   "votingNumber": 13,
+   "type": "election-zero-counter",
+   "bucket": "election",
+   "selection": "curated",
+   "title": "Wyniki głosowania nad poprawką nr 3. do pilnego projektu ustawy o zmianie ustawy o Służbie Celnej.",
+   "date": "2008-02-29T15:00:00"
+  },
+  {
+   "term": 6,
+   "sitting": 51,
+   "votingNumber": 2,
+   "type": "re_enactment",
+   "title": "Pkt 1. porz. dzien. Sprawozdanie Komisji o wniosku Prezydenta Rzeczypospolitej Polskiej o ponowne rozpatrzenie ustawy z dnia 28 sierpnia 2009 r. o zmianie ustawy o prokuraturze oraz niektórych innych ustaw",
+   "date": "2009-10-09T09:24:01",
+   "bucket": "landslide",
+   "selection": "sampled"
+  },
+  {
+   "term": 6,
+   "sitting": 51,
+   "votingNumber": 15,
+   "type": "rejection",
+   "title": "Pkt 11. porz. dzien. Sprawozdanie Komisji o poselskim projekcie ustawy o uregulowaniu niektórych stosunków prawnych dotyczących opcji walutowych i zmianie innych ustaw ",
+   "date": "2009-10-09T09:59:55",
+   "bucket": "narrow",
+   "selection": "sampled"
+  },
+  {
+   "term": 7,
+   "sitting": 1,
+   "votingNumber": 21,
+   "type": "election",
+   "title": "Pkt 9. porz. dzien. Wybór członków Trybunału Stanu",
+   "date": "2011-11-17T12:20:02",
+   "bucket": "unanimous",
+   "selection": "sampled"
+  },
+  {
+   "term": 7,
+   "sitting": 17,
+   "votingNumber": 6,
+   "type": "bill_whole",
+   "title": "Pkt 1. porz. dzien. Sprawozdanie Komisji o projekcie ustawy o zmianie ustawy - Prawo o zgromadzeniach ",
+   "date": "2012-06-28T09:19:21",
+   "bucket": "narrow",
+   "selection": "sampled"
+  },
+  {
+   "term": 7,
+   "sitting": 35,
+   "votingNumber": 3,
+   "type": "first_reading_rejection",
+   "title": "Pkt 3. porz. dzien. Pierwsze czytanie poselskiego projektu ustawy o Korpusie Weteranów Walk o Niepodległość Rzeczypospolitej Polskiej ",
+   "date": "2013-03-08T09:14:58",
+   "bucket": "landslide",
+   "selection": "sampled"
+  },
+  {
+   "term": 7,
+   "sitting": 35,
+   "votingNumber": 15,
+   "type": "first_reading_rejection",
+   "title": "Pkt 11. porz. dzien. Pierwsze czytanie rządowego projektu ustawy o zmianie ustawy - Kodeks pracy oraz ustawy o związkach zawodowych",
+   "date": "2013-03-08T09:45:44",
+   "bucket": "narrow",
+   "selection": "sampled"
+  },
+  {
+   "term": 7,
+   "sitting": 53,
+   "votingNumber": 77,
+   "type": "committee_composition",
+   "title": "Pkt 33. porz. dzien. Zmiany w składach osobowych komisji sejmowych ",
+   "date": "2013-11-08T13:10:47",
+   "bucket": "landslide",
+   "selection": "sampled"
+  },
+  {
+   "term": 7,
+   "sitting": 69,
+   "votingNumber": 51,
+   "type": "bill_whole",
+   "title": "Pkt 10. porz. dzien. Sprawozdanie Komisji o poselskim projekcie ustawy o zmianie ustawy o Krajowej Szkole Sądownictwa i Prokuratury oraz ustawy - Prawo o ustroju sądów powszechnych ",
+   "date": "2014-06-10T17:16:35",
+   "bucket": "comfortable",
+   "selection": "sampled"
+  },
+  {
+   "term": 7,
+   "sitting": 79,
+   "votingNumber": 4,
+   "type": "election",
+   "title": "Pkt 15. porz. dzien. Wniosek o odwołanie posła Radosława Sikorskiego z funkcji Marszałka Sejmu Rzeczypospolitej Polskiej ",
+   "date": "2014-11-07T09:09:03",
+   "bucket": "comfortable",
+   "selection": "sampled"
+  },
+  {
+   "term": 7,
+   "sitting": 81,
+   "votingNumber": 1,
+   "type": "dismissal",
+   "title": "Pkt 1. porz. dzien. Odwołanie Pana Wojciecha Rafała Wiewiórowskiego ze stanowiska Generalnego Inspektora Ochrony Danych Osobowych",
+   "date": "2014-12-03T09:11:35",
+   "bucket": "unanimous",
+   "selection": "sampled"
+  },
+  {
+   "term": 8,
+   "sitting": 7,
+   "votingNumber": 42,
+   "type": "committee_composition",
+   "title": "Pkt 7. porz. dzien. Zmiany w składach osobowych komisji sejmowych",
+   "date": "2015-12-29T23:40:21",
+   "bucket": "comfortable",
+   "selection": "sampled"
+  },
+  {
+   "term": 8,
+   "sitting": 14,
+   "votingNumber": 52,
+   "type": "appointment",
+   "title": "Pkt 19. porz. dzien. Powołanie członka Rady Polityki Pieniężnej ",
+   "date": "2016-03-18T11:34:14",
+   "bucket": "comfortable",
+   "selection": "sampled"
+  },
+  {
+   "term": 8,
+   "sitting": 25,
+   "votingNumber": 13,
+   "type": "appointment",
+   "title": "Pkt 11. porz. dzien. Powołanie Prezesa Urzędu Komunikacji Elektronicznej ",
+   "date": "2016-09-14T10:35:15",
+   "bucket": "landslide",
+   "selection": "sampled"
+  },
+  {
+   "term": 8,
+   "sitting": 59,
+   "votingNumber": 41,
+   "type": "election",
+   "title": "Pkt 24. porz. dzien. Wybór uzupełniający członka Trybunału Stanu",
+   "date": "2018-02-28T18:19:08",
+   "bucket": "landslide",
+   "selection": "sampled"
+  },
+  {
+   "term": 9,
+   "sitting": 1,
+   "votingNumber": 17,
+   "type": "dismissal",
+   "title": "Pkt 11. porz. dzien. Zmiany w składach osobowych komisji sejmowych ",
+   "date": "2019-11-19T21:37:49",
+   "bucket": "landslide",
+   "selection": "sampled"
+  },
+  {
+   "term": 9,
+   "sitting": 9,
+   "votingNumber": 39,
+   "type": "first_reading_rejection",
+   "title": "Pkt 7. porz. dzien. Pierwsze czytanie poselskiego projektu ustawy o szczególnych zasadach przeprowadzania wyborów powszechnych na Prezydenta Rzeczypospolitej Polskiej zarządzonych w 2020 r.",
+   "date": "2020-04-06T20:19:38",
+   "bucket": "edge",
+   "selection": "sampled"
+  },
+  {
+   "term": 9,
+   "sitting": 9,
+   "votingNumber": 40,
+   "type": "rejection",
+   "title": "Pkt 7. porz. dzien. Pierwsze czytanie poselskiego projektu ustawy o szczególnych zasadach przeprowadzania wyborów powszechnych na Prezydenta Rzeczypospolitej Polskiej zarządzonych w 2020 r.",
+   "date": "2020-04-06T21:49:43",
+   "bucket": "edge",
+   "selection": "sampled"
+  },
+  {
+   "term": 9,
+   "sitting": 21,
+   "votingNumber": 117,
+   "type": "resolution_whole",
+   "title": "Pkt 7. porz. dzien. Informacja dla Sejmu i Senatu Rzeczypospolitej Polskiej o udziale Rzeczypospolitej Polskiej w pracach Unii Europejskiej w okresie styczeń-czerwiec 2020 r. (przewodnictwo Chorwacji w Radzie Unii Europejskiej) oraz komisyjnym projektem uchwały ",
+   "date": "2020-11-19T23:11:09",
+   "bucket": "narrow",
+   "selection": "sampled"
+  },
+  {
+   "term": 9,
+   "sitting": 48,
+   "votingNumber": 33,
+   "type": "election",
+   "title": "Pkt. 9 Wybór sędziego Trybunału Konstytucyjnego (druki nr 1982 i 1987)",
+   "date": "2022-02-08T22:29:41",
+   "bucket": "narrow",
+   "selection": "sampled"
+  },
+  {
+   "term": 10,
+   "sitting": 1,
+   "votingNumber": 47,
+   "type": "dismissal",
+   "title": "Pkt. 24 Odwołanie członków Państwowej Komisji do spraw badania wpływów rosyjskich na bezpieczeństwo wewnętrzne Rzeczypospolitej Polskiej w latach 2007-2022 (druk nr 62)",
+   "date": "2023-11-29T20:05:21",
+   "bucket": "comfortable",
+   "selection": "sampled"
+  },
+  {
+   "term": 10,
+   "sitting": 17,
+   "votingNumber": 50,
+   "type": "appointment",
+   "title": "Pkt. 18 Powołanie członków Państwowej Komisji do spraw przeciwdziałania wykorzystaniu seksualnemu małoletnich poniżej lat 15 (druki nr 592, 593, 594, 595, 596, 598, 624, 625, 626, 627, 628 i 630)",
+   "date": "2024-09-13T13:04:47",
+   "bucket": "narrow",
+   "selection": "sampled"
+  },
+  {
+   "term": 10,
+   "sitting": 54,
+   "votingNumber": 31,
+   "type": "bill_whole",
+   "title": "Pkt. 3 Sprawozdanie Komisji o rządowym projekcie ustawy o zmianie ustawy - Prawo o szkolnictwie wyższym i nauce (druki nr 2291 i 2310)",
+   "date": "2026-03-27T12:42:45",
+   "bucket": "unanimous",
+   "selection": "sampled"
+  }
+ ]
+}

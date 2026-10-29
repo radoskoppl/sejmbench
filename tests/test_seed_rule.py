@@ -108,7 +108,13 @@ def test_codebook_invariants_per_fixture(entry):
         pytest.skip("fixture not fetched")
     with open(path, encoding="utf-8") as fh:
         d = json.load(fh)
-    counts = {"YES": 0, "NO": 0, "ABSTAIN": 0, "ABSENT": 0}
+    layers = entry.get("layers") or {}
+    if layers.get("0.1") is False:
+        # zero-counter division: the headline counters do not apply (CODEBOOK
+        # section 11) — the reconstruction invariant is not defined for it.
+        assert d["yes"] == d["no"] == d["abstain"] == 0 and d["totalVoted"] == 0
+        pytest.skip("zero-counter division - layer 0.1/0.2 not eligible")
+    counts = {"YES": 0, "NO": 0, "ABSTAIN": 0, "ABSENT": 0, "NO_VOTE": 0}
     for v in d["votes"]:
         assert v["vote"] in counts, f"unknown vote value: {v['vote']!r}"
         counts[v["vote"]] += 1

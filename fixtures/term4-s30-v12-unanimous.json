@@ -1,0 +1,3455 @@
+{
+ "abstain": 0,
+ "date": "2002-09-26T17:27:44",
+ "description": " ",
+ "kind": "ELECTRONIC",
+ "links": [
+  {
+   "href": "https://api.sejm.gov.pl/sejm/term4/votings/30/12/pdf",
+   "rel": "pdf"
+  }
+ ],
+ "majorityType": "SIMPLE_MAJORITY",
+ "majorityVotes": 1,
+ "no": 0,
+ "notParticipating": 78,
+ "present": 0,
+ "sitting": 30,
+ "sittingDay": 2,
+ "term": 4,
+ "title": "Pkt 1. porz. dzien. Sprawozdanie Komisji o projekcie ustawy o jednorazowym opodatkowaniu nieujawnionego dochodu oraz o zmianie ustawy - Ordynacja podatkowa i ustawy - Kodeks karny skarbowy",
+ "topic": "głosowanie nad przyjęciem 5. poprawki do art. 5 ust. 2",
+ "totalVoted": 382,
+ "votes": [
+  {
+   "MP": 1,
+   "club": "PO",
+   "firstName": "Łukasz",
+   "lastName": "Abgarowicz",
+   "secondName": "Maria",
+   "vote": "YES"
+  },
+  {
+   "MP": 2,
+   "club": "SLD",
+   "firstName": "Romuald",
+   "lastName": "Ajchler",
+   "secondName": "Kazimierz",
+   "vote": "YES"
+  },
+  {
+   "MP": 3,
+   "club": "SLD",
+   "firstName": "Jan",
+   "lastName": "Antochowski",
+   "secondName": "Józef",
+   "vote": "YES"
+  },
+  {
+   "MP": 4,
+   "club": "SKL",
+   "firstName": "Dorota",
+   "lastName": "Arciszewska-Mielewczyk",
+   "secondName": "Irvina",
+   "vote": "YES"
+  },
+  {
+   "MP": 5,
+   "club": "Samoobrona",
+   "firstName": "Mieczysław",
+   "lastName": "Aszkiełowicz",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 6,
+   "club": "UP",
+   "firstName": "Andrzej",
+   "lastName": "Aumiller",
+   "secondName": "Kordian",
+   "vote": "YES"
+  },
+  {
+   "MP": 7,
+   "club": "PO",
+   "firstName": "Dariusz",
+   "lastName": "Bachalski",
+   "secondName": "Jacek",
+   "vote": "YES"
+  },
+  {
+   "MP": 8,
+   "club": "SLD",
+   "firstName": "Tadeusz",
+   "lastName": "Badach",
+   "secondName": "Tomasz",
+   "vote": "YES"
+  },
+  {
+   "MP": 9,
+   "club": "SKL",
+   "firstName": "Artur",
+   "lastName": "Balazs",
+   "secondName": "Krzysztof",
+   "vote": "YES"
+  },
+  {
+   "MP": 10,
+   "club": "SLD",
+   "firstName": "Jolanta",
+   "lastName": "Banach",
+   "secondName": "Maria",
+   "vote": "YES"
+  },
+  {
+   "MP": 11,
+   "club": "SLD",
+   "firstName": "Magdalena",
+   "lastName": "Banaś",
+   "vote": "YES"
+  },
+  {
+   "MP": 12,
+   "club": "SLD",
+   "firstName": "Anna",
+   "lastName": "Bańkowska",
+   "secondName": "Danuta",
+   "vote": "YES"
+  },
+  {
+   "MP": 13,
+   "club": "SLD",
+   "firstName": "Renata",
+   "lastName": "Basta",
+   "secondName": "Walentyna",
+   "vote": "YES"
+  },
+  {
+   "MP": 14,
+   "club": "SLD",
+   "firstName": "Krzysztof",
+   "lastName": "Baszczyński",
+   "secondName": "Andrzej",
+   "vote": "YES"
+  },
+  {
+   "MP": 15,
+   "club": "Samoobrona",
+   "firstName": "Renata",
+   "lastName": "Beger",
+   "vote": "YES"
+  },
+  {
+   "MP": 16,
+   "club": "PiS",
+   "firstName": "Adam",
+   "lastName": "Bielan",
+   "secondName": "Jerzy",
+   "vote": "YES"
+  },
+  {
+   "MP": 17,
+   "club": "SLD",
+   "firstName": "Barbara",
+   "lastName": "Blida",
+   "vote": "YES"
+  },
+  {
+   "MP": 18,
+   "club": "SLD",
+   "firstName": "Bogdan",
+   "lastName": "Błaszczyk",
+   "vote": "YES"
+  },
+  {
+   "MP": 19,
+   "club": "SLD",
+   "firstName": "Anita",
+   "lastName": "Błochowiak",
+   "vote": "YES"
+  },
+  {
+   "MP": 20,
+   "club": "UP",
+   "firstName": "Barbara",
+   "lastName": "Błońska-Fajfrowska",
+   "vote": "YES"
+  },
+  {
+   "MP": 21,
+   "club": "SLD",
+   "firstName": "Elżbieta",
+   "lastName": "Bolek",
+   "secondName": "Zofia",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 22,
+   "club": "niez.",
+   "firstName": "Ryszard",
+   "lastName": "Bonda",
+   "secondName": "Mieczysław",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 23,
+   "club": "PSL",
+   "firstName": "Edmund",
+   "lastName": "Borawski",
+   "vote": "YES"
+  },
+  {
+   "MP": 24,
+   "club": "Samoobrona",
+   "firstName": "Waldemar",
+   "lastName": "Borczyk",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 25,
+   "club": "SLD",
+   "firstName": "Marek",
+   "lastName": "Borowski",
+   "vote": "YES"
+  },
+  {
+   "MP": 26,
+   "club": "SLD",
+   "firstName": "Andrzej",
+   "lastName": "Brachmański",
+   "secondName": "Marian",
+   "vote": "YES"
+  },
+  {
+   "MP": 27,
+   "club": "PSL",
+   "firstName": "Arkadiusz",
+   "lastName": "Bratkowski",
+   "secondName": "Tomasz",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 28,
+   "club": "SLD",
+   "firstName": "Edward",
+   "lastName": "Brzostowski",
+   "vote": "YES"
+  },
+  {
+   "MP": 29,
+   "club": "Samoobrona",
+   "firstName": "Alfred",
+   "lastName": "Budner",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 30,
+   "club": "PO",
+   "firstName": "Jerzy",
+   "lastName": "Budnik",
+   "secondName": "Feliks",
+   "vote": "YES"
+  },
+  {
+   "MP": 31,
+   "club": "SLD",
+   "firstName": "Bogdan",
+   "lastName": "Bujak",
+   "secondName": "Tadeusz",
+   "vote": "YES"
+  },
+  {
+   "MP": 32,
+   "club": "PSL",
+   "firstName": "Bolesław",
+   "lastName": "Bujak",
+   "vote": "YES"
+  },
+  {
+   "MP": 33,
+   "club": "PSL",
+   "firstName": "Jan",
+   "lastName": "Bury",
+   "vote": "YES"
+  },
+  {
+   "MP": 34,
+   "club": "SLD",
+   "firstName": "Jan",
+   "lastName": "Byra",
+   "vote": "YES"
+  },
+  {
+   "MP": 35,
+   "club": "SLD",
+   "firstName": "Andrzej",
+   "lastName": "Celiński",
+   "secondName": "Bohdan",
+   "vote": "YES"
+  },
+  {
+   "MP": 36,
+   "club": "Samoobrona",
+   "firstName": "Józef",
+   "lastName": "Cepil",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 37,
+   "club": "SLD",
+   "firstName": "Jan",
+   "lastName": "Chaładaj",
+   "secondName": "Andrzej",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 38,
+   "club": "PO",
+   "firstName": "Zbigniew",
+   "lastName": "Chlebowski",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 39,
+   "club": "SLD",
+   "firstName": "Ryszard",
+   "lastName": "Chodynicki",
+   "vote": "YES"
+  },
+  {
+   "MP": 40,
+   "club": "SLD",
+   "firstName": "Jan",
+   "lastName": "Chojnacki",
+   "vote": "YES"
+  },
+  {
+   "MP": 41,
+   "club": "SLD",
+   "firstName": "Kazimierz",
+   "lastName": "Chrzanowski",
+   "vote": "YES"
+  },
+  {
+   "MP": 42,
+   "club": "SKL",
+   "firstName": "Zbigniew",
+   "lastName": "Chrzanowski",
+   "vote": "YES"
+  },
+  {
+   "MP": 43,
+   "club": "SLD",
+   "firstName": "Danuta",
+   "lastName": "Ciborowska",
+   "vote": "YES"
+  },
+  {
+   "MP": 44,
+   "club": "SLD",
+   "firstName": "Grażyna",
+   "lastName": "Ciemniak",
+   "secondName": "Jolanta",
+   "vote": "YES"
+  },
+  {
+   "MP": 45,
+   "club": "SLD",
+   "firstName": "Wiesław",
+   "lastName": "Ciesielski",
+   "vote": "YES"
+  },
+  {
+   "MP": 46,
+   "club": "SLD",
+   "firstName": "Bronisław",
+   "lastName": "Cieślak",
+   "vote": "YES"
+  },
+  {
+   "MP": 47,
+   "club": "PSL",
+   "firstName": "Czesław",
+   "lastName": "Cieślak",
+   "vote": "YES"
+  },
+  {
+   "MP": 48,
+   "club": "SLD",
+   "firstName": "Włodzimierz",
+   "lastName": "Cimoszewicz",
+   "vote": "YES"
+  },
+  {
+   "MP": 49,
+   "club": "SLD",
+   "firstName": "Barbara",
+   "lastName": "Ciruk",
+   "vote": "YES"
+  },
+  {
+   "MP": 50,
+   "club": "Samoobrona",
+   "firstName": "Marian",
+   "lastName": "Curyło",
+   "vote": "YES"
+  },
+  {
+   "MP": 51,
+   "club": "PiS",
+   "firstName": "Tadeusz",
+   "lastName": "Cymański",
+   "vote": "YES"
+  },
+  {
+   "MP": 52,
+   "club": "Samoobrona",
+   "firstName": "Włodzimierz",
+   "lastName": "Czechowski",
+   "secondName": "Antoni",
+   "vote": "YES"
+  },
+  {
+   "MP": 53,
+   "club": "SLD",
+   "firstName": "Jerzy",
+   "lastName": "Czepułkowski",
+   "secondName": "Mieczysław",
+   "vote": "YES"
+  },
+  {
+   "MP": 54,
+   "club": "SLD",
+   "firstName": "Mieczysław",
+   "lastName": "Czerniawski",
+   "secondName": "Leon",
+   "vote": "YES"
+  },
+  {
+   "MP": 55,
+   "club": "PO",
+   "firstName": "Andrzej",
+   "lastName": "Czerwiński",
+   "secondName": "Stanisław",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 56,
+   "club": "LPR",
+   "firstName": "Jerzy",
+   "lastName": "Czerwiński",
+   "vote": "YES"
+  },
+  {
+   "MP": 57,
+   "club": "SLD",
+   "firstName": "Aleksander",
+   "lastName": "Czuż",
+   "vote": "YES"
+  },
+  {
+   "MP": 58,
+   "club": "SLD",
+   "firstName": "Eugeniusz",
+   "lastName": "Czykwin",
+   "vote": "YES"
+  },
+  {
+   "MP": 59,
+   "club": "SLD",
+   "firstName": "Bronisław",
+   "lastName": "Dankowski",
+   "vote": "YES"
+  },
+  {
+   "MP": 60,
+   "club": "PSL",
+   "firstName": "Zbigniew",
+   "lastName": "Deptuła",
+   "vote": "YES"
+  },
+  {
+   "MP": 61,
+   "club": "SLD",
+   "firstName": "Jakub",
+   "lastName": "Derech-Krzycki",
+   "vote": "YES"
+  },
+  {
+   "MP": 62,
+   "club": "SLD",
+   "firstName": "Bogdan",
+   "lastName": "Derwich",
+   "secondName": "Adam",
+   "vote": "YES"
+  },
+  {
+   "MP": 63,
+   "club": "PiS",
+   "firstName": "Andrzej",
+   "lastName": "Diakonow",
+   "secondName": "Mieczysław",
+   "vote": "YES"
+  },
+  {
+   "MP": 64,
+   "club": "SLD",
+   "firstName": "Wojciech",
+   "lastName": "Długoborski",
+   "vote": "YES"
+  },
+  {
+   "MP": 65,
+   "club": "SLD",
+   "firstName": "Henryk",
+   "lastName": "Długosz",
+   "vote": "YES"
+  },
+  {
+   "MP": 66,
+   "club": "PSL",
+   "firstName": "Janusz",
+   "lastName": "Dobrosz",
+   "secondName": "Konrad",
+   "vote": "YES"
+  },
+  {
+   "MP": 67,
+   "club": "PO",
+   "firstName": "Grzegorz",
+   "lastName": "Dolniak",
+   "vote": "YES"
+  },
+  {
+   "MP": 68,
+   "club": "SLD",
+   "firstName": "Wojciech",
+   "lastName": "Domaradzki",
+   "secondName": "Grzegorz",
+   "vote": "YES"
+  },
+  {
+   "MP": 69,
+   "club": "PiS",
+   "firstName": "Ludwik",
+   "lastName": "Dorn",
+   "secondName": "Stanisław",
+   "vote": "YES"
+  },
+  {
+   "MP": 70,
+   "club": "PO",
+   "firstName": "Mirosław",
+   "lastName": "Drzewiecki",
+   "secondName": "Michał",
+   "vote": "YES"
+  },
+  {
+   "MP": 71,
+   "club": "Samoobrona",
+   "firstName": "Stanisław",
+   "lastName": "Dulias",
+   "vote": "YES"
+  },
+  {
+   "MP": 72,
+   "club": "PSL",
+   "firstName": "Bronisław",
+   "lastName": "Dutka",
+   "vote": "YES"
+  },
+  {
+   "MP": 73,
+   "club": "SLD",
+   "firstName": "Marek",
+   "lastName": "Dyduch",
+   "vote": "YES"
+  },
+  {
+   "MP": 74,
+   "club": "SLD",
+   "firstName": "Jerzy",
+   "lastName": "Dziewulski",
+   "secondName": "Maciej",
+   "vote": "YES"
+  },
+  {
+   "MP": 75,
+   "club": "Samoobrona",
+   "firstName": "Zbigniew",
+   "lastName": "Dziewulski",
+   "vote": "YES"
+  },
+  {
+   "MP": 76,
+   "club": "PO",
+   "firstName": "Waldy",
+   "lastName": "Dzikowski",
+   "vote": "YES"
+  },
+  {
+   "MP": 77,
+   "club": "PiS",
+   "firstName": "Jacek",
+   "lastName": "Falfus",
+   "secondName": "Eugeniusz",
+   "vote": "YES"
+  },
+  {
+   "MP": 78,
+   "club": "LPR",
+   "firstName": "Andrzej",
+   "lastName": "Fedorowicz",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 79,
+   "club": "SLD",
+   "firstName": "Tadeusz",
+   "lastName": "Ferenc",
+   "vote": "YES"
+  },
+  {
+   "MP": 80,
+   "club": "Samoobrona",
+   "firstName": "Michał",
+   "lastName": "Figlus",
+   "vote": "YES"
+  },
+  {
+   "MP": 81,
+   "club": "SLD",
+   "firstName": "Anna",
+   "lastName": "Filek",
+   "secondName": "Maria",
+   "vote": "YES"
+  },
+  {
+   "MP": 82,
+   "club": "Samoobrona",
+   "firstName": "Krzysztof",
+   "lastName": "Filipek",
+   "vote": "YES"
+  },
+  {
+   "MP": 83,
+   "club": "niez.",
+   "firstName": "Witold",
+   "lastName": "Firak",
+   "secondName": "Edwin",
+   "vote": "YES"
+  },
+  {
+   "MP": 84,
+   "club": "SLD",
+   "firstName": "Sebastian",
+   "lastName": "Florek",
+   "secondName": "Andrzej",
+   "vote": "YES"
+  },
+  {
+   "MP": 252,
+   "club": "PO",
+   "firstName": "Marta",
+   "lastName": "Fogler",
+   "secondName": "Halina",
+   "vote": "YES"
+  },
+  {
+   "MP": 85,
+   "club": "Samoobrona",
+   "firstName": "Franciszek",
+   "lastName": "Franczak",
+   "secondName": "Wojciech",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 86,
+   "club": "SLD",
+   "firstName": "Piotr",
+   "lastName": "Gadzinowski",
+   "vote": "YES"
+  },
+  {
+   "MP": 87,
+   "club": "PSL",
+   "firstName": "Tadeusz",
+   "lastName": "Gajda",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 88,
+   "club": "SLD",
+   "firstName": "Maria",
+   "lastName": "Gajecka-Bożek",
+   "secondName": "Stanisława",
+   "vote": "YES"
+  },
+  {
+   "MP": 89,
+   "club": "PO",
+   "firstName": "Andrzej",
+   "lastName": "Gałażewski",
+   "vote": "YES"
+  },
+  {
+   "MP": 90,
+   "club": "SLD",
+   "firstName": "Andrzej",
+   "lastName": "Gawłowski",
+   "secondName": "Karol",
+   "vote": "YES"
+  },
+  {
+   "MP": 91,
+   "club": "LPR",
+   "firstName": "Maciej",
+   "lastName": "Giertych",
+   "secondName": "Marian",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 92,
+   "club": "LPR",
+   "firstName": "Roman",
+   "lastName": "Giertych",
+   "secondName": "Jacek",
+   "vote": "YES"
+  },
+  {
+   "MP": 93,
+   "club": "PO",
+   "firstName": "Zyta",
+   "lastName": "Gilowska",
+   "secondName": "Janina",
+   "vote": "YES"
+  },
+  {
+   "MP": 94,
+   "club": "SLD",
+   "firstName": "Witold",
+   "lastName": "Gintowt-Dziewałtowski",
+   "secondName": "Józef",
+   "vote": "YES"
+  },
+  {
+   "MP": 95,
+   "club": "PiS",
+   "firstName": "Szymon",
+   "lastName": "Giżyński",
+   "vote": "YES"
+  },
+  {
+   "MP": 96,
+   "club": "Samoobrona",
+   "firstName": "Stanisław",
+   "lastName": "Głębocki",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 97,
+   "club": "PLD",
+   "firstName": "Józef",
+   "lastName": "Głowa",
+   "vote": "YES"
+  },
+  {
+   "MP": 98,
+   "club": "PO",
+   "firstName": "Stanisław",
+   "lastName": "Gorczyca",
+   "vote": "YES"
+  },
+  {
+   "MP": 99,
+   "club": "PiS",
+   "firstName": "Przemysław",
+   "lastName": "Gosiewski",
+   "secondName": "Edgar",
+   "vote": "YES"
+  },
+  {
+   "MP": 100,
+   "club": "SLD",
+   "firstName": "Anna",
+   "lastName": "Górna-Kubacka",
+   "secondName": "Teresa",
+   "vote": "YES"
+  },
+  {
+   "MP": 101,
+   "club": "LPR",
+   "firstName": "Grzegorz",
+   "lastName": "Górniak",
+   "secondName": "Antoni",
+   "vote": "YES"
+  },
+  {
+   "MP": 102,
+   "club": "PO",
+   "firstName": "Cezary",
+   "lastName": "Grabarczyk",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 103,
+   "club": "LPR",
+   "firstName": "Krystyna",
+   "lastName": "Grabicka",
+   "vote": "YES"
+  },
+  {
+   "MP": 104,
+   "club": "SLD",
+   "firstName": "Danuta",
+   "lastName": "Grabowska",
+   "secondName": "Maria",
+   "vote": "YES"
+  },
+  {
+   "MP": 105,
+   "club": "niez.",
+   "firstName": "Dariusz",
+   "lastName": "Grabowski",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 106,
+   "club": "LPR",
+   "firstName": "Mariusz",
+   "lastName": "Grabowski",
+   "secondName": "Krzysztof",
+   "vote": "YES"
+  },
+  {
+   "MP": 107,
+   "club": "PO",
+   "firstName": "Aleksander",
+   "lastName": "Grad",
+   "vote": "YES"
+  },
+  {
+   "MP": 108,
+   "club": "SLD",
+   "firstName": "Aleksandra",
+   "lastName": "Gramała",
+   "secondName": "Ewa",
+   "vote": "YES"
+  },
+  {
+   "MP": 109,
+   "club": "PO",
+   "firstName": "Paweł",
+   "lastName": "Graś",
+   "secondName": "Bolesław",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 110,
+   "club": "SLD",
+   "firstName": "Grzegorz",
+   "lastName": "Gruszka",
+   "secondName": "Stefan",
+   "vote": "YES"
+  },
+  {
+   "MP": 111,
+   "club": "PSL",
+   "firstName": "Józef",
+   "lastName": "Gruszka",
+   "secondName": "Zbigniew",
+   "vote": "YES"
+  },
+  {
+   "MP": 112,
+   "club": "SLD",
+   "firstName": "Zofia",
+   "lastName": "Grzebisz-Nowicka",
+   "vote": "YES"
+  },
+  {
+   "MP": 113,
+   "club": "Samoobrona",
+   "firstName": "Andrzej",
+   "lastName": "Grzesik",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 114,
+   "club": "PSL",
+   "firstName": "Andrzej",
+   "lastName": "Grzyb",
+   "secondName": "Marian",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 115,
+   "club": "UP",
+   "firstName": "Hanna",
+   "lastName": "Gucwińska",
+   "secondName": "Stefania",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 116,
+   "club": "LPR",
+   "firstName": "Stanisław",
+   "lastName": "Gudzowski",
+   "secondName": "Eugeniusz",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 117,
+   "club": "LPR",
+   "firstName": "Witold",
+   "lastName": "Hatka",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 118,
+   "club": "SLD",
+   "firstName": "Jerzy",
+   "lastName": "Hausner",
+   "secondName": "Krzysztof",
+   "vote": "YES"
+  },
+  {
+   "MP": 119,
+   "club": "SLD",
+   "firstName": "Ryszard",
+   "lastName": "Hayn",
+   "vote": "YES"
+  },
+  {
+   "MP": 120,
+   "club": "SLD",
+   "firstName": "Krystyna",
+   "lastName": "Herman",
+   "secondName": "Janina",
+   "vote": "YES"
+  },
+  {
+   "MP": 121,
+   "club": "PO",
+   "firstName": "Jerzy",
+   "lastName": "Hertel",
+   "secondName": "Stanisław",
+   "vote": "YES"
+  },
+  {
+   "MP": 122,
+   "club": "Samoobrona",
+   "firstName": "Danuta",
+   "lastName": "Hojarska",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 123,
+   "club": "SLD",
+   "firstName": "Barbara",
+   "lastName": "Hyla-Makowska",
+   "secondName": "Zofia",
+   "vote": "YES"
+  },
+  {
+   "MP": 124,
+   "club": "SLD",
+   "firstName": "Tadeusz",
+   "lastName": "Iwiński",
+   "vote": "YES"
+  },
+  {
+   "MP": 125,
+   "club": "PLD",
+   "firstName": "Roman",
+   "lastName": "Jagieliński",
+   "vote": "YES"
+  },
+  {
+   "MP": 126,
+   "club": "SLD",
+   "firstName": "Andrzej",
+   "lastName": "Jagiełło",
+   "secondName": "Idzi",
+   "vote": "YES"
+  },
+  {
+   "MP": 127,
+   "club": "SLD",
+   "firstName": "Aleksandra",
+   "lastName": "Jakubowska",
+   "vote": "YES"
+  },
+  {
+   "MP": 128,
+   "club": "SLD",
+   "firstName": "Stanisław",
+   "lastName": "Janas",
+   "vote": "YES"
+  },
+  {
+   "MP": 129,
+   "club": "UP",
+   "firstName": "Marian",
+   "lastName": "Janicki",
+   "secondName": "Józef",
+   "vote": "YES"
+  },
+  {
+   "MP": 130,
+   "club": "SLD",
+   "firstName": "Ewa",
+   "lastName": "Janik",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 131,
+   "club": "SLD",
+   "firstName": "Ewa",
+   "lastName": "Janik",
+   "secondName": "Maria",
+   "vote": "YES"
+  },
+  {
+   "MP": 132,
+   "club": "SLD",
+   "firstName": "Krzysztof",
+   "lastName": "Janik",
+   "secondName": "Jan",
+   "vote": "YES"
+  },
+  {
+   "MP": 133,
+   "club": "SLD",
+   "firstName": "Elżbieta",
+   "lastName": "Jankowska",
+   "secondName": "Róża",
+   "vote": "YES"
+  },
+  {
+   "MP": 134,
+   "club": "Samoobrona",
+   "firstName": "Zdzisław",
+   "lastName": "Jankowski",
+   "vote": "YES"
+  },
+  {
+   "MP": 135,
+   "club": "LPR",
+   "firstName": "Gabriel",
+   "lastName": "Janowski",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 136,
+   "club": "SLD",
+   "firstName": "Zbigniew",
+   "lastName": "Janowski",
+   "secondName": "Tadeusz",
+   "vote": "YES"
+  },
+  {
+   "MP": 137,
+   "club": "SLD",
+   "firstName": "Stanisław",
+   "lastName": "Jarmoliński",
+   "vote": "YES"
+  },
+  {
+   "MP": 138,
+   "club": "PO",
+   "firstName": "Tadeusz",
+   "lastName": "Jarmuziewicz",
+   "vote": "YES"
+  },
+  {
+   "MP": 139,
+   "club": "UP",
+   "firstName": "Izabela",
+   "lastName": "Jaruga-Nowacka",
+   "secondName": "Walentyna",
+   "vote": "YES"
+  },
+  {
+   "MP": 140,
+   "club": "PiS",
+   "firstName": "Wojciech",
+   "lastName": "Jasiński",
+   "secondName": "Stefan",
+   "vote": "YES"
+  },
+  {
+   "MP": 141,
+   "club": "SLD",
+   "firstName": "Jerzy",
+   "lastName": "Jaskiernia",
+   "secondName": "Andrzej",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 142,
+   "club": "SLD",
+   "firstName": "Teresa",
+   "lastName": "Jasztal",
+   "vote": "YES"
+  },
+  {
+   "MP": 143,
+   "club": "SLD",
+   "firstName": "Mieczysław",
+   "lastName": "Jedoń",
+   "vote": "YES"
+  },
+  {
+   "MP": 144,
+   "club": "SLD",
+   "firstName": "Wiesław",
+   "lastName": "Jędrusik",
+   "secondName": "Leszek",
+   "vote": "YES"
+  },
+  {
+   "MP": 145,
+   "club": "PiS",
+   "firstName": "Marek",
+   "lastName": "Jurek",
+   "vote": "YES"
+  },
+  {
+   "MP": 146,
+   "club": "PiS",
+   "firstName": "Krzysztof",
+   "lastName": "Jurgiel",
+   "vote": "YES"
+  },
+  {
+   "MP": 147,
+   "club": "SLD",
+   "firstName": "Michał",
+   "lastName": "Kaczmarek",
+   "vote": "YES"
+  },
+  {
+   "MP": 148,
+   "club": "SLD",
+   "firstName": "Wiesław",
+   "lastName": "Kaczmarek",
+   "secondName": "Władysław",
+   "vote": "YES"
+  },
+  {
+   "MP": 149,
+   "club": "PiS",
+   "firstName": "Jarosław",
+   "lastName": "Kaczyński",
+   "secondName": "Aleksander",
+   "vote": "YES"
+  },
+  {
+   "MP": 150,
+   "club": "PiS",
+   "firstName": "Lech",
+   "lastName": "Kaczyński",
+   "secondName": "Aleksander",
+   "vote": "YES"
+  },
+  {
+   "MP": 151,
+   "club": "PSL",
+   "firstName": "Stanisław",
+   "lastName": "Kalemba",
+   "vote": "YES"
+  },
+  {
+   "MP": 152,
+   "club": "SLD",
+   "firstName": "Tadeusz",
+   "lastName": "Kaleniecki",
+   "vote": "YES"
+  },
+  {
+   "MP": 153,
+   "club": "PSL",
+   "firstName": "Jarosław",
+   "lastName": "Kalinowski",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 154,
+   "club": "PSL",
+   "firstName": "Stanisław",
+   "lastName": "Kalinowski",
+   "secondName": "Bernard",
+   "vote": "YES"
+  },
+  {
+   "MP": 155,
+   "club": "SLD",
+   "firstName": "Ryszard",
+   "lastName": "Kalisz",
+   "vote": "YES"
+  },
+  {
+   "MP": 156,
+   "club": "SLD",
+   "firstName": "Zdzisław",
+   "lastName": "Kałamaga",
+   "vote": "YES"
+  },
+  {
+   "MP": 157,
+   "club": "PiS",
+   "firstName": "Mariusz",
+   "lastName": "Kamiński",
+   "vote": "YES"
+  },
+  {
+   "MP": 158,
+   "club": "PiS",
+   "firstName": "Michał",
+   "lastName": "Kamiński",
+   "secondName": "Tomasz",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 159,
+   "club": "SLD",
+   "firstName": "Zbigniew",
+   "lastName": "Kaniewski",
+   "secondName": "Waldemar",
+   "vote": "YES"
+  },
+  {
+   "MP": 160,
+   "club": "LPR",
+   "firstName": "Ewa",
+   "lastName": "Kantor",
+   "secondName": "Maria",
+   "vote": "YES"
+  },
+  {
+   "MP": 161,
+   "club": "PSL",
+   "firstName": "Mieczysław",
+   "lastName": "Kasprzak",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 162,
+   "club": "SLD",
+   "firstName": "Jacek",
+   "lastName": "Kasprzyk",
+   "secondName": "Franciszek",
+   "vote": "YES"
+  },
+  {
+   "MP": 163,
+   "club": "SLD",
+   "firstName": "Arkadiusz",
+   "lastName": "Kasznia",
+   "vote": "YES"
+  },
+  {
+   "MP": 164,
+   "club": "SLD",
+   "firstName": "Marian",
+   "lastName": "Kawa",
+   "secondName": "Zbigniew",
+   "vote": "YES"
+  },
+  {
+   "MP": 165,
+   "club": "SLD",
+   "firstName": "Mirosława",
+   "lastName": "Kątna",
+   "vote": "YES"
+  },
+  {
+   "MP": 166,
+   "club": "LPR",
+   "firstName": "Ryszard",
+   "lastName": "Kędra",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 167,
+   "club": "ROP",
+   "firstName": "Tadeusz",
+   "lastName": "Kędziak",
+   "vote": "YES"
+  },
+  {
+   "MP": 168,
+   "club": "SLD",
+   "firstName": "Bożena",
+   "lastName": "Kizińska",
+   "secondName": "Maria",
+   "vote": "YES"
+  },
+  {
+   "MP": 169,
+   "club": "PO",
+   "firstName": "Bogdan",
+   "lastName": "Klich",
+   "vote": "YES"
+  },
+  {
+   "MP": 170,
+   "club": "SLD",
+   "firstName": "Jan",
+   "lastName": "Klimek",
+   "vote": "YES"
+  },
+  {
+   "MP": 171,
+   "club": "Samoobrona",
+   "firstName": "Wacław",
+   "lastName": "Klukowski",
+   "vote": "YES"
+  },
+  {
+   "MP": 172,
+   "club": "PSL",
+   "firstName": "Eugeniusz",
+   "lastName": "Kłopotek",
+   "vote": "YES"
+  },
+  {
+   "MP": 173,
+   "club": "SLD",
+   "firstName": "Jan",
+   "lastName": "Knapik",
+   "vote": "YES"
+  },
+  {
+   "MP": 174,
+   "club": "SLD",
+   "firstName": "Antoni",
+   "lastName": "Kobielusz",
+   "vote": "YES"
+  },
+  {
+   "MP": 175,
+   "club": "SLD",
+   "firstName": "Jan",
+   "lastName": "Kochanowski",
+   "vote": "YES"
+  },
+  {
+   "MP": 176,
+   "club": "PO",
+   "firstName": "Bronisław",
+   "lastName": "Komorowski",
+   "secondName": "Maria",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 177,
+   "club": "PSL",
+   "firstName": "Zbigniew",
+   "lastName": "Komorowski",
+   "vote": "YES"
+  },
+  {
+   "MP": 178,
+   "club": "PO",
+   "firstName": "Ewa",
+   "lastName": "Kopacz",
+   "secondName": "Bożena",
+   "vote": "YES"
+  },
+  {
+   "MP": 179,
+   "club": "LPR",
+   "firstName": "Bohdan",
+   "lastName": "Kopczyński",
+   "vote": "YES"
+  },
+  {
+   "MP": 180,
+   "club": "SLD",
+   "firstName": "Stanisław",
+   "lastName": "Kopeć",
+   "vote": "YES"
+  },
+  {
+   "MP": 181,
+   "club": "PO",
+   "firstName": "Leszek",
+   "lastName": "Korzeniowski",
+   "secondName": "Sylwester",
+   "vote": "YES"
+  },
+  {
+   "MP": 182,
+   "club": "LPR",
+   "firstName": "Marek",
+   "lastName": "Kotlinowski",
+   "secondName": "Bolesław",
+   "vote": "YES"
+  },
+  {
+   "MP": 183,
+   "club": "SLD",
+   "firstName": "Jacek",
+   "lastName": "Kowalik",
+   "secondName": "Jakub",
+   "vote": "YES"
+  },
+  {
+   "MP": 184,
+   "club": "SLD",
+   "firstName": "Bronisława",
+   "lastName": "Kowalska",
+   "vote": "YES"
+  },
+  {
+   "MP": 185,
+   "club": "Samoobrona",
+   "firstName": "Bożena",
+   "lastName": "Kozłowska",
+   "secondName": "Alicja",
+   "vote": "YES"
+  },
+  {
+   "MP": 186,
+   "club": "Samoobrona",
+   "firstName": "Piotr",
+   "lastName": "Kozłowski",
+   "vote": "YES"
+  },
+  {
+   "MP": 187,
+   "club": "UP",
+   "firstName": "Ewa",
+   "lastName": "Kralkowska",
+   "vote": "YES"
+  },
+  {
+   "MP": 188,
+   "club": "LPR",
+   "firstName": "Zofia",
+   "lastName": "Krasicka-Domka",
+   "vote": "YES"
+  },
+  {
+   "MP": 189,
+   "club": "SLD",
+   "firstName": "Janusz",
+   "lastName": "Krasoń",
+   "vote": "YES"
+  },
+  {
+   "MP": 190,
+   "club": "niez.",
+   "firstName": "Henryk",
+   "lastName": "Kroll",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 191,
+   "club": "PiS",
+   "firstName": "Elżbieta",
+   "lastName": "Kruk",
+   "secondName": "Małgorzata",
+   "vote": "YES"
+  },
+  {
+   "MP": 192,
+   "club": "LPR",
+   "firstName": "Urszula",
+   "lastName": "Krupa",
+   "secondName": "Irena",
+   "vote": "YES"
+  },
+  {
+   "MP": 193,
+   "club": "SLD",
+   "firstName": "Zbigniew",
+   "lastName": "Krutczenko",
+   "secondName": "Józef",
+   "vote": "YES"
+  },
+  {
+   "MP": 194,
+   "club": "LPR",
+   "firstName": "Piotr",
+   "lastName": "Krutul",
+   "vote": "YES"
+  },
+  {
+   "MP": 195,
+   "club": "PiS",
+   "firstName": "Piotr",
+   "lastName": "Krzywicki",
+   "vote": "YES"
+  },
+  {
+   "MP": 196,
+   "club": "UP",
+   "firstName": "Józef",
+   "lastName": "Kubica",
+   "vote": "YES"
+  },
+  {
+   "MP": 197,
+   "club": "PSL",
+   "firstName": "Jan",
+   "lastName": "Kubik",
+   "vote": "YES"
+  },
+  {
+   "MP": 198,
+   "club": "PiS",
+   "firstName": "Marek",
+   "lastName": "Kuchciński",
+   "secondName": "Tadeusz",
+   "vote": "YES"
+  },
+  {
+   "MP": 199,
+   "club": "SLD",
+   "firstName": "Jerzy",
+   "lastName": "Kulej",
+   "vote": "YES"
+  },
+  {
+   "MP": 200,
+   "club": "SLD",
+   "firstName": "Grzegorz",
+   "lastName": "Kurczuk",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 201,
+   "club": "Samoobrona",
+   "firstName": "Lech",
+   "lastName": "Kuropatwiński",
+   "secondName": "Stefan",
+   "vote": "YES"
+  },
+  {
+   "MP": 202,
+   "club": "SLD",
+   "firstName": "Stanisław",
+   "lastName": "Kurpiewski",
+   "secondName": "Tadeusz",
+   "vote": "YES"
+  },
+  {
+   "MP": 203,
+   "club": "PSL",
+   "firstName": "Zbigniew",
+   "lastName": "Kuźmiuk",
+   "vote": "YES"
+  },
+  {
+   "MP": 204,
+   "club": "Samoobrona",
+   "firstName": "Dorota",
+   "lastName": "Kwaśniewska",
+   "vote": "YES"
+  },
+  {
+   "MP": 205,
+   "club": "Samoobrona",
+   "firstName": "Marian",
+   "lastName": "Kwiatkowski",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 206,
+   "club": "Samoobrona",
+   "firstName": "Józef",
+   "lastName": "Laskowski",
+   "vote": "YES"
+  },
+  {
+   "MP": 207,
+   "club": "Samoobrona",
+   "firstName": "Andrzej",
+   "lastName": "Lepper",
+   "vote": "YES"
+  },
+  {
+   "MP": 208,
+   "club": "SLD",
+   "firstName": "Bogdan",
+   "lastName": "Lewandowski",
+   "secondName": "Andrzej",
+   "vote": "YES"
+  },
+  {
+   "MP": 209,
+   "club": "PO",
+   "firstName": "Janusz",
+   "lastName": "Lewandowski",
+   "secondName": "Antoni",
+   "vote": "YES"
+  },
+  {
+   "MP": 210,
+   "club": "ROP",
+   "firstName": "Henryk",
+   "lastName": "Lewczuk",
+   "vote": "YES"
+  },
+  {
+   "MP": 211,
+   "club": "SLD",
+   "firstName": "Bogusław",
+   "lastName": "Liberadzki",
+   "secondName": "Marian",
+   "vote": "YES"
+  },
+  {
+   "MP": 212,
+   "club": "PiS",
+   "firstName": "Marcin",
+   "lastName": "Libicki",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 213,
+   "club": "PiS",
+   "firstName": "Adam",
+   "lastName": "Lipiński",
+   "vote": "YES"
+  },
+  {
+   "MP": 214,
+   "club": "Samoobrona",
+   "firstName": "Alicja",
+   "lastName": "Lis",
+   "secondName": "Bronisława",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 215,
+   "club": "UP",
+   "firstName": "Janusz",
+   "lastName": "Lisak",
+   "secondName": "Stanisław",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 216,
+   "club": "LPR",
+   "firstName": "Robert",
+   "lastName": "Luśnia",
+   "secondName": "Jerzy",
+   "vote": "YES"
+  },
+  {
+   "MP": 217,
+   "club": "SLD",
+   "firstName": "Mariusz",
+   "lastName": "Łapiński",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 218,
+   "club": "Samoobrona",
+   "firstName": "Jan",
+   "lastName": "Łączny",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 219,
+   "club": "LPR",
+   "firstName": "Jan",
+   "lastName": "Łopuszański",
+   "secondName": "Edward",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 220,
+   "club": "SLD",
+   "firstName": "Krystian",
+   "lastName": "Łuczak",
+   "secondName": "Walery",
+   "vote": "YES"
+  },
+  {
+   "MP": 221,
+   "club": "PO",
+   "firstName": "Elżbieta",
+   "lastName": "Łukacijewska",
+   "secondName": "Katarzyna",
+   "vote": "YES"
+  },
+  {
+   "MP": 222,
+   "club": "SLD",
+   "firstName": "Aleksandra",
+   "lastName": "Łuszczyńska",
+   "secondName": "Ewa",
+   "vote": "YES"
+  },
+  {
+   "MP": 223,
+   "club": "SLD",
+   "firstName": "Krystyna",
+   "lastName": "Łybacka",
+   "secondName": "Maria",
+   "vote": "YES"
+  },
+  {
+   "MP": 224,
+   "club": "Samoobrona",
+   "firstName": "Wanda",
+   "lastName": "Łyżwińska",
+   "secondName": "Elżbieta",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 225,
+   "club": "Samoobrona",
+   "firstName": "Stanisław",
+   "lastName": "Łyżwiński",
+   "secondName": "Józef",
+   "vote": "YES"
+  },
+  {
+   "MP": 226,
+   "club": "LPR",
+   "firstName": "Antoni",
+   "lastName": "Macierewicz",
+   "vote": "YES"
+  },
+  {
+   "MP": 227,
+   "club": "PO",
+   "firstName": "Tadeusz",
+   "lastName": "Maćkała",
+   "vote": "YES"
+  },
+  {
+   "MP": 228,
+   "club": "UP",
+   "firstName": "Aleksander",
+   "lastName": "Małachowski",
+   "vote": "YES"
+  },
+  {
+   "MP": 229,
+   "club": "SLD",
+   "firstName": "Tomasz",
+   "lastName": "Mamiński",
+   "secondName": "Zdzisław",
+   "vote": "YES"
+  },
+  {
+   "MP": 230,
+   "club": "PO",
+   "firstName": "Edward",
+   "lastName": "Maniura",
+   "secondName": "Makary",
+   "vote": "YES"
+  },
+  {
+   "MP": 231,
+   "club": "LPR",
+   "firstName": "Andrzej",
+   "lastName": "Mańka",
+   "vote": "YES"
+  },
+  {
+   "MP": 232,
+   "club": "SLD",
+   "firstName": "Ryszard",
+   "lastName": "Maraszek",
+   "vote": "YES"
+  },
+  {
+   "MP": 233,
+   "club": "PiS",
+   "firstName": "Kazimierz",
+   "lastName": "Marcinkiewicz",
+   "vote": "YES"
+  },
+  {
+   "MP": 234,
+   "club": "SLD",
+   "firstName": "Marian",
+   "lastName": "Marczewski",
+   "secondName": "Mirosław",
+   "vote": "YES"
+  },
+  {
+   "MP": 235,
+   "club": "PiS",
+   "firstName": "Barbara",
+   "lastName": "Marianowska",
+   "vote": "YES"
+  },
+  {
+   "MP": 236,
+   "club": "SLD",
+   "firstName": "Adam",
+   "lastName": "Markiewicz",
+   "vote": "YES"
+  },
+  {
+   "MP": 237,
+   "club": "PO",
+   "firstName": "Andrzej",
+   "lastName": "Markowiak",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 238,
+   "club": "PiS",
+   "firstName": "Tomasz",
+   "lastName": "Markowski",
+   "secondName": "Maciej",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 239,
+   "club": "SLD",
+   "firstName": "Wacław",
+   "lastName": "Martyniuk",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 240,
+   "club": "SLD",
+   "firstName": "Czesław",
+   "lastName": "Marzec",
+   "vote": "YES"
+  },
+  {
+   "MP": 241,
+   "club": "LPR",
+   "firstName": "Gabriela",
+   "lastName": "Masłowska",
+   "vote": "YES"
+  },
+  {
+   "MP": 242,
+   "club": "PO",
+   "firstName": "Piotr",
+   "lastName": "Mateja",
+   "vote": "YES"
+  },
+  {
+   "MP": 243,
+   "club": "PiS",
+   "firstName": "Antoni",
+   "lastName": "Mężydło",
+   "vote": "YES"
+  },
+  {
+   "MP": 244,
+   "club": "SLD",
+   "firstName": "Aldona",
+   "lastName": "Michalak",
+   "secondName": "Maria",
+   "vote": "YES"
+  },
+  {
+   "MP": 245,
+   "club": "Samoobrona",
+   "firstName": "Jerzy",
+   "lastName": "Michalski",
+   "vote": "YES"
+  },
+  {
+   "MP": 246,
+   "club": "PiS",
+   "firstName": "Hanna",
+   "lastName": "Mierzejewska",
+   "secondName": "Elżbieta",
+   "vote": "YES"
+  },
+  {
+   "MP": 247,
+   "club": "SLD",
+   "firstName": "Leszek",
+   "lastName": "Miller",
+   "secondName": "Cezary",
+   "vote": "YES"
+  },
+  {
+   "MP": 248,
+   "club": "PO",
+   "firstName": "Konstanty",
+   "lastName": "Miodowicz",
+   "vote": "YES"
+  },
+  {
+   "MP": 249,
+   "club": "PSL",
+   "firstName": "Józef",
+   "lastName": "Mioduszewski",
+   "vote": "YES"
+  },
+  {
+   "MP": 250,
+   "club": "SLD",
+   "firstName": "Jerzy",
+   "lastName": "Młynarczyk",
+   "secondName": "Marian",
+   "vote": "YES"
+  },
+  {
+   "MP": 251,
+   "club": "Samoobrona",
+   "firstName": "Wojciech",
+   "lastName": "Mojzesowicz",
+   "vote": "YES"
+  },
+  {
+   "MP": 253,
+   "club": "SLD",
+   "firstName": "Tadeusz",
+   "lastName": "Motowidło",
+   "vote": "YES"
+  },
+  {
+   "MP": 254,
+   "club": "LPR",
+   "firstName": "Halina",
+   "lastName": "Murias",
+   "vote": "YES"
+  },
+  {
+   "MP": 255,
+   "club": "SLD",
+   "firstName": "Alicja",
+   "lastName": "Murynowicz",
+   "secondName": "Maria",
+   "vote": "YES"
+  },
+  {
+   "MP": 256,
+   "club": "LPR",
+   "firstName": "Leszek",
+   "lastName": "Murzyn",
+   "vote": "YES"
+  },
+  {
+   "MP": 257,
+   "club": "SLD",
+   "firstName": "Zbigniew",
+   "lastName": "Musiał",
+   "secondName": "Andrzej",
+   "vote": "YES"
+  },
+  {
+   "MP": 258,
+   "club": "PiS",
+   "firstName": "Marek",
+   "lastName": "Muszyński",
+   "secondName": "Paweł",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 259,
+   "club": "UP",
+   "firstName": "Jerzy",
+   "lastName": "Müller",
+   "secondName": "Tomasz",
+   "vote": "YES"
+  },
+  {
+   "MP": 260,
+   "club": "SLD",
+   "firstName": "Tadeusz",
+   "lastName": "Myler",
+   "secondName": "Józef",
+   "vote": "YES"
+  },
+  {
+   "MP": 261,
+   "club": "UP",
+   "firstName": "Tomasz",
+   "lastName": "Nałęcz",
+   "vote": "YES"
+  },
+  {
+   "MP": 262,
+   "club": "SLD",
+   "firstName": "Andrzej",
+   "lastName": "Namysło",
+   "secondName": "Józef",
+   "vote": "YES"
+  },
+  {
+   "MP": 263,
+   "club": "SKL",
+   "firstName": "Ireneusz",
+   "lastName": "Niewiarowski",
+   "vote": "YES"
+  },
+  {
+   "MP": 264,
+   "club": "SLD",
+   "firstName": "Lech",
+   "lastName": "Nikolski",
+   "secondName": "Stanisław",
+   "vote": "YES"
+  },
+  {
+   "MP": 265,
+   "club": "SLD",
+   "firstName": "Irena",
+   "lastName": "Nowacka",
+   "secondName": "Maria",
+   "vote": "YES"
+  },
+  {
+   "MP": 266,
+   "club": "PiS",
+   "firstName": "Maria",
+   "lastName": "Nowak",
+   "vote": "YES"
+  },
+  {
+   "MP": 267,
+   "club": "PiS",
+   "firstName": "Ryszard",
+   "lastName": "Nowak",
+   "vote": "YES"
+  },
+  {
+   "MP": 268,
+   "club": "niez.",
+   "firstName": "Zbigniew",
+   "lastName": "Nowak",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 269,
+   "club": "SLD",
+   "firstName": "Joanna",
+   "lastName": "Nowiak",
+   "vote": "YES"
+  },
+  {
+   "MP": 270,
+   "club": "SLD",
+   "firstName": "Józef",
+   "lastName": "Nowicki",
+   "secondName": "Zygmunt",
+   "vote": "YES"
+  },
+  {
+   "MP": 271,
+   "club": "LPR",
+   "firstName": "Halina",
+   "lastName": "Nowina Konopka",
+   "secondName": "Maria",
+   "vote": "YES"
+  },
+  {
+   "MP": 272,
+   "club": "SLD",
+   "firstName": "Wiesław",
+   "lastName": "Okoński",
+   "vote": "YES"
+  },
+  {
+   "MP": 273,
+   "club": "SKL",
+   "firstName": "Krzysztof",
+   "lastName": "Oksiuta",
+   "secondName": "Roman",
+   "vote": "YES"
+  },
+  {
+   "MP": 274,
+   "club": "PO",
+   "firstName": "Alicja",
+   "lastName": "Olechowska",
+   "secondName": "Danuta",
+   "vote": "YES"
+  },
+  {
+   "MP": 275,
+   "club": "SLD",
+   "firstName": "Wojciech",
+   "lastName": "Olejniczak",
+   "vote": "YES"
+  },
+  {
+   "MP": 276,
+   "club": "SLD",
+   "firstName": "Józef",
+   "lastName": "Oleksy",
+   "vote": "YES"
+  },
+  {
+   "MP": 277,
+   "club": "SLD",
+   "firstName": "Marek",
+   "lastName": "Olewiński",
+   "secondName": "Tadeusz",
+   "vote": "YES"
+  },
+  {
+   "MP": 278,
+   "club": "ROP",
+   "firstName": "Jan",
+   "lastName": "Olszewski",
+   "secondName": "Ferdynand",
+   "vote": "YES"
+  },
+  {
+   "MP": 279,
+   "club": "Samoobrona",
+   "firstName": "Adam",
+   "lastName": "Ołdakowski",
+   "vote": "YES"
+  },
+  {
+   "MP": 280,
+   "club": "UP",
+   "firstName": "Jan",
+   "lastName": "Orkisz",
+   "vote": "YES"
+  },
+  {
+   "MP": 281,
+   "club": "SLD",
+   "firstName": "Wiktor",
+   "lastName": "Osik",
+   "secondName": "Jerzy",
+   "vote": "YES"
+  },
+  {
+   "MP": 282,
+   "club": "SLD",
+   "firstName": "Małgorzata",
+   "lastName": "Ostrowska",
+   "secondName": "Teresa",
+   "vote": "YES"
+  },
+  {
+   "MP": 283,
+   "club": "Samoobrona",
+   "firstName": "Henryk",
+   "lastName": "Ostrowski",
+   "vote": "YES"
+  },
+  {
+   "MP": 284,
+   "club": "SLD",
+   "firstName": "Andrzej",
+   "lastName": "Otręba",
+   "secondName": "Jan",
+   "vote": "YES"
+  },
+  {
+   "MP": 285,
+   "club": "SLD",
+   "firstName": "Alfred",
+   "lastName": "Owoc",
+   "vote": "YES"
+  },
+  {
+   "MP": 286,
+   "club": "LPR",
+   "firstName": "Stanisław",
+   "lastName": "Papież",
+   "vote": "YES"
+  },
+  {
+   "MP": 287,
+   "club": "PO",
+   "firstName": "Tadeusz",
+   "lastName": "Parchański",
+   "vote": "YES"
+  },
+  {
+   "MP": 288,
+   "club": "SLD",
+   "firstName": "Agnieszka",
+   "lastName": "Pasternak",
+   "vote": "YES"
+  },
+  {
+   "MP": 289,
+   "club": "PO",
+   "firstName": "Grażyna",
+   "lastName": "Paturalska",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 290,
+   "club": "PSL",
+   "firstName": "Mirosław",
+   "lastName": "Pawlak",
+   "secondName": "Antoni",
+   "vote": "YES"
+  },
+  {
+   "MP": 291,
+   "club": "PSL",
+   "firstName": "Waldemar",
+   "lastName": "Pawlak",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 292,
+   "club": "niez.",
+   "firstName": "Helmut",
+   "lastName": "Paździor",
+   "vote": "YES"
+  },
+  {
+   "MP": 293,
+   "club": "SLD",
+   "firstName": "Andrzej",
+   "lastName": "Pęczak",
+   "secondName": "Lech",
+   "vote": "YES"
+  },
+  {
+   "MP": 294,
+   "club": "PSL",
+   "firstName": "Bogdan",
+   "lastName": "Pęk",
+   "secondName": "Marek",
+   "vote": "YES"
+  },
+  {
+   "MP": 295,
+   "club": "Samoobrona",
+   "firstName": "Jerzy",
+   "lastName": "Pękała",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 296,
+   "club": "PiS",
+   "firstName": "Bolesław",
+   "lastName": "Piecha",
+   "secondName": "Grzegorz",
+   "vote": "YES"
+  },
+  {
+   "MP": 297,
+   "club": "PSL",
+   "firstName": "Janusz",
+   "lastName": "Piechociński",
+   "vote": "YES"
+  },
+  {
+   "MP": 298,
+   "club": "SLD",
+   "firstName": "Jacek",
+   "lastName": "Piechota",
+   "secondName": "Jan",
+   "vote": "YES"
+  },
+  {
+   "MP": 299,
+   "club": "SLD",
+   "firstName": "Katarzyna",
+   "lastName": "Piekarska",
+   "secondName": "Maria",
+   "vote": "YES"
+  },
+  {
+   "MP": 300,
+   "club": "SLD",
+   "firstName": "Elżbieta",
+   "lastName": "Piela-Mielczarek",
+   "secondName": "Agnieszka",
+   "vote": "YES"
+  },
+  {
+   "MP": 301,
+   "club": "SLD",
+   "firstName": "Kazimierz",
+   "lastName": "Pietrzyk",
+   "vote": "YES"
+  },
+  {
+   "MP": 302,
+   "club": "SLD",
+   "firstName": "Grażyna",
+   "lastName": "Pijanowska",
+   "secondName": "Paulina",
+   "vote": "YES"
+  },
+  {
+   "MP": 303,
+   "club": "SLD",
+   "firstName": "Józef",
+   "lastName": "Pilarczyk",
+   "secondName": "Jerzy",
+   "vote": "YES"
+  },
+  {
+   "MP": 304,
+   "club": "SLD",
+   "firstName": "Andrzej",
+   "lastName": "Piłat",
+   "vote": "YES"
+  },
+  {
+   "MP": 305,
+   "club": "PiS",
+   "firstName": "Marian",
+   "lastName": "Piłka",
+   "vote": "YES"
+  },
+  {
+   "MP": 306,
+   "club": "SLD",
+   "firstName": "Stanisław",
+   "lastName": "Piosik",
+   "vote": "YES"
+  },
+  {
+   "MP": 307,
+   "club": "PO",
+   "firstName": "Teresa",
+   "lastName": "Piotrowska",
+   "vote": "YES"
+  },
+  {
+   "MP": 308,
+   "club": "PO",
+   "firstName": "Paweł",
+   "lastName": "Piskorski",
+   "secondName": "Bartłomiej",
+   "vote": "YES"
+  },
+  {
+   "MP": 309,
+   "club": "PO",
+   "firstName": "Kazimierz",
+   "lastName": "Plocke",
+   "secondName": "Florian",
+   "vote": "YES"
+  },
+  {
+   "MP": 310,
+   "club": "PO",
+   "firstName": "Maciej",
+   "lastName": "Płażyński",
+   "vote": "YES"
+  },
+  {
+   "MP": 311,
+   "club": "PO",
+   "firstName": "Edward",
+   "lastName": "Płonka",
+   "vote": "YES"
+  },
+  {
+   "MP": 312,
+   "club": "PSL",
+   "firstName": "Zdzisław",
+   "lastName": "Podkański",
+   "secondName": "Zbigniew",
+   "vote": "YES"
+  },
+  {
+   "MP": 313,
+   "club": "SLD",
+   "firstName": "Zbigniew",
+   "lastName": "Podraza",
+   "secondName": "Marian",
+   "vote": "YES"
+  },
+  {
+   "MP": 314,
+   "club": "SLD",
+   "firstName": "Czesław",
+   "lastName": "Pogoda",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 315,
+   "club": "UP",
+   "firstName": "Ryszard",
+   "lastName": "Pojda",
+   "vote": "YES"
+  },
+  {
+   "MP": 316,
+   "club": "UP",
+   "firstName": "Marek",
+   "lastName": "Pol",
+   "vote": "YES"
+  },
+  {
+   "MP": 317,
+   "club": "PiS",
+   "firstName": "Jerzy",
+   "lastName": "Polaczek",
+   "secondName": "Jan",
+   "vote": "YES"
+  },
+  {
+   "MP": 318,
+   "club": "UP",
+   "firstName": "Danuta",
+   "lastName": "Polak",
+   "vote": "YES"
+  },
+  {
+   "MP": 319,
+   "club": "PSL",
+   "firstName": "Tadeusz",
+   "lastName": "Polański",
+   "vote": "YES"
+  },
+  {
+   "MP": 320,
+   "club": "PiS",
+   "firstName": "Paweł",
+   "lastName": "Poncyljusz",
+   "secondName": "Janusz",
+   "vote": "YES"
+  },
+  {
+   "MP": 321,
+   "club": "SLD",
+   "firstName": "Olgierd",
+   "lastName": "Poniźnik",
+   "vote": "YES"
+  },
+  {
+   "MP": 322,
+   "club": "SLD",
+   "firstName": "Maria",
+   "lastName": "Potępa",
+   "secondName": "Barbara",
+   "vote": "YES"
+  },
+  {
+   "MP": 323,
+   "club": "SLD",
+   "firstName": "Franciszek",
+   "lastName": "Potulski",
+   "secondName": "Józef",
+   "vote": "YES"
+  },
+  {
+   "MP": 324,
+   "club": "PO",
+   "firstName": "Jacek",
+   "lastName": "Protasiewicz",
+   "vote": "YES"
+  },
+  {
+   "MP": 325,
+   "club": "SLD",
+   "firstName": "Stanisława",
+   "lastName": "Prządka",
+   "secondName": "Alicja",
+   "vote": "YES"
+  },
+  {
+   "MP": 326,
+   "club": "SLD",
+   "firstName": "Sylwia",
+   "lastName": "Pusz",
+   "vote": "YES"
+  },
+  {
+   "MP": 327,
+   "club": "PO",
+   "firstName": "Elżbieta",
+   "lastName": "Radziszewska",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 328,
+   "club": "SLD",
+   "firstName": "Władysław",
+   "lastName": "Rak",
+   "secondName": "Jan",
+   "vote": "YES"
+  },
+  {
+   "MP": 329,
+   "club": "SLD",
+   "firstName": "Zygmunt",
+   "lastName": "Ratman",
+   "vote": "YES"
+  },
+  {
+   "MP": 330,
+   "club": "Samoobrona",
+   "firstName": "Renata",
+   "lastName": "Rochnowska",
+   "vote": "YES"
+  },
+  {
+   "MP": 331,
+   "club": "SKL",
+   "firstName": "Małgorzata",
+   "lastName": "Rohde",
+   "secondName": "Maria",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 332,
+   "club": "PO",
+   "firstName": "Jan",
+   "lastName": "Rokita",
+   "vote": "YES"
+  },
+  {
+   "MP": 333,
+   "club": "SLD",
+   "firstName": "Elżbieta",
+   "lastName": "Romero",
+   "secondName": "Józefa",
+   "vote": "YES"
+  },
+  {
+   "MP": 334,
+   "club": "SLD",
+   "firstName": "Andrzej",
+   "lastName": "Różański",
+   "secondName": "Wawrzyniec",
+   "vote": "YES"
+  },
+  {
+   "MP": 335,
+   "club": "PLD",
+   "firstName": "Krzysztof",
+   "lastName": "Rutkowski",
+   "vote": "YES"
+  },
+  {
+   "MP": 336,
+   "club": "PO",
+   "firstName": "Sławomir",
+   "lastName": "Rybicki",
+   "vote": "YES"
+  },
+  {
+   "MP": 337,
+   "club": "SLD",
+   "firstName": "Stanisław",
+   "lastName": "Rydzoń",
+   "vote": "YES"
+  },
+  {
+   "MP": 338,
+   "club": "PO",
+   "firstName": "Jan",
+   "lastName": "Rzymełka",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 339,
+   "club": "PSL",
+   "firstName": "Tadeusz",
+   "lastName": "Samborski",
+   "vote": "YES"
+  },
+  {
+   "MP": 340,
+   "club": "SLD",
+   "firstName": "Kazimierz",
+   "lastName": "Sas",
+   "vote": "YES"
+  },
+  {
+   "MP": 341,
+   "club": "PiS",
+   "firstName": "Jacek",
+   "lastName": "Sauk",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 342,
+   "club": "PSL",
+   "firstName": "Marek",
+   "lastName": "Sawicki",
+   "secondName": "Wacław",
+   "vote": "YES"
+  },
+  {
+   "MP": 343,
+   "club": "PO",
+   "firstName": "Grzegorz",
+   "lastName": "Schetyna",
+   "secondName": "Juliusz",
+   "vote": "YES"
+  },
+  {
+   "MP": 344,
+   "club": "SLD",
+   "firstName": "Joanna",
+   "lastName": "Senyszyn",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 345,
+   "club": "PSL",
+   "firstName": "Czesław",
+   "lastName": "Siekierski",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 346,
+   "club": "SLD",
+   "firstName": "Zbigniew",
+   "lastName": "Siemiątkowski",
+   "vote": "YES"
+  },
+  {
+   "MP": 347,
+   "club": "SLD",
+   "firstName": "Jan",
+   "lastName": "Sieńko",
+   "vote": "YES"
+  },
+  {
+   "MP": 348,
+   "club": "SLD",
+   "firstName": "Izabella",
+   "lastName": "Sierakowska",
+   "secondName": "Antonina",
+   "vote": "YES"
+  },
+  {
+   "MP": 349,
+   "club": "SLD",
+   "firstName": "Szczepan",
+   "lastName": "Skomra",
+   "secondName": "Stanisław",
+   "vote": "YES"
+  },
+  {
+   "MP": 350,
+   "club": "PO",
+   "firstName": "Krystyna",
+   "lastName": "Skowrońska",
+   "vote": "YES"
+  },
+  {
+   "MP": 351,
+   "club": "LPR",
+   "firstName": "Józef",
+   "lastName": "Skowyra",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 352,
+   "club": "SLD",
+   "firstName": "Andrzej",
+   "lastName": "Skrzyński",
+   "secondName": "Jan",
+   "vote": "YES"
+  },
+  {
+   "MP": 353,
+   "club": "Samoobrona",
+   "firstName": "Józef",
+   "lastName": "Skutecki",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 354,
+   "club": "Samoobrona",
+   "firstName": "Piotr",
+   "lastName": "Smolana",
+   "secondName": "Wincenty",
+   "vote": "YES"
+  },
+  {
+   "MP": 355,
+   "club": "SLD",
+   "firstName": "Robert",
+   "lastName": "Smoleń",
+   "vote": "YES"
+  },
+  {
+   "MP": 356,
+   "club": "LPR",
+   "firstName": "Anna",
+   "lastName": "Sobecka",
+   "secondName": "Elżbieta",
+   "vote": "YES"
+  },
+  {
+   "MP": 357,
+   "club": "SLD",
+   "firstName": "Zbigniew",
+   "lastName": "Sobotka",
+   "secondName": "Jerzy",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 358,
+   "club": "SLD",
+   "firstName": "Joanna",
+   "lastName": "Sosnowska",
+   "secondName": "Katarzyna",
+   "vote": "YES"
+  },
+  {
+   "MP": 359,
+   "club": "SLD",
+   "firstName": "Adam",
+   "lastName": "Sosnowski",
+   "secondName": "Michał",
+   "vote": "YES"
+  },
+  {
+   "MP": 360,
+   "club": "PSL",
+   "firstName": "Zbigniew",
+   "lastName": "Sosnowski",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 361,
+   "club": "SLD",
+   "firstName": "Edmund",
+   "lastName": "Stachowicz",
+   "secondName": "Kazimierz",
+   "vote": "YES"
+  },
+  {
+   "MP": 362,
+   "club": "PSL",
+   "firstName": "Ryszard",
+   "lastName": "Stanibuła",
+   "secondName": "Zbigniew",
+   "vote": "YES"
+  },
+  {
+   "MP": 363,
+   "club": "Samoobrona",
+   "firstName": "Józef",
+   "lastName": "Stasiewski",
+   "secondName": "Edmund",
+   "vote": "YES"
+  },
+  {
+   "MP": 364,
+   "club": "SLD",
+   "firstName": "Stanisław",
+   "lastName": "Stec",
+   "vote": "YES"
+  },
+  {
+   "MP": 365,
+   "club": "PSL",
+   "firstName": "Franciszek",
+   "lastName": "Stefaniuk",
+   "secondName": "Jerzy",
+   "vote": "YES"
+  },
+  {
+   "MP": 366,
+   "club": "SLD",
+   "firstName": "Marian",
+   "lastName": "Stępień",
+   "secondName": "Stanisław",
+   "vote": "YES"
+  },
+  {
+   "MP": 367,
+   "club": "SLD",
+   "firstName": "Władysław",
+   "lastName": "Stępień",
+   "secondName": "Piotr",
+   "vote": "YES"
+  },
+  {
+   "MP": 368,
+   "club": "LPR",
+   "firstName": "Robert",
+   "lastName": "Strąk",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 369,
+   "club": "SLD",
+   "firstName": "Cezary",
+   "lastName": "Stryjak",
+   "secondName": "Andrzej",
+   "vote": "YES"
+  },
+  {
+   "MP": 370,
+   "club": "LPR",
+   "firstName": "Antoni",
+   "lastName": "Stryjewski",
+   "secondName": "Stanisław",
+   "vote": "YES"
+  },
+  {
+   "MP": 371,
+   "club": "PiS",
+   "firstName": "Małgorzata",
+   "lastName": "Stryjska",
+   "vote": "YES"
+  },
+  {
+   "MP": 372,
+   "club": "PO",
+   "firstName": "Michał",
+   "lastName": "Stuligrosz",
+   "vote": "YES"
+  },
+  {
+   "MP": 373,
+   "club": "SLD",
+   "firstName": "Benedykt",
+   "lastName": "Suchecki",
+   "vote": "YES"
+  },
+  {
+   "MP": 374,
+   "club": "Samoobrona",
+   "firstName": "Leszek",
+   "lastName": "Sułek",
+   "secondName": "Kazimierz",
+   "vote": "YES"
+  },
+  {
+   "MP": 375,
+   "club": "PiS",
+   "firstName": "Marek",
+   "lastName": "Suski",
+   "vote": "YES"
+  },
+  {
+   "MP": 376,
+   "club": "PiS",
+   "firstName": "Wojciech",
+   "lastName": "Szarama",
+   "secondName": "Piotr",
+   "vote": "YES"
+  },
+  {
+   "MP": 377,
+   "club": "SLD",
+   "firstName": "Andrzej",
+   "lastName": "Szarawarski",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 378,
+   "club": "PSL",
+   "firstName": "Józef",
+   "lastName": "Szczepańczyk",
+   "vote": "YES"
+  },
+  {
+   "MP": 379,
+   "club": "PiS",
+   "firstName": "Aleksander",
+   "lastName": "Szczygło",
+   "secondName": "Marek",
+   "vote": "YES"
+  },
+  {
+   "MP": 380,
+   "club": "PO",
+   "firstName": "Tomasz",
+   "lastName": "Szczypiński",
+   "vote": "YES"
+  },
+  {
+   "MP": 381,
+   "club": "PO",
+   "firstName": "Adam",
+   "lastName": "Szejnfeld",
+   "secondName": "Stanisław",
+   "vote": "YES"
+  },
+  {
+   "MP": 382,
+   "club": "SLD",
+   "firstName": "Władysław",
+   "lastName": "Szkop",
+   "vote": "YES"
+  },
+  {
+   "MP": 383,
+   "club": "SLD",
+   "firstName": "Jerzy",
+   "lastName": "Szmajdziński",
+   "secondName": "Andrzej",
+   "vote": "YES"
+  },
+  {
+   "MP": 384,
+   "club": "SLD",
+   "firstName": "Elżbieta",
+   "lastName": "Szparaga",
+   "secondName": "Anna",
+   "vote": "YES"
+  },
+  {
+   "MP": 385,
+   "club": "PiS",
+   "firstName": "Bartłomiej",
+   "lastName": "Szrajber",
+   "secondName": "Józef",
+   "vote": "YES"
+  },
+  {
+   "MP": 386,
+   "club": "SLD",
+   "firstName": "Jerzy",
+   "lastName": "Szteliga",
+   "vote": "YES"
+  },
+  {
+   "MP": 387,
+   "club": "UP",
+   "firstName": "Jan",
+   "lastName": "Sztwiertnia",
+   "vote": "YES"
+  },
+  {
+   "MP": 388,
+   "club": "Samoobrona",
+   "firstName": "Tadeusz",
+   "lastName": "Szukała",
+   "vote": "YES"
+  },
+  {
+   "MP": 389,
+   "club": "PO",
+   "firstName": "Krystyna",
+   "lastName": "Szumilas",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 390,
+   "club": "LPR",
+   "firstName": "Gertruda",
+   "lastName": "Szumska",
+   "secondName": "Helena",
+   "vote": "YES"
+  },
+  {
+   "MP": 391,
+   "club": "LPR",
+   "firstName": "Halina",
+   "lastName": "Szustak",
+   "secondName": "Maria",
+   "vote": "YES"
+  },
+  {
+   "MP": 392,
+   "club": "SLD",
+   "firstName": "Jan",
+   "lastName": "Szwarc",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 393,
+   "club": "SLD",
+   "firstName": "Jan",
+   "lastName": "Szymański",
+   "vote": "YES"
+  },
+  {
+   "MP": 394,
+   "club": "SLD",
+   "firstName": "Zygmunt",
+   "lastName": "Szymański",
+   "secondName": "Jerzy",
+   "vote": "YES"
+  },
+  {
+   "MP": 395,
+   "club": "SLD",
+   "firstName": "Renata",
+   "lastName": "Szynalska",
+   "secondName": "Grażyna",
+   "vote": "YES"
+  },
+  {
+   "MP": 396,
+   "club": "LPR",
+   "firstName": "Stanisław",
+   "lastName": "Szyszkowski",
+   "vote": "YES"
+  },
+  {
+   "MP": 397,
+   "club": "PO",
+   "firstName": "Iwona",
+   "lastName": "Śledzińska-Katarasińska",
+   "secondName": "Elżbieta",
+   "vote": "YES"
+  },
+  {
+   "MP": 398,
+   "club": "SLD",
+   "firstName": "Czesław",
+   "lastName": "Śleziak",
+   "vote": "YES"
+  },
+  {
+   "MP": 399,
+   "club": "PSL",
+   "firstName": "Leszek",
+   "lastName": "Świętochowski",
+   "secondName": "Jan",
+   "vote": "YES"
+  },
+  {
+   "MP": 400,
+   "club": "SLD",
+   "firstName": "Halina",
+   "lastName": "Talaga",
+   "vote": "YES"
+  },
+  {
+   "MP": 401,
+   "club": "SLD",
+   "firstName": "Michał",
+   "lastName": "Tober",
+   "vote": "YES"
+  },
+  {
+   "MP": 402,
+   "club": "PO",
+   "firstName": "Jan",
+   "lastName": "Tomaka",
+   "secondName": "Walenty",
+   "vote": "YES"
+  },
+  {
+   "MP": 403,
+   "club": "Samoobrona",
+   "firstName": "Józef",
+   "lastName": "Tomala",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 404,
+   "club": "SLD",
+   "firstName": "Tadeusz",
+   "lastName": "Tomaszewski",
+   "vote": "YES"
+  },
+  {
+   "MP": 405,
+   "club": "LPR",
+   "firstName": "Witold",
+   "lastName": "Tomczak",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 406,
+   "club": "PO",
+   "firstName": "Tomasz",
+   "lastName": "Tomczykiewicz",
+   "vote": "YES"
+  },
+  {
+   "MP": 407,
+   "club": "SLD",
+   "firstName": "Bogusława",
+   "lastName": "Towalewska",
+   "secondName": "Maria",
+   "vote": "YES"
+  },
+  {
+   "MP": 408,
+   "club": "SLD",
+   "firstName": "Michał",
+   "lastName": "Turkiewicz",
+   "vote": "YES"
+  },
+  {
+   "MP": 409,
+   "club": "PO",
+   "firstName": "Donald",
+   "lastName": "Tusk",
+   "secondName": "Franciszek",
+   "vote": "YES"
+  },
+  {
+   "MP": 410,
+   "club": "Samoobrona",
+   "firstName": "Zenon",
+   "lastName": "Tyma",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 411,
+   "club": "PiS",
+   "firstName": "Kazimierz",
+   "lastName": "Ujazdowski",
+   "secondName": "Michał",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 412,
+   "club": "SLD",
+   "firstName": "Ryszard",
+   "lastName": "Ulicki",
+   "secondName": "Jan",
+   "vote": "YES"
+  },
+  {
+   "MP": 413,
+   "club": "SLD",
+   "firstName": "Andrzej",
+   "lastName": "Umiński",
+   "vote": "YES"
+  },
+  {
+   "MP": 414,
+   "club": "Samoobrona",
+   "firstName": "Tadeusz",
+   "lastName": "Urban",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 415,
+   "club": "SLD",
+   "firstName": "Marek",
+   "lastName": "Wagner",
+   "vote": "YES"
+  },
+  {
+   "MP": 416,
+   "club": "PiS",
+   "firstName": "Wiesław",
+   "lastName": "Walendziak",
+   "secondName": "Waldemar",
+   "vote": "YES"
+  },
+  {
+   "MP": 417,
+   "club": "PiS",
+   "firstName": "Zbigniew",
+   "lastName": "Wassermann",
+   "vote": "YES"
+  },
+  {
+   "MP": 418,
+   "club": "SLD",
+   "firstName": "Jerzy",
+   "lastName": "Wenderlich",
+   "secondName": "Jan",
+   "vote": "YES"
+  },
+  {
+   "MP": 419,
+   "club": "SLD",
+   "firstName": "Marek",
+   "lastName": "Widuch",
+   "vote": "YES"
+  },
+  {
+   "MP": 420,
+   "club": "PiS",
+   "firstName": "Elżbieta",
+   "lastName": "Więcławska-Sauk",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 421,
+   "club": "SLD",
+   "firstName": "Marek",
+   "lastName": "Wikiński",
+   "secondName": "Michał",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 422,
+   "club": "SLD",
+   "firstName": "Zofia",
+   "lastName": "Wilczyńska",
+   "vote": "YES"
+  },
+  {
+   "MP": 423,
+   "club": "SLD",
+   "firstName": "Małgorzata",
+   "lastName": "Winiarczyk-Kossakowska",
+   "secondName": "Dorota",
+   "vote": "YES"
+  },
+  {
+   "MP": 424,
+   "club": "Samoobrona",
+   "firstName": "Genowefa",
+   "lastName": "Wiśniowska",
+   "vote": "YES"
+  },
+  {
+   "MP": 425,
+   "club": "Samoobrona",
+   "firstName": "Zbigniew",
+   "lastName": "Witaszek",
+   "vote": "YES"
+  },
+  {
+   "MP": 426,
+   "club": "SLD",
+   "firstName": "Marcin",
+   "lastName": "Wnuk",
+   "vote": "YES"
+  },
+  {
+   "MP": 427,
+   "club": "PSL",
+   "firstName": "Wiesław",
+   "lastName": "Woda",
+   "vote": "YES"
+  },
+  {
+   "MP": 428,
+   "club": "PSL",
+   "firstName": "Janusz",
+   "lastName": "Wojciechowski",
+   "secondName": "Czesław",
+   "vote": "YES"
+  },
+  {
+   "MP": 429,
+   "club": "SLD",
+   "firstName": "Edward",
+   "lastName": "Wojtalik",
+   "vote": "YES"
+  },
+  {
+   "MP": 430,
+   "club": "Samoobrona",
+   "firstName": "Tadeusz",
+   "lastName": "Wojtkowiak",
+   "secondName": "Józef",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 431,
+   "club": "SKL",
+   "firstName": "Andrzej",
+   "lastName": "Wojtyła",
+   "secondName": "Franciszek",
+   "vote": "YES"
+  },
+  {
+   "MP": 432,
+   "club": "SLD",
+   "firstName": "Franciszek",
+   "lastName": "Wołowicz",
+   "vote": "YES"
+  },
+  {
+   "MP": 433,
+   "club": "SLD",
+   "firstName": "Bogusław",
+   "lastName": "Wontor",
+   "vote": "YES"
+  },
+  {
+   "MP": 434,
+   "club": "PSL",
+   "firstName": "Adam",
+   "lastName": "Woś",
+   "vote": "YES"
+  },
+  {
+   "MP": 435,
+   "club": "SLD",
+   "firstName": "Grzegorz",
+   "lastName": "Woźny",
+   "secondName": "Marian",
+   "vote": "YES"
+  },
+  {
+   "MP": 436,
+   "club": "Samoobrona",
+   "firstName": "Kazimierz",
+   "lastName": "Wójcik",
+   "secondName": "Marian",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 437,
+   "club": "LPR",
+   "firstName": "Zygmunt",
+   "lastName": "Wrzodak",
+   "vote": "YES"
+  },
+  {
+   "MP": 438,
+   "club": "PO",
+   "firstName": "Eugeniusz",
+   "lastName": "Wycisło",
+   "vote": "YES"
+  },
+  {
+   "MP": 439,
+   "club": "SLD",
+   "firstName": "Zbyszek",
+   "lastName": "Zaborowski",
+   "vote": "YES"
+  },
+  {
+   "MP": 440,
+   "club": "LPR",
+   "firstName": "Stanisław",
+   "lastName": "Zadora",
+   "vote": "YES"
+  },
+  {
+   "MP": 441,
+   "club": "PO",
+   "firstName": "Rafał",
+   "lastName": "Zagórny",
+   "vote": "YES"
+  },
+  {
+   "MP": 442,
+   "club": "SKL",
+   "firstName": "Marek",
+   "lastName": "Zagórski",
+   "secondName": "Tadeusz",
+   "vote": "YES"
+  },
+  {
+   "MP": 443,
+   "club": "SLD",
+   "firstName": "Andrzej",
+   "lastName": "Zając",
+   "secondName": "Roman",
+   "vote": "YES"
+  },
+  {
+   "MP": 444,
+   "club": "PO",
+   "firstName": "Krzysztof",
+   "lastName": "Zaremba",
+   "secondName": "Piotr",
+   "vote": "YES"
+  },
+  {
+   "MP": 445,
+   "club": "SLD",
+   "firstName": "Kazimierz",
+   "lastName": "Zarzycki",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 446,
+   "club": "PSL",
+   "firstName": "Wojciech",
+   "lastName": "Zarzycki",
+   "secondName": "Szczęsny",
+   "vote": "YES"
+  },
+  {
+   "MP": 447,
+   "club": "PiS",
+   "firstName": "Artur",
+   "lastName": "Zawisza",
+   "secondName": "Wojciech",
+   "vote": "YES"
+  },
+  {
+   "MP": 448,
+   "club": "SLD",
+   "firstName": "Jan",
+   "lastName": "Zaworski",
+   "vote": "YES"
+  },
+  {
+   "MP": 449,
+   "club": "SLD",
+   "firstName": "Ryszard",
+   "lastName": "Zbrzyzny",
+   "vote": "YES"
+  },
+  {
+   "MP": 450,
+   "club": "Samoobrona",
+   "firstName": "Maria",
+   "lastName": "Zbyrowska",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 451,
+   "club": "PO",
+   "firstName": "Bogdan",
+   "lastName": "Zdrojewski",
+   "secondName": "Andrzej",
+   "vote": "YES"
+  },
+  {
+   "MP": 452,
+   "club": "SLD",
+   "firstName": "Janusz",
+   "lastName": "Zemke",
+   "secondName": "Władysław",
+   "vote": "YES"
+  },
+  {
+   "MP": 453,
+   "club": "PSL",
+   "firstName": "Leszek",
+   "lastName": "Zieliński",
+   "secondName": "Stanisław",
+   "vote": "YES"
+  },
+  {
+   "MP": 454,
+   "club": "Samoobrona",
+   "firstName": "Lech",
+   "lastName": "Zielonka",
+   "secondName": "Stefan",
+   "vote": "YES"
+  },
+  {
+   "MP": 455,
+   "club": "PiS",
+   "firstName": "Zbigniew",
+   "lastName": "Ziobro",
+   "vote": "YES"
+  },
+  {
+   "MP": 456,
+   "club": "PSL",
+   "firstName": "Józef",
+   "lastName": "Zych",
+   "vote": "YES"
+  },
+  {
+   "MP": 457,
+   "club": "PSL",
+   "firstName": "Stanisław",
+   "lastName": "Żelichowski",
+   "vote": "YES"
+  },
+  {
+   "MP": 458,
+   "club": "PO",
+   "firstName": "Stanisław",
+   "lastName": "Żmijan",
+   "vote": "ABSENT"
+  },
+  {
+   "MP": 459,
+   "club": "PO",
+   "firstName": "Marek",
+   "lastName": "Żyliński",
+   "secondName": "Błażej",
+   "vote": "YES"
+  },
+  {
+   "MP": 460,
+   "club": "Samoobrona",
+   "firstName": "Józef",
+   "lastName": "Żywiec",
+   "vote": "ABSENT"
+  }
+ ],
+ "votingNumber": 12,
+ "yes": 382
+}
