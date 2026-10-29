@@ -8,8 +8,7 @@ here are fixed and deterministic:
 Parse rules (item status):
   * `refusal`       — raw_output is null/empty/whitespace.
   * `parse_failure` — no JSON object extractable, or the JSON object lacks
-                      the `winner` key, or `winner` is not a string, or
-                      `tracks` is present but not a list.
+                      the `winner` key, or `winner` is not a string.
   * `abstain`       — JSON parses, `winner` is a string outside {yes, no},
                       or an explicit {"abstain": true} marker is present
                       (the model declined the binary).
@@ -29,8 +28,12 @@ label. A ground-truth track missing from the answer counts as maximum
 deviation (1.0 on both measures) — the reference prompt requires "exactly
 the clubs with at least 5 active votes", so omitting a track is an
 instruction violation, not a neutral gap. Extra model-side tracks are
-recorded but not penalized. Non-numeric or out-of-[0,1] values count as
-missing for that track.
+recorded but not penalized (structural fidelity is reported separately as
+n_exact_track_set / exact_track_set_rate). Non-numeric or out-of-[0,1]
+values count as missing for that track. A `tracks` field that is not a
+list does not invalidate the item — the winner is still scored and every
+ground-truth track counts as missing. Duplicate club labels void that
+club: it counts as missing and each duplicate entry is invalid.
 
 Statistics (CODEBOOK §8): bootstrap 95% CIs (10,000 replicates, seed
 20261027, percentile method, deterministic RNG); paired bootstrap for
@@ -48,7 +51,9 @@ import json
 import os
 import random
 
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION = "1.1"             # docs/scorecard-schema.md (review round 2026-10-28)
+BENCHMARK_VERSION = "0.3"          # CODEBOOK version — the contract
+METRIC_VERSION = "0.3"             # CODEBOOK §2/§3 metric schema
 BOOTSTRAP_REPLICATES = 10_000
 BOOTSTRAP_SEED = 20261027          # CODEBOOK §8.1
 RANDOM_BASELINE_SEED = 20261027
@@ -187,7 +192,7 @@ def _usable_tracks(parsed) -> tuple[dict, int]:
         # present but not a list: the structure is unusable, every ground-truth
         # track will count as missing (max deviation); one invalid entry recorded
         return {}, 1
-    out, invalid = {}, 0
+    out, invalid, seen = {}, 0, set()
     for t in tracks:
         if not isinstance(t, dict) or not isinstance(t.get("club"), str):
             invalid += 1
@@ -199,7 +204,13 @@ def _usable_tracks(parsed) -> tuple[dict, int]:
         if not (isinstance(pol, (int, float)) and not isinstance(pol, bool) and 0.0 <= pol <= 1.0):
             invalid += 1
             continue
-        out[t["club"]] = (float(ys), float(pol))
+        club = t["club"]
+        if club in seen:  # duplicate label voids the club: it counts as
+            invalid += 1  # missing (max deviation) via the normal path
+            out.pop(club, None)
+            continue
+        seen.add(club)
+        out[club] = (float(ys), float(pol))
     return out, invalid
 
 
@@ -214,6 +225,7 @@ def score_item(item: dict, division: dict, fixture_name: str) -> dict:
     status, parsed = parse_answer(item.get("raw_output"))
     metric = seed_rule.compute_metric(division)
     gt_winner = metric["seed_rule"]["winner"]
+    gt_tie = metric["seed_rule"]["tie"]
     gt_tracks = metric["tracks"]
 
     pred_winner: str | None = None
@@ -253,7 +265,8 @@ def score_item(item: dict, division: dict, fixture_name: str) -> dict:
     return {
         "fixture": fixture_name,
         "status": status,
-        "layer0_1": {"pred": pred_winner, "gt": gt_winner, "correct": correct},
+        "layer0_1": {"pred": pred_winner, "gt": gt_winner, "gt_tie": gt_tie,
+                     "correct": correct},
         "layer0_2": layer02,
         "abstain_marker": bool(parsed.get("abstain")) if isinstance(parsed, dict) else False,
     }
@@ -284,12 +297,13 @@ def paired_bootstrap(diffs, replicates: int = BOOTSTRAP_REPLICATES, seed: int = 
     return bootstrap_ci(diffs, replicates, seed)
 
 
-def _fmt_ci(stat, ci):
+def _fmt_ci(stat, lo=None, hi=None):
+    """Format 'stat [lo, hi]'; point estimate only when the CI is missing."""
     if stat is None:
         return "n/a"
-    if ci is None or ci[0] is None:
+    if lo is None or hi is None:
         return f"{stat:.4f}"
-    return f"{stat:.4f} [{ci[1]:.4f}, {ci[2]:.4f}]"
+    return f"{stat:.4f} [{lo:.4f}, {hi:.4f}]"
 
 
 # --------------------------------------------------------------------------
@@ -329,10 +343,10 @@ def validate_submission_item(data: dict) -> list:
     errs = []
     if str(data.get("temperature")) not in ("0", "0.0"):
         errs.append(f"temperature must be 0, got {data.get('temperature')!r}")
-    for field in ("model", "date"):
+    for field in ("model", "date", "prompt_hash", "declared_cutoff"):
         if not data.get(field):
             errs.append(f"missing required field: {field}")
-    if "prompt_hash" in data and data["prompt_hash"] != reference_prompt_hash():
+    if data.get("prompt_hash") and data["prompt_hash"] != reference_prompt_hash():
         errs.append(f"prompt_hash mismatch: {data.get('prompt_hash')} != {reference_prompt_hash()}")
     if "raw_output" not in data:
         errs.append("missing raw_output")
@@ -360,6 +374,9 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
     files keyed by fixture basename; `meta`: identity/contamination fields.
     """
     names = sorted(fixtures)
+    unknown = sorted(set(items) - set(names))
+    if unknown:  # records outside the set are contract violations, not gaps
+        problems.extend(f"unknown fixture (not in the set): {u}" for u in unknown)
     per_item, statuses = [], {}
     for name in names:
         data = items.get(name)
@@ -368,7 +385,7 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
             per_item.append({
                 "fixture": name, "status": "missing",
                 "exclusion_reason": "no submission file for fixture",
-                "layer0_1": {"pred": None, "gt": None, "correct": 0},
+                "layer0_1": {"pred": None, "gt": None, "gt_tie": None, "correct": 0},
                 "layer0_2": None,
             })
             continue
@@ -385,6 +402,9 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
 
     counts = _counts_by_status(statuses.values())
     n_total = len(names)
+    n_ties = sum(1 for it in per_item if it["layer0_1"].get("gt_tie") is True)
+    exact_set = sum(1 for it in per_item if it["layer0_2"] and it["layer0_2"]["n_missing"] == 0
+                    and it["layer0_2"]["n_extra"] == 0 and it["layer0_2"]["n_invalid_entries"] == 0)
     correct = [it["layer0_1"]["correct"] for it in per_item]
     acc, acc_lo, acc_hi = bootstrap_ci(correct)
 
@@ -397,7 +417,7 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
     n_scored = counts["n_scored"]
 
     card = {
-        "schema": "sejmbench.scorecard/1.0",
+        "schema": f"sejmbench.scorecard/{SCHEMA_VERSION}",
         "scorecard_version": SCHEMA_VERSION,
         "benchmark_version": meta.get("benchmark_version", "0.3"),
         "metric_version": meta.get("metric_version", "0.3"),
@@ -416,6 +436,7 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
         "layers": {
             "0.1": {
                 "n_total": n_total, **counts,
+                "n_ties": n_ties,
                 "accuracy": acc, "ci95": [acc_lo, acc_hi],
                 "bootstrap": {"replicates": BOOTSTRAP_REPLICATES, "seed": BOOTSTRAP_SEED},
             },
@@ -423,6 +444,8 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
                 "n_total": n_total,
                 "n_scored": n_scored,
                 "answer_coverage": (n_scored / n_total) if n_total else None,
+                "n_exact_track_set": exact_set,
+                "exact_track_set_rate": (exact_set / n_scored) if n_scored else None,
                 "mae_yes_share": ys_stat[0], "ci95_yes_share": [ys_stat[1], ys_stat[2]],
                 "mae_polarization": pol_stat[0], "ci95_polarization": [pol_stat[1], pol_stat[2]],
                 "bootstrap": {"replicates": BOOTSTRAP_REPLICATES, "seed": BOOTSTRAP_SEED},
@@ -442,16 +465,38 @@ SCORECARD_REQUIRED_KEYS = (
 )
 
 
-def validate_scorecard(card: dict) -> list:
-    """Schema validation (CI gate). Returns a list of problems (empty = valid)."""
+def validate_scorecard(card: dict, expected_set_hash: str | None = None,
+                       expected_fixtures: list | None = None) -> list:
+    """Schema validation (CI gate). Returns a list of problems (empty = valid).
+
+    `expected_set_hash` / `expected_fixtures` bind the scorecard to the
+    manifest actually on disk; the CI gates always pass both.
+    """
     errs = []
     for key in SCORECARD_REQUIRED_KEYS:
         if key not in card:
             errs.append(f"missing key: {key}")
-    if card.get("schema") != "sejmbench.scorecard/1.0":
+    if card.get("schema") != f"sejmbench.scorecard/{SCHEMA_VERSION}":
         errs.append(f"unknown schema: {card.get('schema')!r}")
+    if card.get("scorecard_version") != SCHEMA_VERSION:
+        errs.append(f"scorecard_version {card.get('scorecard_version')!r} != {SCHEMA_VERSION!r}")
+    if card.get("benchmark_version") != BENCHMARK_VERSION:
+        errs.append(f"benchmark_version {card.get('benchmark_version')!r} != current "
+                    f"contract {BENCHMARK_VERSION!r}")
+    if card.get("metric_version") != METRIC_VERSION:
+        errs.append(f"metric_version {card.get('metric_version')!r} != current "
+                    f"contract {METRIC_VERSION!r}")
     if card.get("prompt", {}).get("hash") != reference_prompt_hash():
         errs.append("prompt hash mismatch")
+    if expected_set_hash is not None and card.get("set_hash") != expected_set_hash:
+        errs.append("set_hash does not match the canonical hash of the manifest on disk")
+    if expected_fixtures is not None:
+        got = sorted(({"file": f["file"], "sha256": f["sha256"]} for f in card.get("fixtures", [])),
+                     key=lambda x: x["file"])
+        want = sorted(({"file": e["file"], "sha256": e["sha256"]} for e in expected_fixtures),
+                      key=lambda x: x["file"])
+        if got != want:
+            errs.append("fixtures list does not match the manifest (files or sha256)")
     l01 = card.get("layers", {}).get("0.1", {})
     counted = sum(l01.get(k, 0) for k in
                   ("n_scored", "n_abstained", "n_parse_failures", "n_refusals", "n_missing_files"))
@@ -508,8 +553,8 @@ def _gt_clubs(division) -> list:
 
 def baseline_meta(which: str, set_name: str, manifest: dict, harness_version: str) -> dict:
     return {
-        "benchmark_version": "0.3",
-        "metric_version": "0.3",
+        "benchmark_version": BENCHMARK_VERSION,
+        "metric_version": METRIC_VERSION,
         "harness_version": harness_version,
         "set": set_name,
         "set_hash": canonical_set_hash(manifest),
@@ -537,6 +582,20 @@ def baseline_meta(which: str, set_name: str, manifest: dict, harness_version: st
 # rescore / leaderboard
 # --------------------------------------------------------------------------
 
+def shared_fixtures(a: dict, b: dict) -> tuple[list, list]:
+    """Names present in both scorecards with IDENTICAL fixture sha256.
+
+    Same name with a different hash means different data — such items are
+    excluded from pairing and reported back to the caller.
+    """
+    sha_a = {os.path.basename(f["file"]): f["sha256"] for f in a["fixtures"]}
+    sha_b = {os.path.basename(f["file"]): f["sha256"] for f in b["fixtures"]}
+    overlap = set(sha_a) & set(sha_b)
+    shared = sorted(n for n in overlap if sha_a[n] == sha_b[n])
+    mismatched = sorted(n for n in overlap if sha_a[n] != sha_b[n])
+    return shared, mismatched
+
+
 def rescore(card: dict, repo_root: str, manifest: dict) -> dict:
     """Rebuild a scorecard from its referenced artifacts (CI reproduction)."""
     names = [os.path.basename(f["file"]) for f in card["fixtures"]]
@@ -556,31 +615,40 @@ def rescore(card: dict, repo_root: str, manifest: dict) -> dict:
     return build_scorecard(fixtures, items, problems, meta)
 
 
-def _numbers(obj, prefix=""):
-    """Flatten all numeric leaves for exact-compare rescore checks."""
+def _diff_paths(a, b, prefix=""):
+    """Leaf paths where two JSON structures differ (for rescore reports)."""
     out = []
-    if isinstance(obj, dict):
-        for k in sorted(obj):
-            out.extend(_numbers(obj[k], f"{prefix}.{k}"))
-    elif isinstance(obj, list):
-        for i, v in enumerate(obj):
-            out.extend(_numbers(v, f"{prefix}[{i}]"))
-    elif isinstance(obj, (int, float)) and not isinstance(obj, bool):
-        out.append((prefix, obj))
+    if isinstance(a, dict) and isinstance(b, dict):
+        for k in sorted(set(a) | set(b)):
+            out.extend(_diff_paths(a.get(k), b.get(k), f"{prefix}.{k}"))
+    elif isinstance(a, list) and isinstance(b, list):
+        if len(a) != len(b):
+            out.append(f"{prefix}: list length {len(a)} vs {len(b)}")
+        for i, (x, y) in enumerate(zip(a, b)):
+            out.extend(_diff_paths(x, y, f"{prefix}[{i}]"))
+    elif a != b:
+        out.append(f"{prefix}: committed={a!r} rescored={b!r}")
     return out
 
 
 def rescore_matches(card: dict, rebuilt: dict) -> list:
-    """Exact-match check of every committed number against the rescore."""
+    """Full-canonical comparison of a committed scorecard against its rescore.
+
+    Every field is compared, not just numbers: provenance text, hashes,
+    model identity and the prompt template must all survive the rescore.
+    The `problems` list is compared by length only — its messages may embed
+    paths that differ legitimately between the original run and the rescore;
+    `rescore-check` separately rejects any committed problems.
+    """
+    a = {k: v for k, v in card.items() if k != "problems"}
+    b = {k: v for k, v in rebuilt.items() if k != "problems"}
     mismatches = []
-    a = dict(_numbers(card))
-    b = dict(_numbers(rebuilt))
-    for key, val in a.items():
-        if key not in b or b[key] != val:
-            mismatches.append(f"{key}: committed={val} rescored={b.get(key)}")
-    for key, val in b.items():
-        if key not in a:
-            mismatches.append(f"{key}: rescored={val} not in committed")
+    if len(card.get("problems", [])) != len(rebuilt.get("problems", [])):
+        mismatches.append(f"problems: committed n={len(card.get('problems', []))} "
+                          f"rescored n={len(rebuilt.get('problems', []))}")
+    if json.dumps(a, sort_keys=True, ensure_ascii=False) != json.dumps(b, sort_keys=True, ensure_ascii=False):
+        diffs = _diff_paths(a, b)
+        mismatches.extend(diffs[:10] if diffs else ["structures differ"])
     return mismatches
 
 
@@ -596,7 +664,9 @@ def leaderboard_rows(scorecards: list) -> list:
             "accuracy": l01["accuracy"],
             "accuracy_ci95": l01["ci95"],
             "mae_yes_share": l02["mae_yes_share"],
+            "ci95_yes_share": l02["ci95_yes_share"],
             "mae_polarization": l02["mae_polarization"],
+            "ci95_polarization": l02["ci95_polarization"],
             "declared_cutoff": card["contamination"]["declared_cutoff"],
             "evaluation_date": card["evaluation_date"],
             "baseline": card["submission"].get("kind") == "baseline",

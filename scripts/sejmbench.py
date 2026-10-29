@@ -6,7 +6,7 @@ Subcommands
   baselines     regenerate the non-LLM baseline scorecards (always deterministic)
   compare       paired bootstrap comparison of two scorecards (CODEBOOK §8.2)
   rescore-check CI gate: rebuild committed scorecards from raw artifacts and
-                compare every committed number exactly
+                compare every committed field exactly (numbers and provenance)
   leaderboard   regenerate results/leaderboard.jsonl + the README table from
                 accepted scorecards (--check fails on drift)
 
@@ -68,6 +68,10 @@ def _check_layers(layers: str) -> None:
     unknown = requested - set(scoring.SCORED_LAYERS)
     if unknown:
         raise SystemExit(f"unknown layers: {sorted(unknown)}")
+    if requested != set(scoring.SCORED_LAYERS):
+        raise SystemExit(
+            "--layers must be exactly '0.1,0.2': this harness computes both layers "
+            f"into one scorecard; requested: {sorted(requested)}")
 
 
 # ---------------------------------------------------------------- score ----
@@ -113,9 +117,10 @@ def cmd_score(args) -> int:
         decoding["max_tokens"] = args.max_tokens
 
     meta = {
-        "benchmark_version": "0.3",
-        "metric_version": "0.3",
+        "benchmark_version": scoring.BENCHMARK_VERSION,
+        "metric_version": scoring.METRIC_VERSION,
         "harness_version": _repo_version(),
+        "repo_root": _ROOT,
         "set": args.set,
         "set_hash": scoring.canonical_set_hash(manifest),
         "fixture_entries": {os.path.basename(e["file"]): e for e in manifest["fixtures"]},
@@ -152,10 +157,10 @@ def cmd_score(args) -> int:
     if args.out:
         _write_json(args.out, card)
     l01, l02 = card["layers"]["0.1"], card["layers"]["0.2"]
-    print(f"layer 0.1: accuracy {l01['accuracy']:.3f} "
-          f"[{l01['ci95'][0]:.3f}, {l01['ci95'][1]:.3f}] n={l01['n_total']}")
-    print(f"layer 0.2: yes_share MAE {scoring._fmt_ci(l02['mae_yes_share'], (None, *l02['ci95_yes_share']))}"
-          f" | polarization MAE {scoring._fmt_ci(l02['mae_polarization'], (None, *l02['ci95_polarization']))}"
+    print(f"layer 0.1: accuracy {scoring._fmt_ci(l01['accuracy'], l01['ci95'][0], l01['ci95'][1])}"
+          f" n={l01['n_total']}")
+    print(f"layer 0.2: yes_share MAE {scoring._fmt_ci(l02['mae_yes_share'], l02['ci95_yes_share'][0], l02['ci95_yes_share'][1])}"
+          f" | polarization MAE {scoring._fmt_ci(l02['mae_polarization'], l02['ci95_polarization'][0], l02['ci95_polarization'][1])}"
           f" (coverage {l02['answer_coverage']:.2f})")
     if card["problems"]:
         print(f"PROBLEMS (CI will fail on these):", file=sys.stderr)
@@ -196,9 +201,11 @@ def cmd_compare(args) -> int:
         return {os.path.basename(it["fixture"]): it for it in card["items"]}
 
     ia, ib = by_fixture(a), by_fixture(b)
-    shared = sorted(set(ia) & set(ib))
+    shared, sha_mismatched = scoring.shared_fixtures(a, b)
+    shared = [f for f in shared if f in ia and f in ib]
     if not shared:
-        raise SystemExit("no shared fixtures between the two scorecards")
+        raise SystemExit("no shared fixtures (same name AND same fixture sha256) "
+                         "between the two scorecards")
 
     winner_diffs = [ia[f]["layer0_1"]["correct"] - ib[f]["layer0_1"]["correct"] for f in shared]
     ys_diffs = [ia[f]["layer0_2"]["mae_yes_share"] - ib[f]["layer0_2"]["mae_yes_share"]
@@ -206,25 +213,43 @@ def cmd_compare(args) -> int:
     pol_diffs = [ia[f]["layer0_2"]["mae_polarization"] - ib[f]["layer0_2"]["mae_polarization"]
                  for f in shared if ia[f]["layer0_2"] and ib[f]["layer0_2"]]
 
-    def block(name, diffs):
+    def block(diffs):
         if diffs:
             mean, lo, hi = scoring.paired_bootstrap(diffs)
         else:
             mean = lo = hi = None
-        ranked = mean is not None and lo is not None and hi is not None and (lo > 0 or hi < 0)
-        return {"n_shared": len(diffs), "mean_diff": mean, "ci95": [lo, hi],
-                "ranked": ranked,
-                "note": "" if ranked else "differences inside the 95% CI — not ranked (§8.2)"}
+        n = len(diffs)
+        excludes_zero = mean is not None and lo is not None and hi is not None and (lo > 0 or hi < 0)
+        ranked = excludes_zero and n >= scoring.MIN_CELL_COUNT
+        provisional = excludes_zero and n < scoring.MIN_CELL_COUNT
+        if provisional:
+            note = (f"CI excludes zero but n={n} < minimum cell count {scoring.MIN_CELL_COUNT} "
+                    f"(§8.3) — provisional, not a ranking")
+        elif not excludes_zero:
+            note = "differences inside the 95% CI — not ranked (§8.2)"
+        else:
+            note = ""
+        return {"n_shared": n, "mean_diff": mean, "ci95": [lo, hi],
+                "ranked": ranked, "provisional": provisional, "note": note}
 
+    cov_a = a["layers"]["0.2"].get("answer_coverage")
+    cov_b = b["layers"]["0.2"].get("answer_coverage")
     out = {
         "schema": "sejmbench.compare/1.0",
         "comparison_seed": scoring.BOOTSTRAP_SEED,
         "shared_fixtures": shared,
+        "excluded_fixture_hash_mismatches": sha_mismatched,
         "a": os.path.basename(args.scorecard_a),
         "b": os.path.basename(args.scorecard_b),
-        "layer0_1": block("winner_correct", winner_diffs),
-        "layer0_2": {"mae_yes_share": block("mae_yes_share", ys_diffs),
-                     "mae_polarization": block("mae_polarization", pol_diffs)},
+        "answer_coverage": {
+            "a": cov_a, "b": cov_b,
+            "diff": None if (cov_a is None or cov_b is None) else cov_a - cov_b,
+            "note": "MAE denominators include only items with a valid parsed answer (§8.6); "
+                    "a coverage gap can flatter the model that answers only the easy items",
+        },
+        "layer0_1": block(winner_diffs),
+        "layer0_2": {"mae_yes_share": block(ys_diffs),
+                     "mae_polarization": block(pol_diffs)},
     }
     print(json.dumps(out, indent=2, ensure_ascii=False))
     return 0
@@ -233,13 +258,16 @@ def cmd_compare(args) -> int:
 # --------------------------------------------------------- rescore-check ----
 
 def cmd_rescore_check(args) -> int:
+    manifest = scoring.load_manifest(_ROOT)
+    expected_hash = scoring.canonical_set_hash(manifest)
     paths = []
     for p in args.scorecards:
         paths.extend(sorted(glob.glob(p)) or [p])
     failed = False
     for p in paths:
         card = _load_scorecard(p)
-        errs = scoring.validate_scorecard(card)
+        errs = scoring.validate_scorecard(card, expected_set_hash=expected_hash,
+                                          expected_fixtures=manifest["fixtures"])
         if errs:
             print(f"FAIL {p}: schema invalid: {errs}")
             failed = True
@@ -270,9 +298,12 @@ def _render_table(rows) -> str:
     sep = "|---|---|---|---|---|---|---|"
     lines = [header, sep]
     for r in rows:
-        acc = scoring._fmt_ci(r["accuracy"], (None, *r["accuracy_ci95"])) if r["accuracy"] is not None else "n/a"
-        ys = scoring._fmt_ci(r["mae_yes_share"], (None, None, None)) if r["mae_yes_share"] is not None else "n/a"
-        pol = scoring._fmt_ci(r["mae_polarization"], (None, None, None)) if r["mae_polarization"] is not None else "n/a"
+        acc = (scoring._fmt_ci(r["accuracy"], r["accuracy_ci95"][0], r["accuracy_ci95"][1])
+               if r["accuracy"] is not None else "n/a")
+        ys = (scoring._fmt_ci(r["mae_yes_share"], r["ci95_yes_share"][0], r["ci95_yes_share"][1])
+              if r["mae_yes_share"] is not None else "n/a")
+        pol = (scoring._fmt_ci(r["mae_polarization"], r["ci95_polarization"][0], r["ci95_polarization"][1])
+               if r["mae_polarization"] is not None else "n/a")
         star = "\\*" if r["baseline"] else ""
         lines.append(f"| {r['model']}{star} | {r['set']} | {r['n']} | {acc} | {ys} | {pol} | "
                      f"[{r['scorecard']}]({r['scorecard']}) |")
@@ -280,11 +311,13 @@ def _render_table(rows) -> str:
 
 
 def cmd_leaderboard(args) -> int:
+    manifest = scoring.load_manifest(_ROOT)
     paths = sorted(glob.glob(os.path.join(_ROOT, "results", "*.scorecard.json")))
     cards, rows = [], []
     for p in paths:
         card = _load_scorecard(p)
-        errs = scoring.validate_scorecard(card)
+        errs = scoring.validate_scorecard(card, expected_set_hash=scoring.canonical_set_hash(manifest),
+                                          expected_fixtures=manifest["fixtures"])
         if errs:
             raise SystemExit(f"scorecard {p} invalid — leaderboard only reads accepted scorecards: {errs}")
         if card.get("problems"):

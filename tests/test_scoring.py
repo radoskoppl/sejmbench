@@ -255,6 +255,15 @@ def test_scorecard_validation(manifest, fixtures):
     broken = copy.deepcopy(card)
     broken["layers"]["0.1"]["n_total"] = 3
     assert any("counts sum" in e for e in scoring.validate_scorecard(broken))
+    broken = copy.deepcopy(card)
+    broken["metric_version"] = "0.2"
+    assert any("metric_version" in e for e in scoring.validate_scorecard(broken))
+    assert any("set_hash" in e for e in
+               scoring.validate_scorecard(broken, expected_set_hash="bad"))
+    assert any("fixtures list" in e for e in
+               scoring.validate_scorecard(card, expected_fixtures=[]))
+    assert scoring.validate_scorecard(card, expected_set_hash=card["set_hash"],
+                                      expected_fixtures=manifest["fixtures"]) == []
 
 
 def test_perfect_submission_full_pipeline(fixtures, manifest):
@@ -336,3 +345,153 @@ def test_cli_rescore_check_and_layer1_refusal(fixtures, manifest, tmp_path):
     bad = tmp_path / "drifted.scorecard.json"
     bad.write_text(json.dumps(drifted, sort_keys=True, ensure_ascii=False), encoding="utf-8")
     assert cli.cmd_rescore_check(argparse.Namespace(scorecards=[str(bad)])) == 1
+
+
+# --------------------------------------------------- review-round hardening ----
+
+def test_prompt_hash_and_cutoff_required(fixtures, manifest):
+    no_hash = item(LANDSLIDE, {"winner": "yes", "tracks": []})
+    del no_hash["prompt_hash"]
+    no_cut = item(TIGHT, perfect_answer(fixtures[TIGHT]))
+    del no_cut["declared_cutoff"]
+    items = {LANDSLIDE: no_hash, TIGHT: no_cut}
+    card = scoring.build_scorecard(fixtures, items, [], meta_for(fixtures, manifest))
+    assert any("prompt_hash" in p for p in card["problems"])
+    assert any("declared_cutoff" in p for p in card["problems"])
+
+
+def test_unknown_fixture_rejected(fixtures, manifest):
+    items = {LANDSLIDE: item(LANDSLIDE, {"winner": "yes", "tracks": []}),
+             "bogus-fixture.json": item("bogus-fixture.json", {"winner": "yes", "tracks": []})}
+    card = scoring.build_scorecard(fixtures, items, [], meta_for(fixtures, manifest))
+    assert any("unknown fixture" in p and "bogus-fixture" in p for p in card["problems"])
+    # the unknown record never enters scoring: TIGHT still counts as missing
+    assert card["layers"]["0.1"]["n_missing_files"] == 1
+
+
+def test_duplicate_club_labels_void_the_club(fixtures):
+    ans = perfect_answer(fixtures[LANDSLIDE])
+    first = dict(ans["tracks"][0])
+    ans["tracks"].insert(1, {**first, "yes_share": 0.5, "polarization": 0.5})
+    l2 = scoring.score_item(item(LANDSLIDE, ans), fixtures[LANDSLIDE], LANDSLIDE)["layer0_2"]
+    assert first["club"] in l2["missing_clubs"]
+    assert l2["n_invalid_entries"] == 1
+    assert l2["mae_yes_share"] == pytest.approx(1.0 / 6)
+
+
+def test_gt_tie_and_n_ties(fixtures, manifest):
+    entry = scoring.score_item(item(LANDSLIDE, {"winner": "yes", "tracks": []}),
+                               fixtures[LANDSLIDE], LANDSLIDE)
+    assert entry["layer0_1"]["gt_tie"] is False
+    votes = [{"MP": i, "club": "X", "firstName": "A", "lastName": f"L{i}", "secondName": None,
+              "vote": v} for i, v in enumerate(["YES"] * 5 + ["NO"] * 5, start=1)]
+    tie = scoring.score_item(item("tie.json", {"winner": "yes", "tracks": []}),
+                             synthetic_division(votes), "tie.json")
+    assert tie["layer0_1"]["gt_tie"] is True
+    items = {n: item(n, perfect_answer(d)) for n, d in fixtures.items()}
+    card = scoring.build_scorecard(fixtures, items, [], meta_for(fixtures, manifest))
+    assert card["layers"]["0.1"]["n_ties"] == 0
+
+
+def test_exact_track_set_rate(fixtures, manifest):
+    perfect = {n: item(n, perfect_answer(d)) for n, d in fixtures.items()}
+    card = scoring.build_scorecard(fixtures, perfect, [], meta_for(fixtures, manifest))
+    assert card["layers"]["0.2"]["n_exact_track_set"] == 2
+    assert card["layers"]["0.2"]["exact_track_set_rate"] == 1.0
+    with_extra = item(LANDSLIDE, perfect_answer(fixtures[LANDSLIDE]))
+    with_extra["raw_output"]["tracks"].append(
+        {"club": "GHOST", "yes_share": 0.5, "polarization": 0.5})
+    items = {LANDSLIDE: with_extra, TIGHT: item(TIGHT, '{"winner": "yes", "tracks": []}')}
+    card = scoring.build_scorecard(fixtures, items, [], meta_for(fixtures, manifest))
+    assert card["layers"]["0.2"]["n_exact_track_set"] == 0
+    assert card["layers"]["0.2"]["exact_track_set_rate"] == 0.0
+
+
+def test_rescore_catches_text_tamper(fixtures, manifest):
+    items = scoring.baseline_items("majority-class", fixtures, manifest)
+    card = scoring.build_scorecard(fixtures, items, [], scoring.baseline_meta(
+        "majority-class", "public", manifest, "test"))
+    mutations = (
+        lambda c: c["model"].__setitem__("id", "baseline:evil"),
+        lambda c: c.__setitem__("set_hash", "0" * 64),
+        lambda c: c["prompt"].__setitem__("template", "tampered"),
+        lambda c: c["fixtures"][0].__setitem__("sha256", "1" * 64),
+    )
+    for mutate in mutations:
+        broken = copy.deepcopy(card)
+        mutate(broken)
+        assert scoring.rescore_matches(broken, scoring.rescore(card, ROOT, manifest)), \
+            "tampered scorecard passed the rescore comparison"
+    broken = copy.deepcopy(card)
+    broken["problems"] = ["injected"]
+    assert scoring.rescore_matches(broken, scoring.rescore(card, ROOT, manifest))
+
+
+def test_compare_provisional_and_ranked(fixtures, manifest, tmp_path, capsys):
+    spec = importlib.util.spec_from_file_location(
+        "sejmbench_cli", os.path.join(ROOT, "scripts", "sejmbench.py"))
+    assert spec is not None and spec.loader is not None
+    cli = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cli)
+
+    def all_answer(winner, fixtures_dict, m):
+        its = {n: item(n, {"winner": winner, "tracks": []}) for n in fixtures_dict}
+        return scoring.build_scorecard(fixtures_dict, its, [], m)
+
+    good = all_answer("yes", fixtures, meta_for(fixtures, manifest))
+    bad = all_answer("no", fixtures, meta_for(fixtures, manifest))
+    pa = tmp_path / "a.json"
+    pa.write_text(json.dumps(good), encoding="utf-8")
+    pb = tmp_path / "b.json"
+    pb.write_text(json.dumps(bad), encoding="utf-8")
+    cli.cmd_compare(argparse.Namespace(scorecard_a=str(pa), scorecard_b=str(pb)))
+    out = json.loads(capsys.readouterr().out)
+    assert out["layer0_1"]["provisional"] is True
+    assert out["layer0_1"]["ranked"] is False
+
+    # n=20 synthetic: a decisive difference reaches ranked=True
+    divisions, entries = {}, []
+    for i in range(20):
+        name = f"synthetic-{i:02d}.json"
+        votes = [("A", "YES")] * 6 + [("B", "NO")] * 6
+        divisions[name] = synthetic_division(
+            [{"MP": j, "club": c, "firstName": "F", "lastName": f"L{j}", "secondName": None,
+              "vote": v} for j, (c, v) in enumerate(votes, start=1)])
+        entries.append({"file": f"synthetic/{name}", "sha256": "0" * 64})
+    syn_manifest = {"fixtures": entries}
+    syn_meta = meta_for(divisions, syn_manifest)
+    syn_meta["set_hash"] = scoring.canonical_set_hash(syn_manifest)
+    a20 = all_answer("yes", divisions, syn_meta)
+    b20 = all_answer("no", divisions, syn_meta)
+    pa20 = tmp_path / "a20.json"
+    pa20.write_text(json.dumps(a20), encoding="utf-8")
+    pb20 = tmp_path / "b20.json"
+    pb20.write_text(json.dumps(b20), encoding="utf-8")
+    cli.cmd_compare(argparse.Namespace(scorecard_a=str(pa20), scorecard_b=str(pb20)))
+    out = json.loads(capsys.readouterr().out)
+    assert out["layer0_1"]["ranked"] is True
+    assert out["layer0_1"]["n_shared"] == 20
+
+
+def test_render_table_shows_ci(fixtures, manifest):
+    spec = importlib.util.spec_from_file_location(
+        "sejmbench_cli", os.path.join(ROOT, "scripts", "sejmbench.py"))
+    assert spec is not None and spec.loader is not None
+    cli = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cli)
+    items = scoring.baseline_items("majority-class", fixtures, manifest)
+    card = scoring.build_scorecard(fixtures, items, [], scoring.baseline_meta(
+        "majority-class", "public", manifest, "test"))
+    row = scoring.leaderboard_rows([card])[0]
+    row["scorecard"] = "x.scorecard.json"
+    table = cli._render_table([row])
+    assert "[1.0000, 1.0000]" in table
+
+
+def test_shared_fixtures_sha_mismatch():
+    a = {"fixtures": [{"file": "fixtures/a.json", "sha256": "A" * 64}]}
+    b = {"fixtures": [{"file": "fixtures/a.json", "sha256": "B" * 64}]}
+    shared, mismatched = scoring.shared_fixtures(a, b)
+    assert shared == [] and mismatched == ["a.json"]
+    b = {"fixtures": [{"file": "fixtures/a.json", "sha256": "A" * 64}]}
+    assert scoring.shared_fixtures(a, b) == (["a.json"], [])

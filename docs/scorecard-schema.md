@@ -1,4 +1,4 @@
-# Scorecard schema (v1.0)
+# Scorecard schema (v1.1)
 
 This document freezes the harness contract for issue #4: deterministic,
 offline scoring of saved responses, with every published number reproducible
@@ -30,7 +30,13 @@ One JSON file per fixture: `results/<model-name>-<YYYYMMDD>.json` with
 Set semantics: `--set public` is the full `fixtures/manifest.json` list. A
 fixture with no submission file is reported as `missing` (exclusion reason
 recorded) and counts as **incorrect** for headline accuracy — an incomplete
-run is a worse result, not a smaller denominator.
+run is a worse result, not a smaller denominator. A submission record naming
+a fixture outside the set is rejected as an unknown fixture (a `problems`
+entry), never silently ignored.
+
+Missing `prompt_hash`, a hash mismatch, or a missing `declared_cutoff` is a
+contract violation recorded in `problems`; a scorecard with problems is not
+acceptable (CI rejects it).
 
 ## Parse rules (fixed)
 
@@ -56,7 +62,13 @@ Layer 0.2 (tracks): per-item mean absolute deviation of `yes_share` and
   instruction violation, not a neutral gap. This rule is the scorer's
   frozen interpretation; deviations are rejected, arguments get heard
   (AGENTS.md rule 5).
-- Extra model-side tracks are recorded but not penalized.
+- Extra model-side tracks are recorded but not penalized; structural
+  fidelity of the track set is reported separately (`n_exact_track_set` /
+  `exact_track_set_rate`).
+- A `tracks` field that is not a list does not invalidate the item: the
+  winner is still scored and every ground-truth track counts as missing.
+- Duplicate club labels void that club entirely: it counts as missing and
+  each duplicate entry is counted as invalid.
 - Non-numeric or out-of-[0,1] values count as missing for that track.
 - MAE is computed over items with a valid parsed answer (§8.6: status
   `scored`); `answer_coverage` is reported alongside.
@@ -67,7 +79,13 @@ Layer 0.2 (tracks): per-item mean absolute deviation of `yes_share` and
   method, `random.Random` (deterministic; the same seed restarts per
   statistic, so every CI is bit-reproducible).
 - Comparing two scorecards: `compare` runs a paired bootstrap over the
-  shared fixture set; differences inside the CI are **not ranked**.
+  shared fixture set; differences inside the CI are **not ranked**. A
+  comparison is additionally **provisional** (never a ranking) when the
+  shared set is smaller than the §8.3 minimum cell count (20), and pairings
+  require identical fixture sha256 on both sides (same name, different hash
+  = different data, excluded). `compare` also reports both models' answer
+  coverage: a coverage gap can flatter the model that answers only the easy
+  items.
 - Minimum cell count: 20 divisions per bucket (§8.3) — with the current
   2-fixture set all aggregates are provisional by definition.
 
@@ -99,7 +117,7 @@ Layer 0.2 (tracks): per-item mean absolute deviation of `yes_share` and
 | `evaluation_date` | evaluation date |
 | `contamination` | `declared_cutoff` (`unknown` when unverifiable), temporal-holdout flag (issue #5) |
 | `token_usage` / `cost_estimate` | as reported by the adapter; `null` when not supplied |
-| `layers` | per layer: `n_total`, `n_scored`, `n_abstained`, `n_parse_failures`, `n_refusals`, `n_missing_files`, accuracy/MAE with bootstrap 95% CI |
+| `layers` | per layer: `n_total`, `n_scored`, `n_abstained`, `n_parse_failures`, `n_refusals`, `n_missing_files`; layer 0.1 adds `n_ties` (and per-item `gt_tie`, so a convention-winner on a tied division is never readable as "the motion passed"); layer 0.2 adds `n_exact_track_set` / `exact_track_set_rate`; accuracy/MAE with bootstrap 95% CI |
 | `items` | per fixture: status, layer-0.1 pred/gt/correct, layer-0.2 track detail, submission file + sha256 |
 | `problems` | contract violations (temperature ≠ 0, missing fields, prompt-hash mismatch); a scorecard with problems is not acceptable |
 
@@ -109,7 +127,8 @@ Layer 0.2 (tracks): per-item mean absolute deviation of `yes_share` and
   Sejm); tracks: `yes_share` 1.0, `polarization` 0.0. Mandatory row: the
   bar every model must clear.
 - `baseline:random` — seeded RNG (`20261027`) over sorted fixture order:
-  fair-coin winner, uniform shares.
+  fair-coin winner, uniform shares. Deterministic via CPython's stable core
+  `random.Random` generator; cross-runtime bit-identity is not certified.
 - `carry_last` / kNN over titles need division history; they enter the
   leaderboard only from the corpus-backed re-run of the harness-0.4.2 bars
   (separate job; not computable on an isolated fixture set).
@@ -132,7 +151,11 @@ may be submitted or published before that.
 
 - `rescore-check` — every committed scorecard must be schema-valid, carry no
   problems, and rescore from its referenced artifacts to **exactly** the
-  committed numbers.
+  committed content: every field is compared, not just numbers (provenance
+  text, set/fixture hashes, model identity, prompt template; the `problems`
+  list by length). The scorecard is additionally bound to the manifest on
+  disk: `set_hash`, the fixture list (files + sha256), and the current
+  contract versions must all match.
 - `leaderboard --check` — `results/leaderboard.jsonl` and the README table
   are generated only from accepted scorecards; drift fails CI. Values are
   never hand-edited.

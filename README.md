@@ -107,8 +107,8 @@ merged with these rows.
 
 | model | set | n | accuracy (95% CI) | yes_share MAE (95% CI) | polarization MAE (95% CI) | scorecard |
 |---|---|---|---|---|---|---|
-| baseline:majority-class\* | public | 2 | 1.0000 | 0.1855 | 0.0381 | [results/baseline-majority-class-public.scorecard.json](results/baseline-majority-class-public.scorecard.json) |
-| baseline:random\* | public | 2 | 1.0000 | 0.5196 | 0.4731 | [results/baseline-random-public.scorecard.json](results/baseline-random-public.scorecard.json) |
+| baseline:majority-class\* | public | 2 | 1.0000 [1.0000, 1.0000] | 0.1855 [0.0000, 0.3710] | 0.0381 [0.0000, 0.0762] | [results/baseline-majority-class-public.scorecard.json](results/baseline-majority-class-public.scorecard.json) |
+| baseline:random\* | public | 2 | 1.0000 [1.0000, 1.0000] | 0.5196 [0.3344, 0.7048] | 0.4731 [0.3291, 0.6170] | [results/baseline-random-public.scorecard.json](results/baseline-random-public.scorecard.json) |
 <!-- LEADERBOARD:END -->
 
 ## Principles

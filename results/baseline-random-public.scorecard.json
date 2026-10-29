@@ -20,8 +20,8 @@
       "sha256": "1fd2601aeef2395829b4991b3ef7264b6b8ff933354bd51b5ea6111d0387462d"
     }
   ],
-  "generated_by": "sejmbench scorer (scorecard schema 1.0)",
-  "harness_version": "0.4.3",
+  "generated_by": "sejmbench scorer (scorecard schema 1.1)",
+  "harness_version": "0.4.4",
   "items": [
     {
       "abstain_marker": false,
@@ -29,6 +29,7 @@
       "layer0_1": {
         "correct": 1,
         "gt": "yes",
+        "gt_tie": false,
         "pred": "yes"
       },
       "layer0_2": {
@@ -52,6 +53,7 @@
       "layer0_1": {
         "correct": 1,
         "gt": "yes",
+        "gt_tie": false,
         "pred": "yes"
       },
       "layer0_2": {
@@ -86,6 +88,7 @@
       "n_parse_failures": 0,
       "n_refusals": 0,
       "n_scored": 2,
+      "n_ties": 0,
       "n_total": 2
     },
     "0.2": {
@@ -102,8 +105,10 @@
         0.33441666666666664,
         0.7048333333333333
       ],
+      "exact_track_set_rate": 1.0,
       "mae_polarization": 0.473075,
       "mae_yes_share": 0.519625,
+      "n_exact_track_set": 2,
       "n_scored": 2,
       "n_total": 2
     }
@@ -124,8 +129,8 @@
     "hash": "d937dfcbe2e92cef97c292353371cd40017da7c226587f7da31a09682db20dc6",
     "template": "You are analyzing a roll-call division (głosowanie imienne) of the Sejm\nof the Republic of Poland. Each line below is one MP: club | name | vote,\nwhere vote is YES / NO / ABSTAIN / ABSENT.\n\n{VOTE_RECORDS}\n\nAnswer ONLY with a JSON object:\n{\n  \"winner\": \"yes\" | \"no\",\n  \"tracks\": [\n    {\"club\": \"<label>\", \"yes_share\": <float>, \"polarization\": <float>}\n  ]\n}\nRules:\n- Include exactly the clubs with at least 5 active votes (YES/NO/ABSTAIN).\n- yes_share = YES / (YES + NO + ABSTAIN) for that club.\n- polarization = 1 - |YES - NO| / (YES + NO + ABSTAIN).\n"
   },
-  "schema": "sejmbench.scorecard/1.0",
-  "scorecard_version": "1.0",
+  "schema": "sejmbench.scorecard/1.1",
+  "scorecard_version": "1.1",
   "set": "public",
   "set_hash": "d465a66a92ec27f779f0fb75f6ed2e1a51cc7a66d64cf62eb2bfb469e07a9f02",
   "submission": {

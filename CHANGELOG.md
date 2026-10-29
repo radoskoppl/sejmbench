@@ -5,6 +5,7 @@ Format follows Keep-a-Changelog; versions follow SemVer.
 
 ## [Unreleased]
 
+- Harness hardening (blind review round): full-field rescore comparison (provenance, hashes, model identity — not only numbers), scorecards bound to the on-disk manifest (`set_hash`/fixtures/contract versions), `prompt_hash` + `declared_cutoff` required, unknown fixture records rejected, duplicate club labels void the track, `compare` refuses to rank below the §8.3 minimum cell count (provisional instead) and reports answer coverage + fixture-hash pairing, leaderboard table shows the CIs it promises, per-fixture §4 invariant tests, scorecard schema 1.1 (harness 0.4.4).
 - Harness (issue #4): deterministic offline scorer (`scoring.py` + `scripts/sejmbench.py` CLI: `score` / `baselines` / `compare` / `rescore-check` / `leaderboard`), scorecard schema 1.0 (`docs/scorecard-schema.md`), non-LLM baseline rows (majority-class, seeded random) in the leaderboard, CI rescore + leaderboard-drift gates, README version axes (harness 0.4.3).
 
 - Full-corpus backtest results (terms 3–10, 66,044 scored divisions): two-metric bar — kNN 0.707 winner accuracy, carry_last 0.287 yes_share MAE (`results/backtest-full-corpus-2026-10-26.md`).

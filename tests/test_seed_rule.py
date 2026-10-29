@@ -1,5 +1,6 @@
 """Unit tests: hand-computed synthetic divisions (no network)."""
 
+import json
 import os
 
 import pytest
@@ -80,4 +81,46 @@ def test_real_fixture_self_consistency():
     assert r["seed_totals"]["ABSTAIN"] + r["inni_totals"]["ABSTAIN"] == d["abstain"]
     assert r["n_active"] + (r["inni_totals"]["YES"] + r["inni_totals"]["NO"]
                             + r["inni_totals"]["ABSTAIN"]) == d["totalVoted"]
+    assert 0.0 <= r["overall_polarization"] <= 1.0
+
+
+# ---------------------------------------------------------------------------
+# CODEBOOK §4 invariants — parametrized over EVERY manifest fixture (the
+# pre-review suite covered only one real fixture; the set is about to grow).
+# ---------------------------------------------------------------------------
+
+try:
+    with open(os.path.join(FIXTURES, "manifest.json"), encoding="utf-8") as _fh:
+        _ENTRIES = json.load(_fh)["fixtures"]
+except (OSError, ValueError, KeyError):
+    _ENTRIES = []
+
+
+def test_manifest_present():
+    """The invariant sweep below is only meaningful if the manifest is readable."""
+    assert _ENTRIES, "fixtures/manifest.json missing or unreadable"
+
+
+@pytest.mark.parametrize("entry", _ENTRIES, ids=[e["file"] for e in _ENTRIES])
+def test_codebook_invariants_per_fixture(entry):
+    path = os.path.join(FIXTURES, os.path.basename(entry["file"]))
+    if not os.path.exists(path):
+        pytest.skip("fixture not fetched")
+    with open(path, encoding="utf-8") as fh:
+        d = json.load(fh)
+    counts = {"YES": 0, "NO": 0, "ABSTAIN": 0, "ABSENT": 0}
+    for v in d["votes"]:
+        assert v["vote"] in counts, f"unknown vote value: {v['vote']!r}"
+        counts[v["vote"]] += 1
+    assert counts["YES"] == d["yes"]
+    assert counts["NO"] == d["no"]
+    assert counts["ABSTAIN"] == d["abstain"]
+    assert counts["YES"] + counts["NO"] + counts["ABSTAIN"] == d["totalVoted"]
+    r = compute_metric(d)
+    assert r["seed_totals"]["YES"] + r["inni_totals"]["YES"] == d["yes"]
+    assert r["seed_totals"]["NO"] + r["inni_totals"]["NO"] == d["no"]
+    assert r["seed_totals"]["ABSTAIN"] + r["inni_totals"]["ABSTAIN"] == d["abstain"]
+    assert r["n_active"] + sum(r["inni_totals"][k] for k in ("YES", "NO", "ABSTAIN")) == d["totalVoted"]
+    for t in r["tracks"].values():
+        assert 0.0 <= t["polarization"] <= 1.0
     assert 0.0 <= r["overall_polarization"] <= 1.0
