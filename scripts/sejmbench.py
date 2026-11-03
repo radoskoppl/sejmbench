@@ -19,6 +19,8 @@ from __future__ import annotations
 
 import argparse
 import glob
+import gzip
+import hashlib
 import json
 import os
 import sys
@@ -50,12 +52,47 @@ def _load_scorecard(path: str) -> dict:
 
 
 def _fixtures_for_set(repo_root: str, manifest: dict, set_name: str) -> dict:
-    if set_name != "public":
-        raise SystemExit(f"unknown set: {set_name} (only 'public' exists)")
-    return {
-        os.path.basename(e["file"]): scoring.load_fixture(repo_root, e["file"], manifest)
-        for e in manifest["fixtures"]
-    }
+    if set_name == "public":
+        return {
+            os.path.basename(e["file"]): scoring.load_fixture(repo_root, e["file"], manifest)
+            for e in manifest["fixtures"]
+        }
+    raise SystemExit(f"unknown set: {set_name}")
+
+
+CORPUS_SETS = {"full": ("ids-full-corpus.txt", "gt-full.jsonl.gz"),
+               "term10": ("ids-term10.txt", "gt-term10.jsonl.gz")}
+
+
+def _corpus_for_set(repo_root: str, set_name: str):
+    """Corpus-backed sets (issue #11): frozen population ids + precomputed GT.
+
+    Returns (fixtures, population) where fixtures maps item names to
+    `{"__gt__": metric}` stand-ins and population binds the scorecard to the
+    frozen id list (schema 1.2).
+    """
+    pop_dir = os.path.join(repo_root, "docs", "population")
+    ids_file, gt_file = CORPUS_SETS[set_name]
+    ids_path, gt_path = os.path.join(pop_dir, ids_file), os.path.join(pop_dir, gt_file)
+    if not (os.path.exists(ids_path) and os.path.exists(gt_path)):
+        raise SystemExit(f"corpus set '{set_name}' not built: run scripts/build_corpus_gt.py")
+    ids = {("term%s-s%s-v%s.json") % tuple(line.strip().split(":"))
+           for line in open(ids_path, encoding="utf-8") if line.strip()}
+    fixtures, h = {}, hashlib.sha256()
+    with gzip.open(gt_path, "rt", encoding="utf-8") as fh:
+        for line in fh:
+            row = json.loads(line)
+            name = row["id"] + ".json"
+            fixtures[name] = {"__gt__": row["metric"]}
+            h.update(line.encode("utf-8"))
+    if set(fixtures) != ids:
+        raise SystemExit(f"{gt_file} does not match {ids_file} exactly — "
+                         "population drift, refusing to score")
+    population = {"set": set_name, "n": len(fixtures),
+                  "ids_file": f"docs/population/{ids_file}",
+                  "ids_sha256": scoring._sha256_file(ids_path),
+                  "gt_sha256": h.hexdigest()}
+    return fixtures, population
 
 
 def _check_layers(layers: str) -> None:
@@ -78,8 +115,13 @@ def _check_layers(layers: str) -> None:
 
 def cmd_score(args) -> int:
     _check_layers(args.layers)
-    manifest = scoring.load_manifest(_ROOT)
-    fixtures = _fixtures_for_set(_ROOT, manifest, args.set)
+    if args.set == "public":
+        manifest = scoring.load_manifest(_ROOT)
+        fixtures = _fixtures_for_set(_ROOT, manifest, args.set)
+        population = None
+    else:
+        manifest = None
+        fixtures, population = _corpus_for_set(_ROOT, args.set)
 
     paths = []
     for p in args.submission:
@@ -116,14 +158,25 @@ def cmd_score(args) -> int:
     if args.max_tokens is not None:
         decoding["max_tokens"] = args.max_tokens
 
+    if population is not None:
+        # corpus sets: the population hash IS the set identity; every item is
+        # eligible (zero-counter / inconsistent rows never enter the freeze).
+        set_hash = population["gt_sha256"]
+        fixture_entries = {name: {"file": name, "sha256": population["gt_sha256"],
+                                  "layers": {"0.1": True, "0.2": True}}
+                           for name in fixtures}
+    else:
+        set_hash = scoring.canonical_set_hash(manifest)
+        fixture_entries = {os.path.basename(e["file"]): e for e in manifest["fixtures"]}
+
     meta = {
         "benchmark_version": scoring.BENCHMARK_VERSION,
         "metric_version": scoring.METRIC_VERSION,
         "harness_version": _repo_version(),
         "repo_root": _ROOT,
         "set": args.set,
-        "set_hash": scoring.canonical_set_hash(manifest),
-        "fixture_entries": {os.path.basename(e["file"]): e for e in manifest["fixtures"]},
+        "set_hash": set_hash,
+        "fixture_entries": fixture_entries,
         "model": {
             "id": args.model_id or next(iter(ids)),
             "provider": args.provider or "unspecified",
@@ -149,6 +202,8 @@ def cmd_score(args) -> int:
         "cost_estimate": ({"value": args.cost_usd, "currency": "USD"}
                           if args.cost_usd is not None else None),
     }
+    if population is not None:
+        meta["population"] = population
     card = scoring.build_scorecard(fixtures, items, problems, meta)
 
     errs = scoring.validate_scorecard(card)
@@ -173,11 +228,25 @@ def cmd_score(args) -> int:
 # ------------------------------------------------------------ baselines ----
 
 def cmd_baselines(args) -> int:
-    manifest = scoring.load_manifest(_ROOT)
-    fixtures = _fixtures_for_set(_ROOT, manifest, args.set)
+    corpus = args.set != "public"
+    if corpus:
+        fixtures, population = _corpus_for_set(_ROOT, args.set)
+        manifest = None
+    else:
+        manifest = scoring.load_manifest(_ROOT)
+        fixtures = _fixtures_for_set(_ROOT, manifest, args.set)
+        population = None
     for which in ("majority-class", "random"):
-        items = scoring.baseline_items(which, fixtures, manifest)
-        meta = scoring.baseline_meta(which, args.set, manifest, _repo_version())
+        items = scoring.baseline_items(which, fixtures, manifest or {"fixtures": []})
+        if corpus:
+            meta = {**scoring.baseline_meta(which, args.set, {"fixtures": []}, _repo_version()),
+                    "set_hash": population["gt_sha256"],
+                    "fixture_entries": {name: {"file": name, "sha256": population["gt_sha256"],
+                                               "layers": {"0.1": True, "0.2": True}}
+                                        for name in fixtures},
+                    "population": population}
+        else:
+            meta = scoring.baseline_meta(which, args.set, manifest, _repo_version())
         card = scoring.build_scorecard(fixtures, items, [], meta)
         errs = scoring.validate_scorecard(card)
         if errs:
@@ -316,8 +385,23 @@ def cmd_leaderboard(args) -> int:
     cards, rows = [], []
     for p in paths:
         card = _load_scorecard(p)
-        errs = scoring.validate_scorecard(card, expected_set_hash=scoring.canonical_set_hash(manifest),
-                                          expected_fixtures=manifest["fixtures"])
+        if card.get("set") != "public":
+            # corpus-scale scorecards are regenerable artifacts kept out of git
+            # (see docs/scorecard-schema.md); their rows live in results/corpus-*.md.
+            continue
+        if card.get("set") == "public":
+            errs = scoring.validate_scorecard(
+                card, expected_set_hash=scoring.canonical_set_hash(manifest),
+                expected_fixtures=manifest["fixtures"])
+        else:
+            errs = scoring.validate_scorecard(card)
+            pop = card.get("population") or {}
+            ids_file = CORPUS_SETS.get(card.get("set") or "", ("unknown",))[0]
+            ids_path = os.path.join(_ROOT, "docs", "population", ids_file)
+            if not os.path.exists(ids_path) or \
+                    scoring._sha256_file(ids_path) != pop.get("ids_sha256"):
+                errs.append(f"population ids hash does not match "
+                            f"docs/population/{ids_file} — frozen list drifted")
         if errs:
             raise SystemExit(f"scorecard {p} invalid — leaderboard only reads accepted scorecards: {errs}")
         if card.get("problems"):
@@ -366,7 +450,9 @@ def main(argv=None) -> int:
     p = sub.add_parser("score", help="deterministic offline scoring of a submission")
     p.add_argument("--submission", nargs="+", required=True,
                    help="submission file(s) or a directory of per-fixture files")
-    p.add_argument("--set", default="public", choices=["public"])
+    p.add_argument("--set", default="public",
+                   choices=["public", "full", "term10"],
+                   help="public = 50-fixture dev set; full/term10 = frozen corpus sets (issue #11)")
     p.add_argument("--layers", default="0.1,0.2", help="comma list; layer 1 refuses until frozen")
     p.add_argument("--out", help="scorecard output path (relative to repo root)")
     p.add_argument("--model-id", help="override model id (defaults to the files' 'model')")
@@ -382,7 +468,9 @@ def main(argv=None) -> int:
     p.set_defaults(func=cmd_score)
 
     p = sub.add_parser("baselines", help="regenerate non-LLM baseline scorecards")
-    p.add_argument("--set", default="public", choices=["public"])
+    p.add_argument("--set", default="public",
+                   choices=["public", "full", "term10"],
+                   help="public = 50-fixture dev set; full/term10 = frozen corpus sets (issue #11)")
     p.set_defaults(func=cmd_baselines)
 
     p = sub.add_parser("compare", help="paired bootstrap comparison of two scorecards")

@@ -212,8 +212,8 @@
       "sha256": "98b2304a0f6fc00dfd6b1089b2cc5c8186521fc2c62608ad3d0d47822b68a0f7"
     }
   ],
-  "generated_by": "sejmbench scorer (scorecard schema 1.1)",
-  "harness_version": "0.4.6",
+  "generated_by": "sejmbench scorer (scorecard schema 1.2)",
+  "harness_version": "0.5.0",
   "items": [
     {
       "abstain_marker": false,
@@ -1461,11 +1461,11 @@
   },
   "problems": [],
   "prompt": {
-    "hash": "d937dfcbe2e92cef97c292353371cd40017da7c226587f7da31a09682db20dc6",
-    "template": "You are analyzing a roll-call division (głosowanie imienne) of the Sejm\nof the Republic of Poland. Each line below is one MP: club | name | vote,\nwhere vote is YES / NO / ABSTAIN / ABSENT.\n\n{VOTE_RECORDS}\n\nAnswer ONLY with a JSON object:\n{\n  \"winner\": \"yes\" | \"no\",\n  \"tracks\": [\n    {\"club\": \"<label>\", \"yes_share\": <float>, \"polarization\": <float>}\n  ]\n}\nRules:\n- Include exactly the clubs with at least 5 active votes (YES/NO/ABSTAIN).\n- yes_share = YES / (YES + NO + ABSTAIN) for that club.\n- polarization = 1 - |YES - NO| / (YES + NO + ABSTAIN).\n"
+    "hash": "75dca1f188e01cfe041b269ce83700cf29af1b3dd9d2cacebf9bda38ce9dbf91",
+    "template": "You are analyzing a roll-call division (głosowanie imienne) of the Sejm\nof the Republic of Poland. Each line below is one MP: club | name | vote,\nwhere vote is YES / NO / ABSTAIN / ABSENT — or NO_VOTE in term-3-era data.\n\n{VOTE_RECORDS}\n\nAnswer ONLY with a JSON object:\n{\n  \"winner\": \"yes\" | \"no\",\n  \"tracks\": [\n    {\"club\": \"<label>\", \"yes_share\": <float>, \"polarization\": <float>}\n  ]\n}\nRules:\n- A club counts toward the winner if it appears in at least 5 vote records.\n- Active votes are YES / NO / ABSTAIN; ABSENT and NO_VOTE never decide an outcome.\n- winner: \"yes\" if total active YES exceeds total active NO, \"no\" if active NO\n  exceeds active YES; if they are equal (including 0:0), report \"yes\"\n  (earlier-seed convention).\n- Include in \"tracks\" exactly the clubs with at least 5 active votes.\n- yes_share = YES / (YES + NO + ABSTAIN) for that club.\n- polarization = 1 - |YES - NO| / (YES + NO + ABSTAIN).\n"
   },
-  "schema": "sejmbench.scorecard/1.1",
-  "scorecard_version": "1.1",
+  "schema": "sejmbench.scorecard/1.2",
+  "scorecard_version": "1.2",
   "set": "public",
   "set_hash": "018ddcb9ec32cfae977cf176c55f5043240907fcbe0b42827ad9c8381001457b",
   "submission": {

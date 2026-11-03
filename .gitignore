@@ -4,3 +4,7 @@ __pycache__/
 .pytest_cache/
 dump/
 post-basal-discord.md
+
+# corpus-scale scorecards are regenerable artifacts (GT + harness reproduce them byte-for-byte)
+results/baseline-*-full.scorecard.json
+results/baseline-*-term10.scorecard.json

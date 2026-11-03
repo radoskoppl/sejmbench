@@ -1,9 +1,13 @@
-# Scorecard schema (v1.1)
+# Scorecard schema (v1.2)
 
 This document freezes the harness contract for issue #4: deterministic,
 offline scoring of saved responses, with every published number reproducible
 from committed artifacts. The reference implementation is `scoring.py`; the
 CLI is `scripts/sejmbench.py`.
+
+v1.2 adds corpus-backed sets (issue #11): `--set full|term10` scores against
+the frozen population in `docs/population/`, and corpus scorecards must carry
+a `population` block binding them to the frozen ID list.
 
 ## Two paths
 
@@ -16,10 +20,32 @@ CLI is `scripts/sejmbench.py`.
 ```
 $ python scripts/sejmbench.py score --submission results/<model>-<date>/ \
       --set public --out results/<model>-<date>.scorecard.json
+$ python scripts/sejmbench.py score --submission results/<model>-<date>/ \
+      --set term10 --out results/<model>-<date>.scorecard.json
 $ python scripts/sejmbench.py compare A.scorecard.json B.scorecard.json
 $ python scripts/sejmbench.py rescore-check 'results/*.scorecard.json'
 $ python scripts/sejmbench.py leaderboard [--check]
 ```
+
+## Population block (corpus sets, v1.2)
+
+When `set` is `full` or `term10`, the scorecard carries:
+
+```json
+"population": {
+  "set": "full",
+  "n": 66104,
+  "ids_file": "docs/population/ids-full-corpus.txt",
+  "ids_sha256": "<sha256 of the frozen ID list>",
+  "gt_sha256": "<sha256 of the uncompressed GT stream>"
+}
+```
+
+`set_hash` equals `gt_sha256` for corpus sets; the leaderboard validates the
+`ids_sha256` against the file on disk (frozen-list drift fails). Ground truth
+is the precomputed stream `docs/population/gt-<set>.jsonl.gz` built by
+`scripts/build_corpus_gt.py` from the frozen population — the same seed_rule
+metric as fixture scoring, computed once and hashed.
 
 ## Submission format (AGENTS.md)
 

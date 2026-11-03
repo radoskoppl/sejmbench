@@ -51,7 +51,7 @@ import json
 import os
 import random
 
-SCHEMA_VERSION = "1.1"             # docs/scorecard-schema.md (review round 2026-10-28)
+SCHEMA_VERSION = "1.2"             # docs/scorecard-schema.md (corpus sets + population binding)
 BENCHMARK_VERSION = "0.3"          # CODEBOOK version — the contract
 METRIC_VERSION = "0.3"             # CODEBOOK §2/§3 metric schema
 BOOTSTRAP_REPLICATES = 10_000
@@ -230,7 +230,9 @@ def score_item(item: dict, division: dict, fixture_name: str) -> dict:
     import seed_rule
 
     status, parsed = parse_answer(item.get("raw_output"))
-    metric = seed_rule.compute_metric(division)
+    # Corpus-backed sets carry a precomputed GT (`__gt__`, built by
+    # scripts/build_corpus_gt.py); fixture sets compute the metric on the fly.
+    metric = division.get("__gt__") or seed_rule.compute_metric(division)
     gt_winner = metric["seed_rule"]["winner"]
     gt_tie = metric["seed_rule"]["tie"]
     gt_tracks = metric["tracks"]
@@ -479,6 +481,9 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
         "problems": problems,
         "generated_by": f"sejmbench scorer (scorecard schema {SCHEMA_VERSION})",
     }
+    if meta.get("population"):
+        # corpus sets bind the scorecard to the frozen population (schema 1.2)
+        card["population"] = meta["population"]
     return card
 
 
@@ -514,6 +519,18 @@ def validate_scorecard(card: dict, expected_set_hash: str | None = None,
         errs.append("prompt hash mismatch")
     if expected_set_hash is not None and card.get("set_hash") != expected_set_hash:
         errs.append("set_hash does not match the canonical hash of the manifest on disk")
+    if card.get("set") != "public":
+        pop = card.get("population")
+        if not isinstance(pop, dict):
+            errs.append("corpus-set scorecard must carry a 'population' block "
+                        "(n / ids_sha256 / gt_sha256) per schema 1.2")
+        else:
+            if not isinstance(pop.get("n"), int) or pop["n"] <= 0:
+                errs.append("population.n must be a positive integer")
+            for k in ("ids_sha256", "gt_sha256"):
+                v = pop.get(k, "")
+                if not (isinstance(v, str) and len(v) == 64 and all(c in "0123456789abcdef" for c in v)):
+                    errs.append(f"population.{k} must be a sha256 hex digest")
     if expected_fixtures is not None:
         got = sorted(({"file": f["file"], "sha256": f["sha256"]} for f in card.get("fixtures", [])),
                      key=lambda x: x["file"])
@@ -540,7 +557,10 @@ def validate_scorecard(card: dict, expected_set_hash: str | None = None,
 def baseline_items(which: str, fixtures: dict, manifest: dict):
     """Non-LLM baseline answers in the AGENTS.md item shape.
 
-    - majority-class: always "yes" (the modal winner class in the Sejm);
+    - majority-class: predicts the modal winner class OF THE SET BEING SCORED
+      (computed from each item's GT; tie -> "yes" per the earlier-seed
+      convention). On the full corpus the modal winner is "no" (p_yes = 0.389),
+      so hard-coding "yes" would score below random.
       tracks: yes_share 1.0, polarization 0.0 (unanimous yes).
     - random: seeded RNG (RANDOM_BASELINE_SEED) over fixture order
       (sorted names); winner fair coin, shares uniform [0,1).
@@ -549,10 +569,21 @@ def baseline_items(which: str, fixtures: dict, manifest: dict):
     only from the corpus-backed runs (separate, harness 0.4.2 re-run).
     """
     rng = random.Random(RANDOM_BASELINE_SEED)
+    if which == "majority-class":
+        import seed_rule
+        winners = []
+        for name in sorted(fixtures):
+            d = fixtures[name]
+            m = d.get("__gt__") or seed_rule.compute_metric(d)
+            winners.append(m["seed_rule"]["winner"])
+        n_yes = winners.count("yes")
+        pred_winner = "yes" if n_yes >= len(winners) - n_yes else "no"
+    else:
+        pred_winner = None
     items = {}
     for name in sorted(fixtures):
         if which == "majority-class":
-            raw = {"winner": "yes",
+            raw = {"winner": pred_winner,
                    "tracks": [{"club": c, "yes_share": 1.0, "polarization": 0.0}
                               for c in sorted(_gt_clubs(fixtures[name]))]}
         elif which == "random":
@@ -572,6 +603,8 @@ def baseline_items(which: str, fixtures: dict, manifest: dict):
 
 
 def _gt_clubs(division) -> list:
+    if "__gt__" in division:
+        return list(division["__gt__"]["tracks"].keys())
     import seed_rule
     return list(seed_rule.compute_metric(division)["tracks"].keys())
 

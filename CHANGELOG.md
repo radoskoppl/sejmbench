@@ -5,6 +5,8 @@ Format follows Keep-a-Changelog; versions follow SemVer.
 
 ## [Unreleased]
 
+- Corpus-aware harness (issue #11, harness 0.5.0, scorecard schema 1.2): `--set full|term10` scores against the frozen population (`docs/population/ids-*.txt` + precomputed GT `gt-*.jsonl.gz` built by `scripts/build_corpus_gt.py`); corpus scorecards must carry a `population` block (n / ids_sha256 / gt_sha256) and the leaderboard validates it against the frozen list on disk. Fix: the majority-class baseline now predicts the modal winner of the SET BEING SCORED instead of hard-coding "yes" — on the full corpus the modal winner is "no" (p_yes = 0.389), so the old hard-coded row scored below random.
+
 - Evaluation populations frozen (issue #11): `scripts/freeze_population.py` reconciles the four denominators — model-eval population **66,104** unique eligible keys (sha `0b814f62…`, `docs/population/ids-full-corpus.txt`), term-10 subset **5,137** (sha `a632c12c…`); 66,345 = divisions rows (eligible + 241 inconsistent-tally), 66,044 = predictive-backtest scored (different construct incl. inconsistent rows), 66,113 = prior row-level universe. Matching layer-0.1/0.2 baselines on the frozen population: majority-class 0.611 / random 0.500 (winner), constant-mean MAE 0.459 share / 0.153 polarization (cohesion).
 - Reference prompt v0.3 (CODEBOOK §5): names `NO_VOTE`, separates the >=5-record winner threshold from the >=5-active-votes cohesion threshold, states the `YES == NO` tie convention (earlier seed → "yes"). Documentation-vs-code alignment, no metric change; new `prompt_hash` `75dca1f1…` (replaces `d937dfcb…`) as a loud version event. Regression tests: 0:0 tie carries `tie=True`; `NO_VOTE` cannot flip the winner; prompt-wording guard.
 
