@@ -1,0 +1,98 @@
+{
+ "schema": "sejmbench.population/0.5",
+ "generated_by": "scripts/freeze_population.py",
+ "frame_sha256_votings_jsonl": "3b3a659a2fddb0df1e6ea6b4474448110cb1014f9434f562b3b44e31978c0a6b",
+ "random_seed": 20261103,
+ "definitions": {
+  "zero_counter": "totalVoted == 0 and yes == no == abstain == 0 (layers 0.1/0.2 not eligible)",
+  "inconsistent": "totalVoted != yes + no + abstain (headline tallies disagree)",
+  "out_of_terms": "term outside 3..10 (no division records built)",
+  "eligible": "consistent tallies and term in 3..10",
+  "model_population": "unique mirror keys classified eligible, present in divisions_3_10.jsonl with >= 1 active vote record"
+ },
+ "reconciliation": {
+  "mirror_rows": 66427,
+  "mirror_unique_keys": 66406,
+  "mirror_duplicate_rows": 21,
+  "unique_key_classes": {
+   "eligible": 66104,
+   "inconsistent": 241,
+   "zero_counter": 61
+  },
+  "divisions_rows": 66345,
+  "divisions_zero_active": 241,
+  "predictive_backtest_scored_note": "66,345 divisions - 241 zero-active - 60 warmup = 66,044 scored in the #8 predictive backtest (a different construct that INCLUDES inconsistent-tally rows); not a model-eval set",
+  "prior_universe_note": "the 66,113 'universe' from CODEBOOK §11 counted eligible ROWS, not unique keys; at key level the count is 66104"
+ },
+ "mirror_row_counts": {
+  "eligible": 66113,
+  "inconsistent": 253,
+  "zero_counter": 61
+ },
+ "divisions_not_in_mirror": 0,
+ "population_full": {
+  "n": 66104,
+  "ids_file": "ids-full-corpus.txt",
+  "sha256": "0b814f62c1fbc76d015bff4bea4e5446682058a2a740f972a6eaf20e67896994"
+ },
+ "population_term10": {
+  "n": 5137,
+  "ids_file": "ids-term10.txt",
+  "sha256": "a632c12c2db3e74edb286253a23e5b72556ed02bc733befb120ab26212695170"
+ },
+ "baselines_layer0_1": {
+  "n": 66104,
+  "p_yes": 0.389084,
+  "majority_class_accuracy": 0.610916,
+  "random_uniform_accuracy": 0.5
+ },
+ "baselines_layer0_2": {
+  "n_tracks": 474668,
+  "mean_yes_share": 0.466572,
+  "mean_polarization": 0.103292,
+  "mae_constant_mean_share": 0.459085,
+  "mae_constant_mean_polarization": 0.15312,
+  "mae_predict_share_one_polar_zero": {
+   "share": 0.533428,
+   "polarization": 0.103292
+  }
+ },
+ "per_term": {
+  "3": {
+   "eligible": 11798,
+   "inconsistent": 24
+  },
+  "4": {
+   "eligible": 13535,
+   "inconsistent": 54
+  },
+  "5": {
+   "eligible": 3412,
+   "inconsistent": 61
+  },
+  "6": {
+   "inconsistent": 34,
+   "eligible": 8403,
+   "zero_counter": 21
+  },
+  "7": {
+   "eligible": 6291,
+   "inconsistent": 7,
+   "zero_counter": 1
+  },
+  "8": {
+   "inconsistent": 3,
+   "eligible": 8154,
+   "zero_counter": 23
+  },
+  "9": {
+   "eligible": 9383,
+   "inconsistent": 6,
+   "zero_counter": 16
+  },
+  "10": {
+   "inconsistent": 64,
+   "eligible": 5137
+  }
+ }
+}
