@@ -240,7 +240,8 @@ def parse_answer(raw_output):
     # models that cannot emit per-club estimates). The winner still scores;
     # layer 0.2 is reported as abstained (coverage), never penalized as an
     # instruction violation. Additive rule; absent marker = old behaviour.
-    parsed["tracks_abstained"] = bool(parsed.get("tracks_abstained"))
+    if parsed.get("tracks_abstained"):
+        parsed["tracks_abstained"] = True
     return "scored", parsed
 
 
