@@ -429,8 +429,8 @@ def validate_submission_item(data: dict) -> list:
     for field in ("model", "date", "prompt_hash", "declared_cutoff"):
         if not data.get(field):
             errs.append(f"missing required field: {field}")
-    if data.get("prompt_hash") and data["prompt_hash"] != reference_prompt_hash():
-        errs.append(f"prompt_hash mismatch: {data.get('prompt_hash')} != {reference_prompt_hash()}")
+    if data.get("prompt_hash") and data["prompt_hash"] not in KNOWN_PROMPTS:
+        errs.append(f"prompt_hash is not a known versioned prompt: {data.get('prompt_hash')}")
     if "raw_output" not in data:
         errs.append("missing raw_output")
     return errs
