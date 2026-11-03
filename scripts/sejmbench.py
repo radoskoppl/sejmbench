@@ -127,7 +127,8 @@ def cmd_score(args) -> int:
     for p in args.submission:
         if os.path.isdir(p):
             paths.extend(sorted(
-                os.path.join(p, f) for f in os.listdir(p) if f.endswith(".json")))
+                os.path.join(p, f) for f in os.listdir(p)
+                if f.endswith(".json") and f != "status.json"))
         else:
             paths.append(p)
     if not paths:
