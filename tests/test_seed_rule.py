@@ -56,6 +56,28 @@ def test_tie_resolves_by_seed_order():
     assert r["seed_rule"]["margin"] == 0
 
 
+def test_zero_active_tie_is_explicit_not_passed():
+    # 0:0 on active votes: earlier-seed convention says "yes", but the result
+    # must carry tie=True so no scorer ever reports it as "passed" (CODEBOOK §3).
+    votes = [("A", "ABSENT")] * 6 + [("B", "ABSENT")] * 6
+    r = compute_metric(division(votes))
+    assert r["seed_rule"]["winner"] == "yes"
+    assert r["seed_rule"]["tie"] is True
+
+
+def test_no_vote_never_decides_and_record_threshold_differs():
+    # Club A: 3 NO + 4 NO_VOTE = 7 records (counts toward the winner) but only
+    # 3 active votes (< 5, so no cohesion track). Club B: 5 YES.
+    # Active totals: YES 5 vs NO 3 -> winner "yes". If NO_VOTE leaked into the
+    # active tally, NO would be 7 and the winner would flip to "no".
+    votes = ([("A", "NO")] * 3 + [("A", "NO_VOTE")] * 4 + [("B", "YES")] * 5)
+    r = compute_metric(division(votes))
+    assert r["seed_totals"]["NO"] == 3
+    assert r["seed_rule"]["winner"] == "yes"
+    assert "A" not in r["tracks"]      # 3 active < TRACK_MIN_VOTES
+    assert "A" in r["inni_clubs"] or "A" not in r["tracks"]
+
+
 def test_no_majority_when_no_smaller():
     votes = [("A", "NO")] * 7 + [("B", "YES")] * 4
     r = compute_metric(division(votes))

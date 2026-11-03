@@ -18,7 +18,7 @@ import seed_rule
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-PROMPT_HASH = "d937dfcbe2e92cef97c292353371cd40017da7c226587f7da31a09682db20dc6"
+PROMPT_HASH = "75dca1f188e01cfe041b269ce83700cf29af1b3dd9d2cacebf9bda38ce9dbf91"
 SET_HASH = "018ddcb9ec32cfae977cf176c55f5043240907fcbe0b42827ad9c8381001457b"
 LANDSLIDE = "term10-s1-v2-landslide.json"
 TIGHT = "term10-s6-v14-tight.json"
@@ -78,6 +78,15 @@ def synthetic_division(votes):
 
 def test_prompt_hash_pinned():
     assert scoring.reference_prompt_hash() == PROMPT_HASH
+
+
+def test_reference_prompt_v03_states_all_three_conventions():
+    # Guard against silent rewording: the v0.3 prompt must name NO_VOTE,
+    # the >=5-record winner threshold, and the equal-count tie convention.
+    p = scoring.REFERENCE_PROMPT
+    assert "NO_VOTE" in p
+    assert "at least 5 vote records" in p
+    assert "equal (including 0:0)" in p
     assert "głosowanie imienne" in scoring.REFERENCE_PROMPT
     assert "{VOTE_RECORDS}" in scoring.REFERENCE_PROMPT
 

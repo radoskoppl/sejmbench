@@ -60,11 +60,13 @@ RANDOM_BASELINE_SEED = 20261027
 MIN_CELL_COUNT = 20                # CODEBOOK §8.3
 SCORED_LAYERS = ("0.1", "0.2")     # layer 1 stays unscorable until §10 freezes
 
-# Exact CODEBOOK §5 reference prompt (agent track, v0.2). The hash of these
+# Exact CODEBOOK §5 reference prompt (agent track, v0.3). The hash of these
 # bytes is the prompt_hash recorded in submissions (AGENTS.md) and scorecards.
+# v0.3: names NO_VOTE explicitly, separates the >=5-record track threshold from
+# the >=5-active-votes cohesion threshold, states the YES == NO tie convention.
 REFERENCE_PROMPT = """You are analyzing a roll-call division (głosowanie imienne) of the Sejm
 of the Republic of Poland. Each line below is one MP: club | name | vote,
-where vote is YES / NO / ABSTAIN / ABSENT.
+where vote is YES / NO / ABSTAIN / ABSENT — or NO_VOTE in term-3-era data.
 
 {VOTE_RECORDS}
 
@@ -76,7 +78,12 @@ Answer ONLY with a JSON object:
   ]
 }
 Rules:
-- Include exactly the clubs with at least 5 active votes (YES/NO/ABSTAIN).
+- A club counts toward the winner if it appears in at least 5 vote records.
+- Active votes are YES / NO / ABSTAIN; ABSENT and NO_VOTE never decide an outcome.
+- winner: "yes" if total active YES exceeds total active NO, "no" if active NO
+  exceeds active YES; if they are equal (including 0:0), report "yes"
+  (earlier-seed convention).
+- Include in "tracks" exactly the clubs with at least 5 active votes.
 - yes_share = YES / (YES + NO + ABSTAIN) for that club.
 - polarization = 1 - |YES - NO| / (YES + NO + ABSTAIN).
 """

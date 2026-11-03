@@ -83,12 +83,20 @@ For every division:
 
 A submission whose tallies break these is rejected before scoring.
 
-## 5. Reference prompt (agent track, v0.2)
+## 5. Reference prompt (agent track, v0.3)
+
+v0.3 makes explicit what §1–§3 already define in code: the `NO_VOTE` value
+(term-3 era), the two different thresholds (>= 5 vote records for a club to
+count toward the winner; >= 5 active votes for a cohesion track), and the
+`YES == NO` tie convention (earlier seed wins, so the answer is "yes").
+The metric itself is unchanged — this is a documentation-vs-code alignment;
+the prompt hash below replaces the v0.2 hash (`d937dfcb…`) as a loud version
+event per §8 rule 3.
 
 ```
 You are analyzing a roll-call division (głosowanie imienne) of the Sejm
 of the Republic of Poland. Each line below is one MP: club | name | vote,
-where vote is YES / NO / ABSTAIN / ABSENT.
+where vote is YES / NO / ABSTAIN / ABSENT — or NO_VOTE in term-3-era data.
 
 {VOTE_RECORDS}
 
@@ -100,7 +108,12 @@ Answer ONLY with a JSON object:
   ]
 }
 Rules:
-- Include exactly the clubs with at least 5 active votes (YES/NO/ABSTAIN).
+- A club counts toward the winner if it appears in at least 5 vote records.
+- Active votes are YES / NO / ABSTAIN; ABSENT and NO_VOTE never decide an outcome.
+- winner: "yes" if total active YES exceeds total active NO, "no" if active NO
+  exceeds active YES; if they are equal (including 0:0), report "yes"
+  (earlier-seed convention).
+- Include in "tracks" exactly the clubs with at least 5 active votes.
 - yes_share = YES / (YES + NO + ABSTAIN) for that club.
 - polarization = 1 - |YES - NO| / (YES + NO + ABSTAIN).
 ```
