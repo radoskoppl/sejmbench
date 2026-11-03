@@ -91,3 +91,73 @@ def test_corpus_scorecard_missing_population_is_invalid(tmp_path):
     card = _corpus_card(tmp_path, with_population=False)
     errs = scoring.validate_scorecard(card)
     assert any("population" in e for e in errs)
+
+
+# ---- issue #12: model identity, retry policy, prompt variants ----
+
+def _model_card(with_identity=True, with_retry=True, variant="reference"):
+    fixtures = {"a.json": {"votes": [{"club": "A", "vote": "YES"}] * 6,
+                           "term": 10, "sitting": 1, "votingNumber": 2,
+                           "title": "t"}}
+    items = {"a.json": {"model": "m", "date": "2026-11-03", "temperature": 0,
+                        "prompt_hash": scoring.reference_prompt_hash(),
+                        "declared_cutoff": "unknown",
+                        "raw_output": {"winner": "yes",
+                                       "tracks": [{"club": "A", "yes_share": 1.0,
+                                                   "polarization": 0.0}]},
+                        "fixture": "a.json", "_path": "<test>",
+                        "input_tokens": 1234, "context_overflow": False,
+                        "inference_attempts": 1}}
+    model = {"id": "m", "provider": "p", "revision": None,
+             "identity_mutable_alias": True, "call_date": "2026-11-03",
+             "decoding": {"temperature": 0}}
+    if with_identity:
+        model["identity"] = {"weights_sha256": "abc", "tokenizer": "tok-1",
+                             "quantization": "bf16", "runtime": "basal-serve",
+                             "runtime_version": "2.5.2", "context_length": 262144}
+    meta = {"benchmark_version": scoring.BENCHMARK_VERSION,
+            "metric_version": scoring.METRIC_VERSION, "harness_version": "t",
+            "set": "public", "set_hash": "0" * 64,
+            "fixture_entries": {"a.json": {"file": "a.json", "sha256": "x",
+                                           "layers": {"0.1": True, "0.2": True}}},
+            "model": model,
+            "submission": {"kind": "model", "files": []},
+            "evaluation_date": "2026-11-03",
+            "contamination": {"declared_cutoff": "unknown",
+                              "temporal_holdout_applied": False},
+            "token_usage": None, "cost_estimate": None}
+    if with_retry:
+        meta["operational"] = {"retry_policy": "single attempt per item"}
+    if variant != "reference":
+        meta["prompt_variant"] = variant
+    return scoring.build_scorecard(fixtures, items, [], meta)
+
+
+def test_model_card_requires_identity_and_retry():
+    errs = scoring.validate_scorecard(_model_card())
+    assert errs == [], errs
+    errs = scoring.validate_scorecard(_model_card(with_identity=False))
+    assert any("identity" in e for e in errs)
+    errs = scoring.validate_scorecard(_model_card(with_retry=False))
+    assert any("retry_policy" in e for e in errs)
+    bad = _model_card()
+    bad["model"]["identity"].pop("quantization")
+    assert any("quantization" in e for e in scoring.validate_scorecard(bad))
+
+
+def test_model_items_carry_operational_fields():
+    card = _model_card()
+    assert scoring.validate_scorecard(card) == []
+    it = card["items"][0]
+    assert it["input_tokens"] == 1234
+    assert it["context_overflow"] is False
+    assert it["inference_attempts"] == 1
+
+
+def test_corpus_prompt_variant_validates_and_tamper_fails():
+    card = _model_card(variant="corpus")
+    assert scoring.validate_scorecard(card) == []
+    assert card["prompt"]["hash"] == scoring.corpus_reference_prompt_hash()
+    tampered = _model_card(variant="corpus")
+    tampered["prompt"]["template"] += "\nbe creative\n"
+    assert any("pinned hash" in e for e in scoring.validate_scorecard(tampered))

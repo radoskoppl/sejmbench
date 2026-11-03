@@ -27,8 +27,28 @@ $ python scripts/sejmbench.py rescore-check 'results/*.scorecard.json'
 $ python scripts/sejmbench.py leaderboard [--check]
 ```
 
-## Population block (corpus sets, v1.2)
+## Model identity and operational controls (v1.2, issue #12)
 
+Model scorecards (`submission.kind == "model"`) must carry:
+
+```json
+"model": { ..., "identity": {
+  "weights_sha256": "…", "tokenizer": "…", "quantization": "bf16|fp8|…",
+  "runtime": "basal-serve", "runtime_version": "2.5.2",
+  "context_length": 262144, "hardware": "…", "determinism_note": "…" } },
+"operational": { "retry_policy": "fixed before the run; never re-roll for a better answer" }
+```
+
+The identity keys are required; `"unknown"` is an allowed value for anything
+genuinely unverifiable. Raw responses may carry per-item `input_tokens`,
+`context_overflow` and `inference_attempts`; the scorer passes them through to
+scorecard items so truncation and retry storms are visible, never silent.
+
+Prompts are versioned: `KNOWN_PROMPTS` pins hash → template (`reference` v0.3
+and the `corpus` variant — `club | vote` lines, used when MP names are not in
+the input). A template that does not match its pinned hash fails validation.
+
+## Population block (corpus sets, v1.2)
 When `set` is `full` or `term10`, the scorecard carries:
 
 ```json

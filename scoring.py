@@ -93,6 +93,52 @@ def reference_prompt_hash() -> str:
     return hashlib.sha256(REFERENCE_PROMPT.encode("utf-8")).hexdigest()
 
 
+# Corpus-run variant (issue #12 / 9A): the compact divisions dump drops MP
+# names, so each line is `club | vote`. Names carry no information for the
+# task (tracks and winner are club-level), but the deviation must be explicit
+# and versioned — this template has its own pinned hash.
+REFERENCE_PROMPT_CORPUS = """You are analyzing a roll-call division (głosowanie imienne) of the Sejm
+of the Republic of Poland. Each line below is one MP: club | vote,
+where vote is YES / NO / ABSTAIN / ABSENT — or NO_VOTE in term-3-era data.
+
+{VOTE_RECORDS}
+
+Answer ONLY with a JSON object:
+{
+  "winner": "yes" | "no",
+  "tracks": [
+    {"club": "<label>", "yes_share": <float>, "polarization": <float>}
+  ]
+}
+Rules:
+- A club counts toward the winner if it appears in at least 5 vote records.
+- Active votes are YES / NO / ABSTAIN; ABSENT and NO_VOTE never decide an outcome.
+- winner: "yes" if total active YES exceeds total active NO, "no" if active NO
+  exceeds active YES; if they are equal (including 0:0), report "yes"
+  (earlier-seed convention).
+- Include in "tracks" exactly the clubs with at least 5 active votes.
+- yes_share = YES / (YES + NO + ABSTAIN) for that club.
+- polarization = 1 - |YES - NO| / (YES + NO + ABSTAIN).
+"""
+
+
+def corpus_reference_prompt_hash() -> str:
+    return hashlib.sha256(REFERENCE_PROMPT_CORPUS.encode("utf-8")).hexdigest()
+
+
+# Accepted prompt versions: hash -> exact template. A scorecard must name one
+# of these; silent prompt edits fail validation.
+KNOWN_PROMPTS = {
+    reference_prompt_hash(): REFERENCE_PROMPT,
+    corpus_reference_prompt_hash(): REFERENCE_PROMPT_CORPUS,
+}
+
+# Issue #12: reproducible model identity. Required on model scorecards
+# (baseline cards exempt); "unknown" is an allowed VALUE, the KEY is not.
+MODEL_IDENTITY_REQUIRED = ("weights_sha256", "tokenizer", "quantization",
+                           "runtime", "runtime_version", "context_length")
+
+
 # --------------------------------------------------------------------------
 # fixtures / provenance
 # --------------------------------------------------------------------------
@@ -277,6 +323,9 @@ def score_item(item: dict, division: dict, fixture_name: str) -> dict:
         "layer0_1": {"pred": pred_winner, "gt": gt_winner, "gt_tie": gt_tie,
                      "correct": correct},
         "layer0_2": layer02,
+        # issue #12 operational fields, passed through from the raw response
+        **{k: item[k] for k in ("input_tokens", "context_overflow",
+                                "inference_attempts") if k in item},
         "abstain_marker": bool(parsed.get("abstain")) if isinstance(parsed, dict) else False,
     }
 
@@ -451,7 +500,9 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
                       "sha256": meta["fixture_entries"][n]["sha256"]} for n in names],
         "model": meta["model"],
         "submission": meta["submission"],
-        "prompt": {"hash": reference_prompt_hash(), "template": REFERENCE_PROMPT},
+        "prompt": ({"hash": corpus_reference_prompt_hash(), "template": REFERENCE_PROMPT_CORPUS}
+                   if meta.get("prompt_variant") == "corpus"
+                   else {"hash": reference_prompt_hash(), "template": REFERENCE_PROMPT}),
         "evaluation_date": meta["evaluation_date"],
         "contamination": meta["contamination"],
         "token_usage": meta.get("token_usage"),
@@ -484,6 +535,8 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
     if meta.get("population"):
         # corpus sets bind the scorecard to the frozen population (schema 1.2)
         card["population"] = meta["population"]
+    if meta.get("operational"):
+        card["operational"] = meta["operational"]
     return card
 
 
@@ -515,8 +568,24 @@ def validate_scorecard(card: dict, expected_set_hash: str | None = None,
     if card.get("metric_version") != METRIC_VERSION:
         errs.append(f"metric_version {card.get('metric_version')!r} != current "
                     f"contract {METRIC_VERSION!r}")
-    if card.get("prompt", {}).get("hash") != reference_prompt_hash():
-        errs.append("prompt hash mismatch")
+    if card.get("prompt", {}).get("hash") not in KNOWN_PROMPTS:
+        errs.append("prompt hash is not a known versioned prompt")
+    elif card["prompt"].get("template") != KNOWN_PROMPTS[card["prompt"]["hash"]]:
+        errs.append("prompt template does not match its pinned hash (silent edit)")
+    if card.get("submission", {}).get("kind") == "model":
+        ident = card.get("model", {}).get("identity")
+        if not isinstance(ident, dict):
+            errs.append("model scorecard must carry model.identity "
+                        "(weights_sha256, tokenizer, quantization, runtime, "
+                        "runtime_version, context_length) per issue #12")
+        else:
+            for k in MODEL_IDENTITY_REQUIRED:
+                if k not in ident:
+                    errs.append(f"model.identity missing key: {k}")
+        if not card.get("operational", {}).get("retry_policy"):
+            errs.append("model scorecard must declare operational.retry_policy "
+                        "(fixed before the run; retries must never re-roll "
+                        "for a better answer)")
     if expected_set_hash is not None and card.get("set_hash") != expected_set_hash:
         errs.append("set_hash does not match the canonical hash of the manifest on disk")
     if card.get("set") != "public":

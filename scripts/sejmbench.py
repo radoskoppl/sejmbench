@@ -204,6 +204,13 @@ def cmd_score(args) -> int:
     }
     if population is not None:
         meta["population"] = population
+    if getattr(args, "identity_json", None):
+        with open(args.identity_json, encoding="utf-8") as fh:
+            meta["model"]["identity"] = json.load(fh)
+    if getattr(args, "retry_policy", None):
+        meta["operational"] = {"retry_policy": args.retry_policy}
+    if getattr(args, "prompt_variant", "reference") != "reference":
+        meta["prompt_variant"] = args.prompt_variant
     card = scoring.build_scorecard(fixtures, items, problems, meta)
 
     errs = scoring.validate_scorecard(card)
@@ -465,6 +472,14 @@ def main(argv=None) -> int:
     p.add_argument("--token-usage-in", type=int)
     p.add_argument("--token-usage-out", type=int)
     p.add_argument("--cost-usd", type=float)
+    p.add_argument("--identity-json", metavar="PATH",
+                   help="JSON file with model.identity fields (issue #12): "
+                        "weights_sha256, tokenizer, quantization, runtime, "
+                        "runtime_version, context_length, hardware?, determinism_note?")
+    p.add_argument("--retry-policy",
+                   help="retry rule fixed before the run (required for model scorecards)")
+    p.add_argument("--prompt-variant", choices=["reference", "corpus"], default="reference",
+                   help="'corpus' = club|vote template (divisions dump drops MP names)")
     p.set_defaults(func=cmd_score)
 
     p = sub.add_parser("baselines", help="regenerate non-LLM baseline scorecards")
