@@ -235,6 +235,12 @@ def parse_answer(raw_output):
     if winner.strip().lower() not in ("yes", "no"):
         return "abstain", parsed
     parsed["winner"] = winner.strip().lower()
+    # Partial abstention (issue #9A design): the item answers the winner task
+    # but explicitly declines the numeric tracks task (e.g. typed-decision
+    # models that cannot emit per-club estimates). The winner still scores;
+    # layer 0.2 is reported as abstained (coverage), never penalized as an
+    # instruction violation. Additive rule; absent marker = old behaviour.
+    parsed["tracks_abstained"] = bool(parsed.get("tracks_abstained"))
     return "scored", parsed
 
 
@@ -290,6 +296,24 @@ def score_item(item: dict, division: dict, fixture_name: str) -> dict:
 
     layer02 = None
     if status == "scored" and pred_winner is not None:
+        if parsed and parsed.get("tracks_abstained"):
+            # explicit partial abstention: winner answered, tracks declined
+            layer02 = {"n_tracks_gt": len(gt_tracks), "n_matched": 0,
+                       "n_missing": len(gt_tracks), "n_extra": 0,
+                       "missing_clubs": sorted(gt_tracks), "extra_clubs": [],
+                       "n_invalid_entries": 0,
+                       "mae_yes_share": None, "mae_polarization": None,
+                       "tracks_abstained": True}
+            return {
+                "fixture": fixture_name,
+                "status": status,
+                "layer0_1": {"pred": pred_winner, "gt": gt_winner,
+                             "gt_tie": gt_tie, "correct": correct},
+                "layer0_2": layer02,
+                **{k: item[k] for k in ("input_tokens", "context_overflow",
+                                        "inference_attempts") if k in item},
+                "abstain_marker": False,
+            }
         pred, invalid = _usable_tracks(parsed)
         devs_ys, devs_pol, matched = [], [], 0
         missing = sorted(c for c in gt_tracks if c not in pred)
@@ -487,6 +511,10 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
     ys_stat = bootstrap_ci(mae_ys_vals) if mae_ys_vals else (None, None, None)
     pol_stat = bootstrap_ci(mae_pol_vals) if mae_pol_vals else (None, None, None)
     n_scored = counts["n_scored"]
+    n_tracks_answered = sum(1 for it in per_item if it["layer0_2"]
+                            and not it["layer0_2"].get("tracks_abstained"))
+    n_tracks_abstained = sum(1 for it in per_item if it["layer0_2"]
+                             and it["layer0_2"].get("tracks_abstained"))
 
     card = {
         "schema": f"sejmbench.scorecard/{SCHEMA_VERSION}",
@@ -520,6 +548,9 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
                 "n_total": n_total,
                 "n_eligible": n_eligible,
                 "n_scored": n_scored,
+                "n_tracks_answered": n_tracks_answered,
+                "n_tracks_abstained": n_tracks_abstained,
+                "tracks_answer_coverage": (n_tracks_answered / n_eligible) if n_eligible else None,
                 "answer_coverage": (n_scored / n_eligible) if n_eligible else None,
                 "n_exact_track_set": exact_set,
                 "exact_track_set_rate": (exact_set / n_scored) if n_scored else None,

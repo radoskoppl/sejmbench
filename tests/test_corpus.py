@@ -161,3 +161,44 @@ def test_corpus_prompt_variant_validates_and_tamper_fails():
     tampered = _model_card(variant="corpus")
     tampered["prompt"]["template"] += "\nbe creative\n"
     assert any("pinned hash" in e for e in scoring.validate_scorecard(tampered))
+
+
+def test_partial_abstention_winner_scores_tracks_coverage_zero():
+    fixtures = {"a.json": {"votes": [{"club": "A", "vote": "YES"}] * 6,
+                           "term": 10, "sitting": 1, "votingNumber": 2,
+                           "title": "t"}}
+    items = {"a.json": {"model": "m", "date": "2026-11-03", "temperature": 0,
+                        "prompt_hash": scoring.reference_prompt_hash(),
+                        "declared_cutoff": "unknown",
+                        "raw_output": {"winner": "yes",
+                                       "tracks_abstained": "typed API"},
+                        "fixture": "a.json", "_path": "<test>"}}
+    meta = {"benchmark_version": scoring.BENCHMARK_VERSION,
+            "metric_version": scoring.METRIC_VERSION, "harness_version": "t",
+            "set": "public", "set_hash": "0" * 64,
+            "fixture_entries": {"a.json": {"file": "a.json", "sha256": "x",
+                                           "layers": {"0.1": True, "0.2": True}}},
+            "model": {"id": "m", "provider": "p", "revision": None,
+                      "identity_mutable_alias": True, "call_date": "2026-11-03",
+                      "decoding": {"temperature": 0},
+                      "identity": {"weights_sha256": "abc", "tokenizer": "tok",
+                                   "quantization": "bf16", "runtime": "r",
+                                   "runtime_version": "1", "context_length": 1}},
+            "submission": {"kind": "model", "files": []},
+            "operational": {"retry_policy": "single attempt"},
+            "evaluation_date": "2026-11-03",
+            "contamination": {"declared_cutoff": "unknown",
+                              "temporal_holdout_applied": False},
+            "token_usage": None, "cost_estimate": None}
+    card = scoring.build_scorecard(fixtures, items, [], meta)
+    assert scoring.validate_scorecard(card) == []
+    it = card["items"][0]
+    assert it["status"] == "scored"
+    assert it["layer0_1"]["correct"] == 1          # winner answered -> scored
+    assert it["layer0_2"]["tracks_abstained"] is True
+    assert it["layer0_2"]["mae_yes_share"] is None  # never a penalized MAE
+    l2 = card["layers"]["0.2"]
+    assert l2["n_tracks_answered"] == 0
+    assert l2["n_tracks_abstained"] == 1
+    assert l2["tracks_answer_coverage"] == 0.0
+    assert l2["mae_yes_share"] is None
