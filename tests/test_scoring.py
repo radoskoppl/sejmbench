@@ -530,3 +530,64 @@ def test_shared_fixtures_sha_mismatch():
     assert shared == [] and mismatched == ["a.json"]
     b = {"fixtures": [{"file": "fixtures/a.json", "sha256": "A" * 64}]}
     assert scoring.shared_fixtures(a, b) == (["a.json"], [])
+
+
+# --------------------------------------------------------------------------
+# Tie regression matrix (owner decision 2026-11-04, pre-9B checklist)
+# --------------------------------------------------------------------------
+
+def _tie_meta():
+    return {"benchmark_version": scoring.BENCHMARK_VERSION,
+            "metric_version": scoring.METRIC_VERSION, "harness_version": "t",
+            "set": "public", "set_hash": "0" * 64,
+            "fixture_entries": {"tie.json": {"file": "tie.json", "sha256": "x",
+                                             "layers": {"0.1": True, "0.2": True}}},
+            "model": {"id": "m", "provider": "p", "revision": None,
+                      "identity_mutable_alias": True, "call_date": "2026-11-03",
+                      "decoding": {"temperature": 0}},
+            "submission": {"kind": "model", "files": []},
+            "evaluation_date": "2026-11-03",
+            "contamination": {"declared_cutoff": "unknown",
+                              "temporal_holdout_applied": False},
+            "token_usage": None, "cost_estimate": None}
+
+
+def _tie_item(raw):
+    return {"model": "m", "date": "2026-11-03", "temperature": 0,
+            "prompt_hash": scoring.reference_prompt_hash(),
+            "declared_cutoff": "unknown",
+            "raw_output": raw, "fixture": "tie.json", "_path": "<test>"}
+
+
+_TIE_FIXTURES = {"tie.json": {
+    "votes": [{"club": "A", "vote": "YES"}] * 6 + [{"club": "B", "vote": "NO"}] * 6,
+    "term": 10, "sitting": 1, "votingNumber": 5, "title": "t"}}
+
+
+def test_tie_gt_is_yes_by_seed_order_with_tie_flag():
+    gt = seed_rule.compute_metric(_TIE_FIXTURES["tie.json"])
+    assert gt["seed_rule"]["winner"] == "yes"
+    assert gt["seed_rule"]["method"] == "tie_seed_order"
+    assert gt["seed_rule"]["tie"] is True
+
+
+def test_tie_winner_yes_scores_correct():
+    card = scoring.build_scorecard(_TIE_FIXTURES, {"tie.json": _tie_item({"winner": "yes"})}, [], _tie_meta())
+    it = card["items"][0]
+    assert it["status"] == "scored" and it["layer0_1"]["correct"] == 1
+    assert it["layer0_1"]["gt_tie"] == 1
+
+
+def test_tie_winner_no_scores_incorrect():
+    card = scoring.build_scorecard(_TIE_FIXTURES, {"tie.json": _tie_item({"winner": "no"})}, [], _tie_meta())
+    it = card["items"][0]
+    assert it["status"] == "scored" and it["layer0_1"]["correct"] == 0
+
+
+def test_tie_model_answer_remis_is_abstain_not_converted():
+    # The adapter must NOT silently map `remis` to yes; parser -> abstain.
+    assert scoring.parse_answer({"winner": "remis"})[0] == "abstain"
+    card = scoring.build_scorecard(_TIE_FIXTURES, {"tie.json": _tie_item({"abstain": True})}, [], _tie_meta())
+    it = card["items"][0]
+    assert it["status"] == "abstain"
+    assert card["layers"]["0.1"]["n_abstained"] == 1

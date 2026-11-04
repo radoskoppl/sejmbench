@@ -10,8 +10,9 @@ Frozen contract for this run (do not tune mid-run):
   - prompt variant: corpus (club | vote lines), pinned hash;
   - decoding: server default, single attempt per item; transport errors
     retried up to 3x the SAME request, content never re-rolled;
-  - winner mapping: za->yes, przeciw->no, remis->yes (earlier-seed tie
-    convention), nie_do_okreslenia->abstain.
+  - winner mapping: za->yes, przeciw->no, nie_do_okreslenia->abstain. `remis`
+    maps to ABSTAIN, never silently to yes (owner decision 2026-11-04; the
+    benchmark tie convention is applied by the scorer to GT, not by the adapter).
 
 Resume: rerun skips items whose output file exists. Status: <out>/status.json.
 Usage: python3 scripts/run_term10_eval.py --server http://192.168.0.18:8000 \
@@ -53,7 +54,7 @@ QUESTIONS = {
 }
 
 MAP = {"za": ("yes", False), "przeciw": ("no", False),
-       "remis": ("yes", True), "nie_do_okreslenia": (None, False)}
+       "remis": (None, False), "nie_do_okreslenia": (None, False)}
 
 
 def post(server: str, payload: dict, timeout: int = 120):
@@ -76,13 +77,13 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--server", default="http://192.168.0.18:8000")
     ap.add_argument("--dump", default=os.path.expanduser("~/sejm-dump"))
+    ap.add_argument("--ids", default=os.path.join(ROOT, "docs", "population", "ids-term10.txt"))
     ap.add_argument("--out", default=os.path.join(ROOT, "results", "basal-9a-term10"))
     ap.add_argument("--limit", type=int, default=0, help="stop after N items (smoke)")
     args = ap.parse_args()
 
     ids = set()
-    with open(os.path.join(ROOT, "docs", "population", "ids-term10.txt"),
-              encoding="utf-8") as fh:
+    with open(args.ids, encoding="utf-8") as fh:
         for line in fh:
             if line.strip():
                 t, s, v = line.strip().split(":")
