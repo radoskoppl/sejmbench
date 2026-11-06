@@ -26,7 +26,8 @@ competence on that task.
   basal 2.5.2 systemone, gb10-a034, context 262144, temp 0 (server default)
 - retry policy: single attempt per item; transport errors retried ≤3× the same
   request; content never re-rolled
-- scoring: harness 0.5.0 / metric 0.3 / schema 1.2
+- scoring: harness 0.5.0 / metric 0.3 / schema 1.2 at run time; scorecard rebuilt
+  under harness 0.6.0 / schema 1.3 with the temporal-holdout block (issue #5)
 
 ## Operational evidence
 
@@ -38,9 +39,25 @@ competence on that task.
   is worth watching in 9B where the tie pool is larger)
 - determinism: scorecard rebuilt twice → byte-identical (`cmp` clean)
 
+## Temporal holdout (issue #5, cutoff 2026-01-01)
+
+The frozen temporal split (CODEBOOK §9) partitions the population by official
+sitting date; post-cutoff = divisions from 2026 sittings, all term 10.
+
+| subset | n | winner acc | 95% CI |
+|---|---|---|---|
+| pre-cutoff (≤2025) | 3,220 | 0.9556 | [0.9484, 0.9627] |
+| post-cutoff (2026) | 1,917 | 0.9384 | [0.9275, 0.9489] |
+
+Layer 0.2 is n/a in both subsets (the model's typed API never emits per-club
+tracks — partial abstention, coverage 0 by owner decision). A −1.7 pp
+post-cutoff gap is consistent with pre-training memory helping on pre-cutoff
+data; `declared_cutoff` stays `unknown` (unverifiable), so the split is a
+control, not proof of innocence.
+
 ## Artifacts
 
-- `results/basal-9a-term10.scorecard.json` — sha256 `b388ed4b…`
+- `results/basal-9a-term10.scorecard.json` — sha256 `0ee22bda…` (schema 1.3 rebuild with the `temporal_split` block)
 - `results/basal-9a-term10.raw.tar.gz` — per-item raw responses, sha256 `c2818c3c…`
   (contains `input_tokens`, `inference_attempts`, model choice + confidence)
 - runner: `scripts/run_term10_eval.py` (resumable; rerun skips completed items)

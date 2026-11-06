@@ -177,6 +177,20 @@ These rules do not alter any v0.2 metric definition.
    cutoff (`unknown` when unverifiable). SejmBench never certifies a model
    as "uncontaminated"; the temporal holdout (issue #5) is the primary
    contamination control.
+6. Temporal holdout split (added 2026-11-06): the benchmark freezes a split
+   cutoff of **2026-01-01** (the calendar year of the first model
+   evaluations). "Post" = official sitting date strictly after the cutoff;
+   "pre" = the rest. `scripts/temporal_split.py` derives the post-cutoff ID
+   lists from the committed GT stream alone (reproducible without the dump);
+   the lists `docs/population/ids-post-2026-01-01.txt` (full corpus, n=1,917)
+   and `ids-post-2026-01-01-term10.txt` (term-10 subset) are committed and
+   their sha256 is bound into the scorecard block. The split auto-extends:
+   new sittings land post-cutoff by construction — rerun the script after a
+   dump refresh and commit the grown list. Every corpus model scorecard
+   carries a `temporal_split` block (schema 1.3) with per-subset layer
+   0.1/0.2 statistics; a model whose declared training cutoff is on or after
+   the frozen cutoff is potentially exposed to the post-cutoff subset and
+   must be read with that in mind.
 
 ## 10. Layer 1 vote-type dictionary (v0.1-draft, added 2026-10-28)
 

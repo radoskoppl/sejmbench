@@ -60,39 +60,16 @@ def _fixtures_for_set(repo_root: str, manifest: dict, set_name: str) -> dict:
     raise SystemExit(f"unknown set: {set_name}")
 
 
-CORPUS_SETS = {"full": ("ids-full-corpus.txt", "gt-full.jsonl.gz"),
-               "term10": ("ids-term10.txt", "gt-term10.jsonl.gz")}
+CORPUS_SETS = scoring.CORPUS_SETS
 
 
 def _corpus_for_set(repo_root: str, set_name: str):
-    """Corpus-backed sets (issue #11): frozen population ids + precomputed GT.
+    """Corpus-backed sets (issue #11): thin wrapper over scoring.corpus_fixtures.
 
-    Returns (fixtures, population) where fixtures maps item names to
-    `{"__gt__": metric}` stand-ins and population binds the scorecard to the
-    frozen id list (schema 1.2).
+    The loader is shared with `rescore` so a committed corpus scorecard
+    rebuilds from exactly the same on-disk artifacts (schema 1.3).
     """
-    pop_dir = os.path.join(repo_root, "docs", "population")
-    ids_file, gt_file = CORPUS_SETS[set_name]
-    ids_path, gt_path = os.path.join(pop_dir, ids_file), os.path.join(pop_dir, gt_file)
-    if not (os.path.exists(ids_path) and os.path.exists(gt_path)):
-        raise SystemExit(f"corpus set '{set_name}' not built: run scripts/build_corpus_gt.py")
-    ids = {("term%s-s%s-v%s.json") % tuple(line.strip().split(":"))
-           for line in open(ids_path, encoding="utf-8") if line.strip()}
-    fixtures, h = {}, hashlib.sha256()
-    with gzip.open(gt_path, "rt", encoding="utf-8") as fh:
-        for line in fh:
-            row = json.loads(line)
-            name = row["id"] + ".json"
-            fixtures[name] = {"__gt__": row["metric"]}
-            h.update(line.encode("utf-8"))
-    if set(fixtures) != ids:
-        raise SystemExit(f"{gt_file} does not match {ids_file} exactly — "
-                         "population drift, refusing to score")
-    population = {"set": set_name, "n": len(fixtures),
-                  "ids_file": f"docs/population/{ids_file}",
-                  "ids_sha256": scoring._sha256_file(ids_path),
-                  "gt_sha256": h.hexdigest()}
-    return fixtures, population
+    return scoring.corpus_fixtures(repo_root, set_name)
 
 
 def _check_layers(layers: str) -> None:
@@ -159,6 +136,12 @@ def cmd_score(args) -> int:
     if args.max_tokens is not None:
         decoding["max_tokens"] = args.max_tokens
 
+    temporal = None
+    if getattr(args, "temporal_cutoff", None):
+        if population is None:
+            raise SystemExit("--temporal-cutoff requires a corpus set (--set full|term10)")
+        temporal = scoring.load_post_ids(_ROOT, args.temporal_cutoff, args.set)
+
     if population is not None:
         # corpus sets: the population hash IS the set identity; every item is
         # eligible (zero-counter / inconsistent rows never enter the freeze).
@@ -195,7 +178,7 @@ def cmd_score(args) -> int:
         },
         "evaluation_date": eval_date,
         "contamination": {"declared_cutoff": declared_cutoff,
-                          "temporal_holdout_applied": False},
+                          "temporal_holdout_applied": temporal is not None},
         "token_usage": ({"input_tokens": args.token_usage_in,
                          "output_tokens": args.token_usage_out}
                         if args.token_usage_in is not None or args.token_usage_out is not None
@@ -212,6 +195,8 @@ def cmd_score(args) -> int:
         meta["operational"] = {"retry_policy": args.retry_policy}
     if getattr(args, "prompt_variant", "reference") != "reference":
         meta["prompt_variant"] = args.prompt_variant
+    if temporal:
+        meta["temporal"] = temporal
     card = scoring.build_scorecard(fixtures, items, problems, meta)
 
     errs = scoring.validate_scorecard(card)
@@ -237,6 +222,8 @@ def cmd_score(args) -> int:
 
 def cmd_baselines(args) -> int:
     corpus = args.set != "public"
+    if getattr(args, "temporal_cutoff", None) and not corpus:
+        raise SystemExit("--temporal-cutoff requires a corpus set (--set full|term10)")
     if corpus:
         fixtures, population = _corpus_for_set(_ROOT, args.set)
         manifest = None
@@ -253,6 +240,9 @@ def cmd_baselines(args) -> int:
                                                "layers": {"0.1": True, "0.2": True}}
                                         for name in fixtures},
                     "population": population}
+            if getattr(args, "temporal_cutoff", None):
+                meta["temporal"] = scoring.load_post_ids(_ROOT, args.temporal_cutoff, args.set)
+                meta["contamination"]["temporal_holdout_applied"] = True
         else:
             meta = scoring.baseline_meta(which, args.set, manifest, _repo_version())
         card = scoring.build_scorecard(fixtures, items, [], meta)
@@ -343,8 +333,14 @@ def cmd_rescore_check(args) -> int:
     failed = False
     for p in paths:
         card = _load_scorecard(p)
-        errs = scoring.validate_scorecard(card, expected_set_hash=expected_hash,
-                                          expected_fixtures=manifest["fixtures"])
+        if card.get("set") == "public":
+            errs = scoring.validate_scorecard(card, expected_set_hash=expected_hash,
+                                              expected_fixtures=manifest["fixtures"])
+        else:
+            # corpus sets bind to the frozen population on disk, not the
+            # public manifest (schema 1.2/1.3)
+            errs = scoring.validate_scorecard(card)
+            errs.extend(_corpus_binding_errors(card))
         if errs:
             print(f"FAIL {p}: schema invalid: {errs}")
             failed = True
@@ -361,6 +357,33 @@ def cmd_rescore_check(args) -> int:
         else:
             print(f"OK   {p}: rescore reproduces every committed number")
     return 1 if failed else 0
+
+def _corpus_binding_errors(card: dict, repo_root: str | None = None) -> list:
+    """Bind a corpus-set scorecard to the frozen population files on disk.
+
+    repo_root defaults to the CLI root; tests pass a tmp repo.
+    """
+    root = repo_root or _ROOT
+    pop = card.get("population")
+    if not isinstance(pop, dict):
+        return ["corpus-set scorecard must carry a 'population' block"]
+    set_name = card.get("set")
+    gt_file = CORPUS_SETS.get(set_name, (None, None))[1]
+    if not gt_file:
+        return ["unknown corpus set: %r" % (set_name,)]
+    errs = []
+    ids_rel = pop.get("ids_file")
+    ids_path = os.path.join(root, ids_rel) if ids_rel else None
+    if not ids_path or not os.path.exists(ids_path):
+        errs.append("population.ids_file missing on disk: %r" % (ids_rel,))
+    elif scoring._sha256_file(ids_path) != pop.get("ids_sha256"):
+        errs.append("population.ids_sha256 drift vs " + str(ids_rel) + " on disk")
+    gt_path = os.path.join(root, "docs", "population", gt_file)
+    if not os.path.exists(gt_path):
+        errs.append("GT stream missing on disk: docs/population/" + gt_file)
+    elif scoring.gt_stream_sha256(gt_path) != pop.get("gt_sha256"):
+        errs.append("population.gt_sha256 drift vs " + gt_file + " on disk")
+    return errs
 
 
 # ------------------------------------------------------------ leaderboard ----
@@ -479,6 +502,8 @@ def main(argv=None) -> int:
                         "runtime_version, context_length, hardware?, determinism_note?")
     p.add_argument("--retry-policy",
                    help="retry rule fixed before the run (required for model scorecards)")
+    p.add_argument("--temporal-cutoff",
+                   help="frozen temporal-holdout cutoff (issue #5; corpus sets only)")
     p.add_argument("--prompt-variant", choices=["reference", "corpus"], default="reference",
                    help="'corpus' = club|vote template (divisions dump drops MP names)")
     p.set_defaults(func=cmd_score)
@@ -487,6 +512,8 @@ def main(argv=None) -> int:
     p.add_argument("--set", default="public",
                    choices=["public", "full", "term10"],
                    help="public = 50-fixture dev set; full/term10 = frozen corpus sets (issue #11)")
+    p.add_argument("--temporal-cutoff",
+                   help="frozen temporal-holdout cutoff (issue #5; corpus sets only)")
     p.set_defaults(func=cmd_baselines)
 
     p = sub.add_parser("compare", help="paired bootstrap comparison of two scorecards")

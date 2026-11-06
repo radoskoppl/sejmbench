@@ -193,8 +193,8 @@ accepted by CI; schema in issue #4).
 | benchmark (contract) | `CODEBOOK.md` | v0.3 |
 | metric | `CODEBOOK.md` | v0.3 |
 | dataset | HF dataset card | v0.4.0 |
-| pipeline / harness | `VERSION` | 0.4.3 |
-| scorecard schema | `docs/scorecard-schema.md` | 1.0 |
+| pipeline / harness | `VERSION` | 0.6.0 |
+| scorecard schema | `docs/scorecard-schema.md` | 1.3 |
 | release | git tags | — |
 
 ## Contamination policy
@@ -206,6 +206,10 @@ control is a **temporal holdout** (divisions newer than a model's declared
 training cutoff); scorecards carry the evaluation date and the declared
 cutoff (`unknown` when unverifiable). SejmBench never certifies a model as
 "uncontaminated". See issue #5.
+The split is frozen and scripted (CODEBOOK §9): cutoff 2026-01-01, post =
+official sitting date after the cutoff. The committed post-cutoff ID lists
+live in `docs/population/`, and corpus scorecards carry a `temporal_split`
+block reporting per-subset results.
 
 ## Pipeline tooling (`scripts/`)
 

@@ -56,11 +56,12 @@ population `0b814f62…` (66,104 eligible) · GT stream sha `bdc320ba…` · pro
 corpus variant `e165643d…` · identity HF revision `3c1e540f…`, bf16, basal
 2.5.2 systemone, gb10-a034, context 262144, temp 0 · retry policy: single
 attempt, transport-only retries ≤3× same request · scoring harness 0.5.0 /
-metric 0.3 / schema 1.2.
+metric 0.3 / schema 1.2 at run time; scorecard rebuilt under harness 0.6.0 /
+schema 1.3 with the temporal-holdout block (issue #5).
 
 ## Artifacts
 
-- `results/basal-9b-full.scorecard.json` — sha256 `288de03e…`
+- `results/basal-9b-full.scorecard.json` — sha256 `001d1a05…` (schema 1.3 rebuild with the `temporal_split` block)
 - `results/basal-9b-full.raw.tar.gz` — per-item raw responses, sha256 `bdcc7d2e…`
 - runner: `scripts/run_term10_eval.py --ids docs/population/ids-full-corpus.txt`
 
@@ -153,6 +154,24 @@ accuracy — closeness alone does not explain the gap. Term 9 is tighter
 2. The close subset (≤50, n≈14k) plus ties is the natural test bed for the
    second model.
 3. The t9-vs-t10 pattern strengthens the case for issue #5 (temporal split).
+
+## Temporal holdout (issue #5, cutoff 2026-01-01)
+
+The frozen split (CODEBOOK §9) applied to the full corpus; post-cutoff =
+2026 sittings, n=1,917 — the identical subset to 9A's post-cutoff set, hence
+the identical post-cutoff numbers.
+
+| subset | n | winner acc | 95% CI |
+|---|---|---|---|
+| pre-cutoff (≤2025) | 64,187 | 0.9808 | [0.9797, 0.9818] |
+| post-cutoff (2026) | 1,917 | 0.9384 | [0.9275, 0.9489] |
+
+The −4.2 pp post-cutoff drop is the quantitative version of the
+term-9-vs-term-10 hypothesis above: on divisions the pre-training corpus
+cannot have seen, the task is pure counting, and the advantage that lifted
+term 9 to 98.5% disappears. `declared_cutoff` stays `unknown`
+(unverifiable); the split is the contamination control (issue #5), not
+proof of innocence.
 
 ## Next
 

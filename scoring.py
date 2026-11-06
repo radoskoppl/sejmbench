@@ -46,12 +46,13 @@ Scorecard schema is documented and versioned in docs/scorecard-schema.md.
 
 from __future__ import annotations
 
+import gzip
 import hashlib
 import json
 import os
 import random
 
-SCHEMA_VERSION = "1.2"             # docs/scorecard-schema.md (corpus sets + population binding)
+SCHEMA_VERSION = "1.3"             # docs/scorecard-schema.md (corpus sets + temporal holdout)
 BENCHMARK_VERSION = "0.3"          # CODEBOOK version — the contract
 METRIC_VERSION = "0.3"             # CODEBOOK §2/§3 metric schema
 BOOTSTRAP_REPLICATES = 10_000
@@ -451,6 +452,212 @@ def _counts_by_status(statuses):
     }
 
 
+# --------------------------------------------------------------------------
+# corpus sets + temporal holdout (issues #11/#5, schema 1.2/1.3)
+# --------------------------------------------------------------------------
+
+CORPUS_SETS = {"full": ("ids-full-corpus.txt", "gt-full.jsonl.gz"),
+               "term10": ("ids-term10.txt", "gt-term10.jsonl.gz")}
+
+
+def corpus_fixtures(repo_root: str, set_name: str):
+    """Corpus set loader: GT stand-ins + the frozen population block (issue #11).
+
+    Shared by the CLI (--set full|term10) and rescore so a committed corpus
+    scorecard is rebuilt from exactly the same on-disk artifacts.
+    """
+    pop_dir = os.path.join(repo_root, "docs", "population")
+    ids_file, gt_file = CORPUS_SETS[set_name]
+    ids_path, gt_path = os.path.join(pop_dir, ids_file), os.path.join(pop_dir, gt_file)
+    if not (os.path.exists(ids_path) and os.path.exists(gt_path)):
+        raise SystemExit(f"corpus set '{set_name}' not built: run scripts/build_corpus_gt.py")
+    ids = {("term%s-s%s-v%s.json") % tuple(line.strip().split(":"))
+           for line in open(ids_path, encoding="utf-8") if line.strip()}
+    fixtures, h = {}, hashlib.sha256()
+    with gzip.open(gt_path, "rt", encoding="utf-8") as fh:
+        for line in fh:
+            row = json.loads(line)
+            name = row["id"] + ".json"
+            fixtures[name] = {"__gt__": row["metric"]}
+            h.update(line.encode("utf-8"))
+    if set(fixtures) != ids:
+        raise SystemExit(f"{gt_file} does not match {ids_file} exactly — "
+                         "population drift, refusing to score")
+    population = {"set": set_name, "n": len(fixtures),
+                  "ids_file": "docs/population/" + ids_file,
+                  "ids_sha256": _sha256_file(ids_path),
+                  "gt_sha256": h.hexdigest()}
+    return fixtures, population
+
+
+def gt_stream_sha256(path: str) -> str:
+    """sha256 of the UNCOMPRESSED GT stream (the population gt_sha256)."""
+    h = hashlib.sha256()
+    with gzip.open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _fixture_key(name: str):
+    """Map 'term10-s1-v10.json' to (10, 1, 10); None for non-corpus names."""
+    base = name[:-5] if name.endswith(".json") else name
+    try:
+        t, s, v = base[len("term"):].split("-")
+        return (int(t), int(s[1:]), int(v[1:]))
+    except (ValueError, IndexError):
+        return None
+
+
+def load_post_ids(repo_root: str, cutoff: str, set_name: str) -> dict:
+    """Load the committed post-cutoff ID list for a corpus set (issue #5).
+
+    The split rule is frozen in CODEBOOK section 9; the lists are derived by
+    scripts/temporal_split.py from the committed GT stream. Returns the
+    cutoff, the repo-relative list path, its sha256 and the id set.
+    """
+    suffix = "" if set_name == "full" else "-" + set_name
+    rel = "docs/population/ids-post-" + cutoff + suffix + ".txt"
+    path = os.path.join(repo_root, rel)
+    if not os.path.exists(path):
+        raise SystemExit("temporal split list missing: " + rel +
+                         " - run scripts/temporal_split.py --cutoff " + cutoff)
+    post = set()
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line:
+                continue
+            t, s, v = line.split(":")
+            post.add((int(t), int(s), int(v)))
+    return {"cutoff": cutoff, "ids_post_file": rel,
+            "ids_post_sha256": _sha256_file(path), "post_ids": post}
+
+
+def _subset_l01(entries: list) -> dict:
+    correct = [it["layer0_1"]["correct"] for it in entries]
+    if not correct:
+        return {"n": 0, "accuracy": None, "ci95": [None, None]}
+    acc, lo, hi = bootstrap_ci(correct)
+    return {"n": len(correct), "accuracy": acc, "ci95": [lo, hi]}
+
+
+def _subset_l02(entries: list) -> dict:
+    ys = [it["layer0_2"]["mae_yes_share"] for it in entries
+          if it["layer0_2"] and it["layer0_2"]["mae_yes_share"] is not None]
+    pol = [it["layer0_2"]["mae_polarization"] for it in entries
+           if it["layer0_2"] and it["layer0_2"]["mae_polarization"] is not None]
+    yst = bootstrap_ci(ys) if ys else (None, None, None)
+    polst = bootstrap_ci(pol) if pol else (None, None, None)
+    return {"n_scored": len(ys),
+            "mae_yes_share": yst[0], "ci95_yes_share": [yst[1], yst[2]],
+            "mae_polarization": polst[0], "ci95_polarization": [polst[1], polst[2]]}
+
+
+def _temporal_block(per_item: list, temporal: dict) -> dict:
+    """Partition scored items into pre/post-cutoff subsets (issue #5).
+
+    Excluded items (zero-counter divisions) sit outside both subsets; every
+    other item lands in exactly one. Subset statistics use the same
+    bootstrap protocol as the headline layer blocks (seed 20261027).
+    """
+    post_ids = temporal["post_ids"]
+    pre_items, post_items = [], []
+    for it in per_item:
+        if it.get("status") == "excluded":
+            continue
+        key = _fixture_key(it["fixture"])
+        (post_items if key in post_ids else pre_items).append(it)
+    return {"cutoff": temporal["cutoff"],
+            "ids_post_file": temporal["ids_post_file"],
+            "ids_post_sha256": temporal["ids_post_sha256"],
+            "n_pre": len(pre_items), "n_post": len(post_items),
+            "layers": {"0.1": {"pre": _subset_l01(pre_items), "post": _subset_l01(post_items)},
+                       "0.2": {"pre": _subset_l02(pre_items), "post": _subset_l02(post_items)}}}
+
+
+def _validate_temporal_split(card: dict, ts: dict) -> list:
+    """Schema checks for the temporal_split block (issue #5)."""
+    errs = []
+    if card.get("set") == "public":
+        errs.append("temporal_split is defined on corpus sets only")
+        return errs
+    for k in ("cutoff", "ids_post_file", "ids_post_sha256", "n_pre", "n_post", "layers"):
+        if k not in ts:
+            errs.append("temporal_split missing key: " + k)
+    cut = ts.get("cutoff")
+    if not (isinstance(cut, str) and len(cut) == 10 and cut[4] == "-" and cut[7] == "-"
+            and all(c.isdigit() for i, c in enumerate(cut) if i not in (4, 7))):
+        errs.append("temporal_split.cutoff must be an ISO date (YYYY-MM-DD)")
+    v = ts.get("ids_post_sha256", "")
+    if not (isinstance(v, str) and len(v) == 64 and all(c in "0123456789abcdef" for c in v)):
+        errs.append("temporal_split.ids_post_sha256 must be a sha256 hex digest")
+    n_pre, n_post = ts.get("n_pre"), ts.get("n_post")
+    if not (isinstance(n_pre, int) and isinstance(n_post, int) and n_pre >= 0 and n_post >= 0):
+        errs.append("temporal_split.n_pre/n_post must be non-negative integers")
+    else:
+        non_excluded = sum(1 for it in card.get("items", []) if it.get("status") != "excluded")
+        if n_pre + n_post != non_excluded:
+            errs.append("temporal_split n_pre+n_post=%d != non-excluded items %d"
+                        % (n_pre + n_post, non_excluded))
+    if not card.get("contamination", {}).get("temporal_holdout_applied"):
+        errs.append("temporal_split present but contamination.temporal_holdout_applied is not true")
+    layers = ts.get("layers")
+    if not isinstance(layers, dict) or "0.1" not in layers:
+        errs.append("temporal_split.layers must carry the 0.1 subset stats")
+    return errs
+
+
+def _submission_paths_from_tar(card: dict, repo_root: str) -> tuple:
+    """Per-item files absent: rescore from the committed raw tar instead.
+
+    The tar (results/<dir>.raw.tar.gz) carries the run's own bytes; every
+    file sha256 is verified against the card submission manifest, so a
+    rescore never runs on substitute data. Missing tar or any mismatch is a
+    hard error.
+    """
+    import tarfile
+    import tempfile
+    entries = card.get("submission", {}).get("files", [])
+    if not entries:
+        raise SystemExit("cannot rescore: empty submission file list")
+    dirs = sorted({os.path.dirname(f["path"]) for f in entries})
+    if len(dirs) != 1:
+        raise SystemExit("cannot rescore: submission files span %d dirs; expected "
+                         "a single results/<dir> layout" % len(dirs))
+    tar_rel = dirs[0] + ".raw.tar.gz"
+    tar_path = os.path.join(repo_root, tar_rel)
+    if not os.path.exists(tar_path):
+        raise SystemExit("cannot rescore: per-item files missing and " + tar_rel + " not found")
+    tmp = tempfile.mkdtemp(prefix="sejmbench-rescore-")
+    try:
+        with tarfile.open(tar_path, "r:gz") as tf:
+            members = tf.getmembers()
+            # rewrite member names so the extracted layout mirrors the
+            # repo-relative paths the card references (the tar was created
+            # from inside results/)
+            for m in members:
+                parts = m.name.split("/", 1)
+                if len(parts) == 2 and not m.name.startswith("results/"):
+                    m.name = "results/" + m.name
+            try:
+                tf.extractall(tmp, members=members, filter="data")
+            except TypeError:  # python < 3.11.4: no filter parameter
+                tf.extractall(tmp, members=members)
+    except tarfile.TarError as exc:
+        raise SystemExit("cannot rescore: " + tar_rel + " unreadable: " + str(exc))
+    out = []
+    for f in entries:
+        p = os.path.join(tmp, f["path"])
+        if not os.path.exists(p):
+            raise SystemExit("cannot rescore: " + f["path"] + " not present in " + tar_rel)
+        if _sha256_file(p) != f.get("sha256"):
+            raise SystemExit("cannot rescore: sha256 mismatch for " + f["path"] +
+                             " vs " + tar_rel)
+        out.append(p)
+    return out, tmp
+
+
 def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> dict:
     """Assemble the scorecard for one submission over a fixture set.
 
@@ -489,10 +696,16 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
         if errs:
             problems.extend(f"{name}: {e}" for e in errs)
         entry = score_item(data, fixtures[name], name)
-        entry["submission_file"] = os.path.relpath(data["_path"], meta.get("repo_root") or ".")
-        entry["submission_sha256"] = (_sha256_file(data["_path"])
-                                      if os.path.exists(data["_path"]) and not
-                                      data["_path"].startswith("<") else None)
+        p = data["_path"]
+        if p.startswith("<"):
+            # in-harness generated answers (baselines): the marker itself is the
+            # value - never CWD-dependent via relpath
+            entry["submission_file"] = p
+        else:
+            entry["submission_file"] = os.path.relpath(p, meta.get("repo_root") or ".")
+        entry["submission_sha256"] = (_sha256_file(p)
+                                      if os.path.exists(p) and not
+                                      p.startswith("<") else None)
         statuses[name] = entry["status"]
         per_item.append(entry)
 
@@ -569,6 +782,10 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
         card["population"] = meta["population"]
     if meta.get("operational"):
         card["operational"] = meta["operational"]
+    if meta.get("temporal", {}).get("post_ids"):
+        # temporal holdout subsets (issue #5, schema 1.3); the caller flips
+        # contamination.temporal_holdout_applied when the split is applied
+        card["temporal_split"] = _temporal_block(per_item, meta["temporal"])
     return card
 
 
@@ -632,6 +849,9 @@ def validate_scorecard(card: dict, expected_set_hash: str | None = None,
                 v = pop.get(k, "")
                 if not (isinstance(v, str) and len(v) == 64 and all(c in "0123456789abcdef" for c in v)):
                     errs.append(f"population.{k} must be a sha256 hex digest")
+    ts = card.get("temporal_split")
+    if ts is not None:
+        errs.extend(_validate_temporal_split(card, ts))
     if expected_fixtures is not None:
         got = sorted(({"file": f["file"], "sha256": f["sha256"]} for f in card.get("fixtures", [])),
                      key=lambda x: x["file"])
@@ -756,21 +976,45 @@ def shared_fixtures(a: dict, b: dict) -> tuple[list, list]:
 
 
 def rescore(card: dict, repo_root: str, manifest: dict) -> dict:
-    """Rebuild a scorecard from its referenced artifacts (CI reproduction)."""
+    "Rebuild a scorecard from its referenced artifacts (CI reproduction, corpus-aware)."
     names = [os.path.basename(f["file"]) for f in card["fixtures"]]
-    fixtures = {n: load_fixture(repo_root, n, manifest) for n in names}
     meta = dict(card)
-    meta["set_hash"] = canonical_set_hash(manifest, names)
-    meta["fixture_entries"] = {os.path.basename(e["file"]): e for e in manifest["fixtures"]}
-
+    # prompt_variant is meta-only (never serialized into the card): recover it
+    # from the pinned prompt hash so the rebuilt prompt block matches
+    if card.get("prompt", {}).get("hash") == corpus_reference_prompt_hash():
+        meta["prompt_variant"] = "corpus"
+    if card.get("set") == "public":
+        fixtures = {n: load_fixture(repo_root, n, manifest) for n in names}
+        meta["set_hash"] = canonical_set_hash(manifest, names)
+        meta["fixture_entries"] = {os.path.basename(e["file"]): e for e in manifest["fixtures"]}
+    else:
+        fixtures, population = corpus_fixtures(repo_root, card["set"])
+        meta["fixture_entries"] = {name: {"file": name, "sha256": population["gt_sha256"],
+                                          "layers": {"0.1": True, "0.2": True}}
+                                   for name in fixtures}
+        meta["population"] = population
+    if card.get("temporal_split"):
+        ts = card["temporal_split"]
+        drift_file = ts.get("ids_post_file")
+        loaded = load_post_ids(repo_root, ts["cutoff"], card["set"])
+        if loaded["ids_post_sha256"] != ts.get("ids_post_sha256"):
+            raise SystemExit(f"temporal split drift: {drift_file} sha256 does not match the list on disk")
+        meta["temporal"] = loaded
     if card.get("submission", {}).get("kind") == "baseline":
         which = card["model"]["id"].split(":", 1)[1]
-        items = baseline_items(which, fixtures, manifest)
+        items = baseline_items(which, fixtures,
+                               manifest if card.get("set") == "public" else {"fixtures": []})
         problems = []
+        meta["repo_root"] = repo_root
     else:
         paths = [os.path.join(repo_root, f["path"]) for f in card["submission"]["files"]]
+        item_root = repo_root
+        if not all(os.path.exists(p) for p in paths):
+            paths, item_root = _submission_paths_from_tar(card, repo_root)
         items, problems = load_submission_files(paths)
-    meta["repo_root"] = repo_root
+        # rescore-from-tar: the extracted layout mirrors the repo layout, so
+        # per-item submission_file paths and sha256s reproduce exactly
+        meta["repo_root"] = item_root
     return build_scorecard(fixtures, items, problems, meta)
 
 

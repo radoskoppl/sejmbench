@@ -1,4 +1,4 @@
-# Scorecard schema (v1.2)
+# Scorecard schema (v1.3)
 
 This document freezes the harness contract for issue #4: deterministic,
 offline scoring of saved responses, with every published number reproducible
@@ -8,6 +8,11 @@ CLI is `scripts/sejmbench.py`.
 v1.2 adds corpus-backed sets (issue #11): `--set full|term10` scores against
 the frozen population in `docs/population/`, and corpus scorecards must carry
 a `population` block binding them to the frozen ID list.
+
+v1.3 adds the temporal holdout (issue #5): corpus scorecards may carry an
+optional `temporal_split` block with per-subset statistics;
+`contamination.temporal_holdout_applied` is true exactly when the block is
+present. The frozen cutoff is a CODEBOOK §9 rule (2026-01-01).
 
 ## Two paths
 
@@ -66,6 +71,30 @@ When `set` is `full` or `term10`, the scorecard carries:
 is the precomputed stream `docs/population/gt-<set>.jsonl.gz` built by
 `scripts/build_corpus_gt.py` from the frozen population — the same seed_rule
 metric as fixture scoring, computed once and hashed.
+
+## Temporal holdout block (corpus sets, v1.3)
+When `--temporal-cutoff` is passed (corpus sets only), the scorecard carries:
+
+```json
+"temporal_split": {
+  "cutoff": "2026-01-01",
+  "ids_post_file": "docs/population/ids-post-2026-01-01.txt",
+  "ids_post_sha256": "<sha256 of the committed post-cutoff list>",
+  "n_pre": 64187, "n_post": 1917,
+  "layers": {"0.1": {"pre": {"n": 1, "accuracy": 1.0, "ci95": [0.0, 1.0]},
+                     "post": {"n": 1, "accuracy": 1.0, "ci95": [0.0, 1.0]}},
+             "0.2": {"pre": {}, "post": {}}}
+}
+```
+
+`post` = official sitting date strictly after the frozen cutoff (CODEBOOK §9
+rule 6); the post-cutoff ID list is committed, and `rescore-check` verifies
+its sha256 against the file on disk (drift refuses). Excluded items
+(zero-counter divisions) sit outside both subsets; every other item lands in
+exactly one. Subset statistics use the same bootstrap protocol as the
+headline layer blocks (seed 20261027, 10,000 replicates). Baselines accept
+the same flag: `baselines --temporal-cutoff` reports the subsets for
+majority-class and random.
 
 ## Submission format (AGENTS.md)
 
@@ -166,6 +195,7 @@ Layer 0.2 (tracks): per-item mean absolute deviation of `yes_share` and
 | `prompt` | hash + template itself |
 | `evaluation_date` | evaluation date |
 | `contamination` | `declared_cutoff` (`unknown` when unverifiable), temporal-holdout flag (issue #5) |
+| `temporal_split` | optional (corpus sets): cutoff, committed post-cutoff list path + sha256, n_pre/n_post, per-layer pre/post subset stats (issue #5) |
 | `token_usage` / `cost_estimate` | as reported by the adapter; `null` when not supplied |
 | `layers` | per layer: `n_total`, `n_eligible`, `n_scored`, `n_abstained`, `n_parse_failures`, `n_refusals`, `n_missing_files`, `n_excluded_ineligible` (zero-counter divisions — excluded from both denominators, not counted as incorrect); layer 0.1 adds `n_ties` (and per-item `gt_tie`, so a convention-winner on a tied division is never readable as "the motion passed"); layer 0.2 adds `n_exact_track_set` / `exact_track_set_rate`; accuracy/MAE with bootstrap 95% CI |
 | `items` | per fixture: status, layer-0.1 pred/gt/correct, layer-0.2 track detail, submission file + sha256 |

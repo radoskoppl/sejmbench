@@ -2,7 +2,7 @@
   "benchmark_version": "0.3",
   "contamination": {
     "declared_cutoff": "unknown",
-    "temporal_holdout_applied": false
+    "temporal_holdout_applied": true
   },
   "cost_estimate": null,
   "evaluation_date": "2026-11-06",
@@ -264424,8 +264424,8 @@
       "sha256": "bdc320baed872ed987fe959f704ad4ee088c9db30036b795bb7c97e4ea774964"
     }
   ],
-  "generated_by": "sejmbench scorer (scorecard schema 1.2)",
-  "harness_version": "0.5.0",
+  "generated_by": "sejmbench scorer (scorecard schema 1.3)",
+  "harness_version": "0.6.0",
   "items": [
     {
       "abstain_marker": false,
@@ -2656198,8 +2656198,8 @@
     "hash": "e165643d6e230dc8e9a0831cd8fddd83c7fce50ebb02411b0a44b54886200ffd",
     "template": "You are analyzing a roll-call division (głosowanie imienne) of the Sejm\nof the Republic of Poland. Each line below is one MP: club | vote,\nwhere vote is YES / NO / ABSTAIN / ABSENT — or NO_VOTE in term-3-era data.\n\n{VOTE_RECORDS}\n\nAnswer ONLY with a JSON object:\n{\n  \"winner\": \"yes\" | \"no\",\n  \"tracks\": [\n    {\"club\": \"<label>\", \"yes_share\": <float>, \"polarization\": <float>}\n  ]\n}\nRules:\n- A club counts toward the winner if it appears in at least 5 vote records.\n- Active votes are YES / NO / ABSTAIN; ABSENT and NO_VOTE never decide an outcome.\n- winner: \"yes\" if total active YES exceeds total active NO, \"no\" if active NO\n  exceeds active YES; if they are equal (including 0:0), report \"yes\"\n  (earlier-seed convention).\n- Include in \"tracks\" exactly the clubs with at least 5 active votes.\n- yes_share = YES / (YES + NO + ABSTAIN) for that club.\n- polarization = 1 - |YES - NO| / (YES + NO + ABSTAIN).\n"
   },
-  "schema": "sejmbench.scorecard/1.2",
-  "scorecard_version": "1.2",
+  "schema": "sejmbench.scorecard/1.3",
+  "scorecard_version": "1.3",
   "set": "full",
   "set_hash": "bdc320baed872ed987fe959f704ad4ee088c9db30036b795bb7c97e4ea774964",
   "submission": {
@@ -2986726,6 +2986726,61 @@
       }
     ],
     "kind": "model"
+  },
+  "temporal_split": {
+    "cutoff": "2026-01-01",
+    "ids_post_file": "docs/population/ids-post-2026-01-01.txt",
+    "ids_post_sha256": "cdda3be5d1cad66a1742a24ae86270f3b05addcd768b3a23fc0e9037043cba82",
+    "layers": {
+      "0.1": {
+        "post": {
+          "accuracy": 0.9384454877412624,
+          "ci95": [
+            0.927490871152843,
+            0.9488784559207094
+          ],
+          "n": 1917
+        },
+        "pre": {
+          "accuracy": 0.9808060822284886,
+          "ci95": [
+            0.9797310981974543,
+            0.9818343278233911
+          ],
+          "n": 64187
+        }
+      },
+      "0.2": {
+        "post": {
+          "ci95_polarization": [
+            null,
+            null
+          ],
+          "ci95_yes_share": [
+            null,
+            null
+          ],
+          "mae_polarization": null,
+          "mae_yes_share": null,
+          "n_scored": 0
+        },
+        "pre": {
+          "ci95_polarization": [
+            null,
+            null
+          ],
+          "ci95_yes_share": [
+            null,
+            null
+          ],
+          "mae_polarization": null,
+          "mae_yes_share": null,
+          "n_scored": 0
+        }
+      }
+    },
+    "n_post": 1917,
+    "n_pre": 64187
   },
   "token_usage": null
 }
