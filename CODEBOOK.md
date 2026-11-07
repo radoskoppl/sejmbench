@@ -345,3 +345,20 @@ Each fixture carries `source_url` (API detail endpoint) and
 `scripts/verify_provenance.py` re-fetches every fixture from the live API
 and compares field-by-field against both the fixture file and the mirror
 row.
+
+## 12. Population bookkeeping (added 2026-11-08, issue #16)
+
+Two populations differ by construction; never mix baselines or compare
+results across them without explicit reconciliation.
+
+| population | n | definition |
+|---|---|---|
+| model evaluation | 66,104 | consistent tallies, terms 3–10, ≥1 active vote record (`ids-full-corpus.txt`) |
+| predictive backtest | 66,044 | scored by `scripts/backtest_layers.py` (v0.4.2 logic: mirror dedup, chronological sort, skip `actuals() == None`, skip the first 60 rows of the sorted order) |
+
+The only difference is the 60 warmup rows (term 3): the scored set is a
+subset of the model-evaluation population (`|scored − eligible| = 0`). The
+backtest's zero-active rule (241 rows) is a proper subset of the mirror's
+inconsistent-tally class (243); no inconsistent row was ever scored. Full
+derivation: `docs/population/diff-model-eval-vs-backtest.md`, scored ID
+list: `docs/population/ids-backtest-scored.txt`.
