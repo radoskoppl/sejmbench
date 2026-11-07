@@ -5,6 +5,8 @@ Format follows Keep-a-Changelog; versions follow SemVer.
 
 ## [Unreleased]
 
+- Large model scorecards hosted on HF (9B card = 79.96 MB, GitHub warning): `patrykorwat/sejmbench-results` (dataset, public) hosts the full artifact with a dataset card carrying the sha256; the git repo keeps only the sha256 reference (`results/basal-9b-full.md`) and `scripts/fetch_scorecards.py` (stdlib, idempotent, no token needed) pulls the card in CI before `rescore-check`, so the card is still verified end-to-end from the committed raw tar. Harness 0.6.1.
+
 - Temporal holdout (issue #5, harness 0.6.0, scorecard schema 1.3): frozen split rule (CODEBOOK §9 rule 6) — cutoff **2026-01-01**; `scripts/temporal_split.py` derives the post-cutoff ID lists from the committed GT stream alone (`docs/population/ids-post-2026-01-01.txt`, n=1,917; `-term10` subset); corpus scorecards carry an additive `temporal_split` block (per-subset layer-0.1/0.2 stats, same bootstrap protocol) and `rescore-check` verifies the committed list by sha256; `baselines --temporal-cutoff` reports the same subsets for majority-class/random.
 
 - Corpus rescore gate fixed (CI had been red since the 9A/9B scorecards landed): `rescore-check` binds corpus cards to the frozen population files on disk (ids/GT sha) instead of the public manifest; `rescore` supports corpus sets (GT stand-ins, population rebinding) and rebuilds model cards from the committed raw tar (`results/<dir>.raw.tar.gz`, per-file sha256 verified) when per-item files are absent; in-harness baseline items carry their marker path verbatim (CWD-independent rescore).
