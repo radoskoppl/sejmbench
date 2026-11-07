@@ -397,19 +397,24 @@ LEADERBOARD_END = "<!-- LEADERBOARD:END -->"
 
 
 def _render_table(rows) -> str:
-    header = ("| model | set | n | accuracy (95% CI) | yes_share MAE (95% CI) "
+    header = ("| model | set | n | accuracy (95% CI) | close-division acc (95% CI) "
+              "| margin-macro | yes_share MAE (95% CI) "
               "| polarization MAE (95% CI) | scorecard |")
-    sep = "|---|---|---|---|---|---|---|"
+    sep = "|---|---|---|---|---|---|---|---|---|"
     lines = [header, sep]
     for r in rows:
         acc = (scoring._fmt_ci(r["accuracy"], r["accuracy_ci95"][0], r["accuracy_ci95"][1])
                if r["accuracy"] is not None else "n/a")
+        close = (scoring._fmt_ci(r["acc_close"], r["acc_close_ci95"][0], r["acc_close_ci95"][1])
+                 if r.get("acc_close") is not None else "n/a")
+        macro = (f"{r['margin_macro']:.4f}" if r.get("margin_macro") is not None else "n/a")
         ys = (scoring._fmt_ci(r["mae_yes_share"], r["ci95_yes_share"][0], r["ci95_yes_share"][1])
               if r["mae_yes_share"] is not None else "n/a")
         pol = (scoring._fmt_ci(r["mae_polarization"], r["ci95_polarization"][0], r["ci95_polarization"][1])
                if r["mae_polarization"] is not None else "n/a")
         star = "\\*" if r["baseline"] else ""
-        lines.append(f"| {r['model']}{star} | {r['set']} | {r['n']} | {acc} | {ys} | {pol} | "
+        lines.append(f"| {r['model']}{star} | {r['set']} | {r['n']} | {acc} | {close} | {macro} "
+                     f"| {ys} | {pol} | "
                      f"[{r['scorecard']}]({r['scorecard']}) |")
     return "\n".join(lines)
 

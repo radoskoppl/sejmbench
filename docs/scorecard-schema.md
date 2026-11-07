@@ -1,4 +1,4 @@
-# Scorecard schema (v1.3)
+# Scorecard schema (v1.4)
 
 This document freezes the harness contract for issue #4: deterministic,
 offline scoring of saved responses, with every published number reproducible
@@ -17,6 +17,15 @@ without the block). Baseline corpus cards carry the block when built with
 `--temporal-cutoff`. `contamination.temporal_holdout_applied` is true
 exactly when the block is present. The frozen cutoff is a CODEBOOK §9
 rule (2026-01-01).
+
+v1.4 adds pre-registered margin buckets (issue #14, CODEBOOK §13):
+`layers["0.1"]` carries a `margin_buckets` block — per-bucket
+`n` / `n_scored` / `accuracy` / `ci95` over tie | narrow | close | wide,
+plus `margin_macro` (unweighted mean over non-empty buckets; weights frozen
+in CODEBOOK §13). The denominator rule per bucket matches the headline
+accuracy. `validate_scorecard` verifies the bucket n values sum to layer
+0.1 `n_eligible`. The leaderboard gains two parallel columns
+(close-division accuracy, margin-macro); overall accuracy is never dropped.
 
 ## Two paths
 

@@ -52,7 +52,7 @@ import json
 import os
 import random
 
-SCHEMA_VERSION = "1.3"             # docs/scorecard-schema.md (corpus sets + temporal holdout)
+SCHEMA_VERSION = "1.4"             # docs/scorecard-schema.md (v1.4: margin_buckets block, issue #14)
 BENCHMARK_VERSION = "0.3"          # CODEBOOK version — the contract
 METRIC_VERSION = "0.3"             # CODEBOOK §2/§3 metric schema
 BOOTSTRAP_REPLICATES = 10_000
@@ -354,6 +354,74 @@ def score_item(item: dict, division: dict, fixture_name: str) -> dict:
                                 "inference_attempts") if k in item},
         "abstain_marker": bool(parsed.get("abstain")) if isinstance(parsed, dict) else False,
     }
+
+
+# --------------------------------------------------------------------------
+# margin buckets (issue #14; CODEBOOK §13, frozen 2026-11-08, before model 2)
+# --------------------------------------------------------------------------
+
+MARGIN_BUCKETS = ("tie", "narrow", "close", "wide")
+
+
+def margin_bucket(margin_all):
+    """CODEBOOK §13 pre-registered buckets. m = |yes − no| over API headline
+    counts (the GT `margin_all` field; same construct as CODEBOOK §11).
+
+    tie: m == 0 · narrow: 1 ≤ m ≤ 5 · close: 6 ≤ m ≤ 50 · wide: m ≥ 51.
+    These names overlap §11's stratification buckets with different ranges —
+    §13 governs model reporting only, §11 fixture stratification only.
+    """
+    if margin_all is None:
+        return None
+    m = abs(int(margin_all))
+    if m == 0:
+        return "tie"
+    if m <= 5:
+        return "narrow"
+    if m <= 50:
+        return "close"
+    return "wide"
+
+
+def margin_bucket_stats(per_item: list, margins: dict) -> dict:
+    """Per-bucket winner accuracy (layers 0.1) + margin-macro.
+
+    Same denominator rule as the headline accuracy: excluded items leave the
+    denominator; missing/abstained/failed items count as incorrect. Items
+    whose GT carries no `margin_all` (partial/synthetic GT) are counted in
+    the explicit `n_no_margin` field, not in any bucket. Macro = unweighted
+    mean over the four buckets (buckets with n = 0 excluded); weights
+    pre-registered in CODEBOOK §13.
+    """
+    vals = {b: [] for b in MARGIN_BUCKETS}
+    n_scored = {b: 0 for b in MARGIN_BUCKETS}
+    n_no_margin = 0
+    for it in per_item:
+        b = margin_bucket(margins.get(it["fixture"]))
+        if b is None:
+            if it["status"] != "excluded":
+                n_no_margin += 1
+            continue
+        if it["status"] == "excluded":
+            continue
+        vals[b].append(it["layer0_1"]["correct"] or 0)
+        if it["status"] == "scored":
+            n_scored[b] += 1
+    buckets, accs = {}, []
+    for b in MARGIN_BUCKETS:
+        v = vals[b]
+        if v:
+            acc, lo, hi = bootstrap_ci(v)
+            buckets[b] = {"n": len(v), "n_scored": n_scored[b],
+                          "accuracy": acc, "ci95": [lo, hi]}
+            accs.append(acc)
+        else:
+            buckets[b] = {"n": 0, "n_scored": n_scored[b],
+                          "accuracy": None, "ci95": [None, None]}
+    return {"definition": "sejmbench.margin-buckets/1.0 (CODEBOOK §13)",
+            "buckets": buckets,
+            "n_no_margin": n_no_margin,
+            "margin_macro": (sum(accs) / len(accs)) if accs else None}
 
 
 # --------------------------------------------------------------------------
@@ -709,6 +777,13 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
         statuses[name] = entry["status"]
         per_item.append(entry)
 
+    import seed_rule
+    margins = {}
+    for name in names:
+        margins[name] = (fixtures[name].get("__gt__")
+                         or seed_rule.compute_metric(fixtures[name])).get("margin_all")
+    mb = margin_bucket_stats(per_item, margins)
+
     counts = _counts_by_status(statuses.values())
     n_total = len(names)
     n_eligible = n_total - counts["n_excluded_ineligible"]
@@ -756,6 +831,7 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
                 **counts,
                 "n_ties": n_ties,
                 "accuracy": acc, "ci95": [acc_lo, acc_hi],
+                "margin_buckets": mb,
                 "bootstrap": {"replicates": BOOTSTRAP_REPLICATES, "seed": BOOTSTRAP_SEED},
             },
             "0.2": {
@@ -869,6 +945,14 @@ def validate_scorecard(card: dict, expected_set_hash: str | None = None,
                    "n_missing_files", "n_excluded_ineligible"))
     if l01 and counted != l01.get("n_total"):
         errs.append(f"layer 0.1 counts sum to {counted}, n_total={l01.get('n_total')}")
+    mb = l01.get("margin_buckets")
+    if mb is not None:
+        if set(mb.get("buckets", {})) != set(MARGIN_BUCKETS):
+            errs.append(f"margin_buckets must carry exactly {list(MARGIN_BUCKETS)}")
+        elif (sum(b["n"] for b in mb["buckets"].values())
+              + mb.get("n_no_margin", 0)) != l01.get("n_eligible"):
+            errs.append("margin_buckets n values (+ n_no_margin) do not sum "
+                        "to layer 0.1 n_eligible")
     for it in card.get("items", []):
         if "status" not in it or "layer0_1" not in it:
             errs.append(f"item missing status/layer0_1: {it.get('fixture')}")
@@ -1070,6 +1154,11 @@ def leaderboard_rows(scorecards: list) -> list:
             "n": l01.get("n_eligible", l01["n_total"]),
             "accuracy": l01["accuracy"],
             "accuracy_ci95": l01["ci95"],
+            "acc_close": ((l01.get("margin_buckets", {}).get("buckets", {}).get("close") or {})
+                          .get("accuracy")),
+            "acc_close_ci95": ((l01.get("margin_buckets", {}).get("buckets", {}).get("close") or {})
+                               .get("ci95")),
+            "margin_macro": l01.get("margin_buckets", {}).get("margin_macro"),
             "mae_yes_share": l02["mae_yes_share"],
             "ci95_yes_share": l02["ci95_yes_share"],
             "mae_polarization": l02["mae_polarization"],

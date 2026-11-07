@@ -61,7 +61,7 @@ schema 1.3 with the temporal-holdout block (issue #5).
 
 ## Artifacts
 
-- `results/basal-9b-full.scorecard.json` (79.96 MB) — **hosted on HF**: https://huggingface.co/datasets/patrykorwat/sejmbench-results/blob/main/scorecards/basal-9b-full.scorecard.json, sha256 `001d1a05…` (schema 1.3 rebuild with the `temporal_split` block); `scripts/fetch_scorecards.py` pulls it so `rescore-check` covers it end-to-end from the committed raw tar
+- `results/basal-9b-full.scorecard.json` (61.4 MB) — **hosted on HF**: https://huggingface.co/datasets/patrykorwat/sejmbench-results/blob/main/scorecards/basal-9b-full.scorecard.json, sha256 `4b57c65e…` (schema 1.4 rebuild with the `temporal_split` and `margin_buckets` blocks; harness 0.7.0); `scripts/fetch_scorecards.py` pulls it so `rescore-check` covers it end-to-end from the committed raw tar
 - `results/basal-9b-full.raw.tar.gz` — per-item raw responses, sha256 `bdcc7d2e…`
 - runner: `scripts/run_term10_eval.py --ids docs/population/ids-full-corpus.txt`
 

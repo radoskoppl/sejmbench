@@ -362,3 +362,31 @@ backtest's zero-active rule (241 rows) is a proper subset of the mirror's
 inconsistent-tally class (243); no inconsistent row was ever scored. Full
 derivation: `docs/population/diff-model-eval-vs-backtest.md`, scored ID
 list: `docs/population/ids-backtest-scored.txt`.
+
+## 13. Margin-conditioned reporting buckets (v0.3; frozen 2026-11-08, before model 2)
+
+Pre-registered in issue #14 BEFORE any second model evaluation. Buckets are
+mutually exclusive, first-match on the margin
+m = |yes − no| over the API headline counts (the GT `margin_all` field; the
+same construct as §11's strata):
+
+1. `tie` — m = 0 (yes == no, including 0:0).
+2. `narrow` — 1 ≤ m ≤ 5.
+3. `close` — 6 ≤ m ≤ 50.
+4. `wide` — m ≥ 51.
+
+- Denominator rule per bucket: identical to the headline accuracy (§2) —
+  excluded items leave the denominator; missing/abstained/failed items count
+  as incorrect.
+- **margin-macro**: unweighted (equal-weight) mean of the four bucket
+  accuracies; a bucket with n = 0 is excluded from the mean. Weights are
+  frozen here, not chosen per run.
+- Leaderboard carries three parallel metrics: overall accuracy
+  (representativeness — never dropped), close-division accuracy
+  (discrimination on contested votes), margin-macro. Overall accuracy alone
+  tests reliable counting at large margins, not discrimination: 65.8% of
+  corpus divisions have margin ≥ 100 with zero errors; 93.6% of 9B errors
+  came from divisions with margin ≤ 50.
+- The bucket names overlap §11's stratification buckets (`narrow` there is
+  6 ≤ m ≤ 20, `edge` is 1 ≤ m ≤ 5) with different ranges. §13 buckets govern
+  model reporting only; §11 buckets govern fixture stratification only.
