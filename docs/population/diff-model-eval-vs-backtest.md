@@ -19,8 +19,13 @@ The reconstruction reproduced the published count exactly: **scored = 66,044**
 - **The two 241s are not the same set.** Zero-active (241; no club track reaches
   `MIN_TRACK = 5` among YES/NO/ABSTAIN in the division record) is a **proper
   subset** of mirror-inconsistent (243): intersection 241, inconsistent-only 2.
-  The 2 extra inconsistent keys sit inside the 60 warmup rows (term 3), which is
-  why they are invisible in the eligible/scored diff.
+  Correction (2026-11-08): the 2 inconsistent-only keys are **absent from the
+  divisions file entirely** — the file holds exactly eligible (66,104) +
+  zero-active (241) = 66,345 rows — so they are mirror-only rows (classify()
+  flags `inconsistent` before the term check, so these are most plausibly
+  out-of-terms divisions with broken counters; key list to be captured at the
+  next dump pass). An earlier draft of this report wrongly placed them among
+  the 60 warmup rows.
 - Mirror bookkeeping correction to #11: `votings.jsonl` has 66,524 rows /
   66,503 unique keys (21 duplicate rows — matches #11), classified as
   inconsistent **243** (not 241 — that number was the zero-active count),
