@@ -166,12 +166,19 @@ the identical post-cutoff numbers.
 | pre-cutoff (≤2025) | 64,187 | 0.9808 | [0.9797, 0.9818] |
 | post-cutoff (2026) | 1,917 | 0.9384 | [0.9275, 0.9489] |
 
-The −4.2 pp post-cutoff drop is the quantitative version of the
-term-9-vs-term-10 hypothesis above: on divisions the pre-training corpus
-cannot have seen, the task is pure counting, and the advantage that lifted
-term 9 to 98.5% disappears. `declared_cutoff` stays `unknown`
-(unverifiable); the split is the contamination control (issue #5), not
-proof of innocence.
+**Reading this correctly (correction 2026-11-06):** the −4.2 pp gap is NOT
+a clean temporal effect — the pre-cutoff set is dominated by terms 3–9
+(60,967 of 64,187 divisions, aggregate 98.21%), so it largely restates the
+term-composition difference already visible in the per-term table. The
+comparison that holds the term fixed is within term 10: 0.9556 pre-2026
+(n=3,220) vs 0.9384 post-2026 (n=1,917) — a −1.72 pp gap. Even that does
+not isolate contamination: sitting-year differences in margin mix, vote
+types and agenda difficulty can produce the same shift (a cheap robustness
+check — the same split at placebo cutoffs 2025-01-01/2024-01-01, where a
+pure-composition explanation predicts no matching discontinuity — is queued
+with the margin-conditioned reporting work). `declared_cutoff` stays
+`unknown` (unverifiable); the split is the contamination control
+(issue #5), not proof of innocence.
 
 ## Next
 

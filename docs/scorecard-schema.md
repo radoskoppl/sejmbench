@@ -9,10 +9,14 @@ v1.2 adds corpus-backed sets (issue #11): `--set full|term10` scores against
 the frozen population in `docs/population/`, and corpus scorecards must carry
 a `population` block binding them to the frozen ID list.
 
-v1.3 adds the temporal holdout (issue #5): corpus scorecards may carry an
-optional `temporal_split` block with per-subset statistics;
-`contamination.temporal_holdout_applied` is true exactly when the block is
-present. The frozen cutoff is a CODEBOOK §9 rule (2026-01-01).
+v1.3 adds the temporal holdout (issue #5): corpus model scorecards must
+carry a `temporal_split` block with per-subset statistics (CODEBOOK §9
+rule 6 — enforced by the CLI: corpus `score` runs require
+`--temporal-cutoff`; tightened 2026-11-06 before any 1.3 card shipped
+without the block). Baseline corpus cards carry the block when built with
+`--temporal-cutoff`. `contamination.temporal_holdout_applied` is true
+exactly when the block is present. The frozen cutoff is a CODEBOOK §9
+rule (2026-01-01).
 
 ## Two paths
 
@@ -73,7 +77,10 @@ is the precomputed stream `docs/population/gt-<set>.jsonl.gz` built by
 metric as fixture scoring, computed once and hashed.
 
 ## Temporal holdout block (corpus sets, v1.3)
-When `--temporal-cutoff` is passed (corpus sets only), the scorecard carries:
+Required on corpus model scorecards (CODEBOOK §9 rule 6): a corpus `score`
+run without `--temporal-cutoff` refuses to build, and validation rejects a
+corpus model card without the block. Baseline corpus cards carry the block
+when built with `--temporal-cutoff`. The scorecard carries:
 
 ```json
 "temporal_split": {
@@ -195,7 +202,7 @@ Layer 0.2 (tracks): per-item mean absolute deviation of `yes_share` and
 | `prompt` | hash + template itself |
 | `evaluation_date` | evaluation date |
 | `contamination` | `declared_cutoff` (`unknown` when unverifiable), temporal-holdout flag (issue #5) |
-| `temporal_split` | optional (corpus sets): cutoff, committed post-cutoff list path + sha256, n_pre/n_post, per-layer pre/post subset stats (issue #5) |
+| `temporal_split` | required on corpus model scorecards (baselines: carried in practice): cutoff, committed post-cutoff list path + sha256, n_pre/n_post, per-layer pre/post subset stats (issue #5) |
 | `token_usage` / `cost_estimate` | as reported by the adapter; `null` when not supplied |
 | `layers` | per layer: `n_total`, `n_eligible`, `n_scored`, `n_abstained`, `n_parse_failures`, `n_refusals`, `n_missing_files`, `n_excluded_ineligible` (zero-counter divisions — excluded from both denominators, not counted as incorrect); layer 0.1 adds `n_ties` (and per-item `gt_tie`, so a convention-winner on a tied division is never readable as "the motion passed"); layer 0.2 adds `n_exact_track_set` / `exact_track_set_rate`; accuracy/MAE with bootstrap 95% CI |
 | `items` | per fixture: status, layer-0.1 pred/gt/correct, layer-0.2 track detail, submission file + sha256 |

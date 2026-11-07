@@ -52,8 +52,10 @@ sitting date; post-cutoff = divisions from 2026 sittings, all term 10.
 Layer 0.2 is n/a in both subsets (the model's typed API never emits per-club
 tracks — partial abstention, coverage 0 by owner decision). A −1.7 pp
 post-cutoff gap is consistent with pre-training memory helping on pre-cutoff
-data; `declared_cutoff` stays `unknown` (unverifiable), so the split is a
-control, not proof of innocence.
+data — but it does not isolate contamination: sitting-year shifts in margin
+mix, vote types and agenda difficulty can produce the same movement.
+`declared_cutoff` stays `unknown` (unverifiable), so the split is a control,
+not proof of innocence (placebo-cutoff robustness check queued).
 
 ## Artifacts
 

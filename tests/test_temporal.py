@@ -1,5 +1,6 @@
 """Temporal holdout (issue #5, schema 1.3): block build, validation, rescore."""
 
+import argparse
 import gzip
 import importlib.util
 import json
@@ -210,3 +211,22 @@ def test_corpus_binding_errors(tmp_path):
     bad["population"]["ids_sha256"] = "0" * 64
     errs = cli._corpus_binding_errors(bad, repo)
     assert any("ids_sha256 drift" in e for e in errs)
+
+
+def test_corpus_model_card_requires_temporal_block(tmp_path):
+    repo = _write_repo(tmp_path, _rows())
+    card = _model_card_with_tar(repo, _model_items(repo))
+    assert scoring.validate_scorecard(card) == []          # carries the block
+    stripped = json.loads(json.dumps(card))
+    stripped.pop("temporal_split")
+    stripped["contamination"]["temporal_holdout_applied"] = False
+    errs = scoring.validate_scorecard(stripped)
+    assert any("must carry temporal_split" in e for e in errs)
+
+
+def test_cmd_score_requires_temporal_cutoff():
+    # the guard fires after corpus-set resolution, before any submission loading
+    args = argparse.Namespace(layers="0.1,0.2", set="full", submission=[],
+                              temporal_cutoff=None)
+    with pytest.raises(SystemExit, match="required for corpus sets"):
+        cli.cmd_score(args)

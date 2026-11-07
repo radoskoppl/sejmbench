@@ -99,6 +99,10 @@ def cmd_score(args) -> int:
     else:
         manifest = None
         fixtures, population = _corpus_for_set(_ROOT, args.set)
+    if population is not None and not getattr(args, "temporal_cutoff", None):
+        # CODEBOOK §9 rule 6: every corpus model scorecard carries the split
+        raise SystemExit("--temporal-cutoff is required for corpus sets "
+                         "(CODEBOOK §9 rule 6)")
 
     paths = []
     for p in args.submission:

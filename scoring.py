@@ -849,6 +849,10 @@ def validate_scorecard(card: dict, expected_set_hash: str | None = None,
                 v = pop.get(k, "")
                 if not (isinstance(v, str) and len(v) == 64 and all(c in "0123456789abcdef" for c in v)):
                     errs.append(f"population.{k} must be a sha256 hex digest")
+    if card.get("submission", {}).get("kind") == "model" and card.get("set") != "public":
+        if "temporal_split" not in card:
+            errs.append("corpus model scorecard must carry temporal_split "
+                        "(CODEBOOK §9 rule 6 — enforce with --temporal-cutoff)")
     ts = card.get("temporal_split")
     if ts is not None:
         errs.extend(_validate_temporal_split(card, ts))
