@@ -33,7 +33,10 @@ ROOT = os.path.dirname(HERE)
 sys.path.insert(0, ROOT)
 import scoring  # noqa: E402
 
-PROMPT_HASH = scoring.corpus_reference_prompt_hash()
+# v0.4 outcome contract (issue #17): the model reports the actual outcome
+# (ZA / PRZECIW / remis) — the earlier-seed convention is measured as
+# legacy_seed_convention_compliance, not forced into the prompt.
+PROMPT_HASH = scoring.corpus_reference_prompt_v04_hash()
 MODEL_ID = "basal-omni-1.0-ultra (local)"
 MAX_TRANSPORT_RETRIES = 3
 
@@ -43,7 +46,7 @@ STATE_TMPL = ("Sejm, kadencja {term}, posiedzenie {sitting}, głosowanie nr {vn}
 QUESTIONS = {
     "wynik": {
         "type": "choice",
-        "instructions": "Która strona wygrała to głosowanie imienne?",
+        "instructions": "Jaki był rzeczywisty wynik tego głosowania? (głosy ZA / PRZECIW / remis)",
         "criteria": {
             "za": "więcej głosów ważnych ZA niż PRZECIW",
             "przeciw": "więcej głosów ważnych PRZECIW niż ZA",
@@ -54,7 +57,7 @@ QUESTIONS = {
 }
 
 MAP = {"za": ("yes", False), "przeciw": ("no", False),
-       "remis": (None, False), "nie_do_okreslenia": (None, False)}
+       "remis": ("tie", True), "nie_do_okreslenia": (None, False)}
 
 
 def post(server: str, payload: dict, timeout: int = 120):
@@ -129,7 +132,7 @@ def main():
             ans = resp["answers"]["wynik"]
             choice = ans.get("choice")
             winner, tie_flag = MAP.get(choice, (None, False))
-            raw: dict = {"winner": winner} if winner else {"abstain": True}
+            raw: dict = {"outcome": winner} if winner else {"abstain": True}
             if winner:
                 raw["tracks_abstained"] = "typed-decision API cannot emit per-club numeric estimates"
             rec = {"model": MODEL_ID,
