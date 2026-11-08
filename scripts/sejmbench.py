@@ -283,10 +283,19 @@ def cmd_compare(args) -> int:
     pairable = [f for f in shared if ia[f]["layer0_1"]["correct"] is not None
                 and ib[f]["layer0_1"]["correct"] is not None]
     winner_diffs = [ia[f]["layer0_1"]["correct"] - ib[f]["layer0_1"]["correct"] for f in pairable]
+    winner_clusters = [scoring._fixture_cluster(f) for f in pairable]
     ys_diffs = [ia[f]["layer0_2"]["mae_yes_share"] - ib[f]["layer0_2"]["mae_yes_share"]
-                for f in shared if ia[f]["layer0_2"] and ib[f]["layer0_2"]]
+                for f in shared if ia[f]["layer0_2"] and ib[f]["layer0_2"]
+                and ia[f]["layer0_2"]["mae_yes_share"] is not None]
+    ys_clusters = [scoring._fixture_cluster(f) for f in shared
+                   if ia[f]["layer0_2"] and ib[f]["layer0_2"]
+                   and ia[f]["layer0_2"]["mae_yes_share"] is not None]
     pol_diffs = [ia[f]["layer0_2"]["mae_polarization"] - ib[f]["layer0_2"]["mae_polarization"]
-                 for f in shared if ia[f]["layer0_2"] and ib[f]["layer0_2"]]
+                 for f in shared if ia[f]["layer0_2"] and ib[f]["layer0_2"]
+                 and ia[f]["layer0_2"]["mae_polarization"] is not None]
+    pol_clusters = [scoring._fixture_cluster(f) for f in shared
+                    if ia[f]["layer0_2"] and ib[f]["layer0_2"]
+                    and ia[f]["layer0_2"]["mae_polarization"] is not None]
 
     # margin buckets (issue #18): margins come from the set's GT — shared
     # fixtures imply one set.
@@ -305,14 +314,16 @@ def cmd_compare(args) -> int:
         fx_all, _ = scoring.corpus_fixtures(_ROOT, a["set"])
         margins = {name: (d.get("__gt__") or {}).get("margin_all") for name, d in fx_all.items()}
     bucket_diffs = {}
+    bucket_clusters = {}
     for f in pairable:
         bucket_name = scoring.margin_bucket(margins.get(f))
         if bucket_name is not None:
             bucket_diffs.setdefault(bucket_name, []).append(ia[f]["layer0_1"]["correct"] - ib[f]["layer0_1"]["correct"])
+            bucket_clusters.setdefault(bucket_name, []).append(scoring._fixture_cluster(f))
 
-    def block(diffs):
+    def block(diffs, clusters):
         if diffs:
-            mean, lo, hi = scoring.paired_bootstrap(diffs)
+            mean, lo, hi = scoring.cluster_bootstrap_ci(diffs, clusters)
         else:
             mean = lo = hi = None
         n = len(diffs)
@@ -329,12 +340,13 @@ def cmd_compare(args) -> int:
         return {"n_shared": n, "mean_diff": mean, "ci95": [lo, hi],
                 "ranked": ranked, "provisional": provisional, "note": note}
 
-    close_block = block(bucket_diffs.get("close", []))
+    close_block = block(bucket_diffs.get("close", []), bucket_clusters.get("close", []))
     macro_diffs = {b: d for b, d in bucket_diffs.items() if d}
+    macro_clusters = {b: bucket_clusters[b] for b in macro_diffs}
     macro_n = sum(len(d) for d in macro_diffs.values())
     if macro_diffs:
         macro_mean = sum(sum(d) / len(d) for d in macro_diffs.values()) / len(macro_diffs)
-        mlo, mhi = scoring.stratified_macro_ci([macro_diffs[b] for b in sorted(macro_diffs)])
+        mlo, mhi = scoring.cluster_stratified_macro_ci(macro_diffs, macro_clusters)
         excludes = mlo is not None and (mlo > 0 or mhi < 0)
         verdict = scoring.macro_rank_verdict({b: len(d) for b, d in macro_diffs.items()}, excludes)
         ranked, provisional = verdict["ranked"], verdict["provisional"]
@@ -367,10 +379,10 @@ def cmd_compare(args) -> int:
             "note": "MAE denominators include only items with a valid parsed answer (§8.6); "
                     "a coverage gap can flatter the model that answers only the easy items",
         },
-        "layer0_1": block(winner_diffs),
+        "layer0_1": block(winner_diffs, winner_clusters),
         "margin_buckets": {"close": close_block, "margin_macro": macro_block},
-        "layer0_2": {"mae_yes_share": block(ys_diffs),
-                     "mae_polarization": block(pol_diffs)},
+        "layer0_2": {"mae_yes_share": block(ys_diffs, ys_clusters),
+                     "mae_polarization": block(pol_diffs, pol_clusters)},
     }
     print(json.dumps(out, indent=2, ensure_ascii=False))
     return 0

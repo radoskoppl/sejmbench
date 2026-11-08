@@ -161,6 +161,10 @@ These rules do not alter any v0.2 metric definition.
 6. MAE is computed over items with a valid parsed answer; refusals, parse
    failures and abstains are excluded from the MAE denominator and reported
    as answer coverage alongside.
+7. Bootstrap CIs are clustered: the resampling unit is the sitting (term +
+   sitting), not the division — divisions within a sitting share the agenda
+   and the political moment. Point estimates are unchanged; CIs widen
+   (issue #20, 2026-11-08).
 
 ## 9. Model input and contamination contract (added 2026-10-27)
 
@@ -400,9 +404,9 @@ minimum to per-bucket comparisons. The margin-macro is the pre-registered
 sub-minimum buckets — per-bucket CIs carry the small-n uncertainty explicitly
 (9A: tie n=3, narrow n=17; the published macro 0.9167 stands). The minimum is
 not waived; it does not apply to this reporting aggregate. Changing this scope
-is a version event. `margin_macro_ci95` (stratified bootstrap: resample within
-buckets, equal weights per replicate) makes the small-n noise visible in the
-aggregate too.
+is a version event. `margin_macro_ci95` (cluster-stratified bootstrap: resample
+sittings within buckets, equal weights per replicate — issue #20) makes the
+small-n noise visible in the aggregate too.
 
 ### The `tie` bucket is the headline balance, not the seed-rule tie
 

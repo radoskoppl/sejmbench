@@ -383,7 +383,7 @@ def margin_bucket(margin_all):
     return "wide"
 
 
-def margin_bucket_stats(per_item: list, margins: dict) -> dict:
+def margin_bucket_stats(per_item: list, margins: dict, clusters: dict) -> dict:
     """Per-bucket winner accuracy (layers 0.1) + margin-macro.
 
     Same denominator rule as the headline accuracy: excluded items leave the
@@ -391,9 +391,11 @@ def margin_bucket_stats(per_item: list, margins: dict) -> dict:
     whose GT carries no `margin_all` (partial/synthetic GT) are counted in
     the explicit `n_no_margin` field, not in any bucket. Macro = unweighted
     mean over the four buckets (buckets with n = 0 excluded); weights
-    pre-registered in CODEBOOK §13.
+    pre-registered in CODEBOOK §13. CIs are cluster-bootstrapped by sitting
+    (issue #20): the resampling unit is the sitting, not the division.
     """
     vals = {b: [] for b in MARGIN_BUCKETS}
+    clus = {b: [] for b in MARGIN_BUCKETS}
     n_scored = {b: 0 for b in MARGIN_BUCKETS}
     n_no_margin = 0
     for it in per_item:
@@ -405,25 +407,118 @@ def margin_bucket_stats(per_item: list, margins: dict) -> dict:
         if it["status"] == "excluded":
             continue
         vals[b].append(it["layer0_1"]["correct"] or 0)
+        clus[b].append(clusters.get(it["fixture"]))
         if it["status"] == "scored":
             n_scored[b] += 1
     buckets, accs = {}, []
     for b in MARGIN_BUCKETS:
         v = vals[b]
         if v:
-            acc, lo, hi = bootstrap_ci(v)
+            by_cluster = {}
+            for val, c in zip(v, clus[b]):
+                by_cluster.setdefault(c, []).append(val)
+            acc = sum(v) / len(v)
+            _, lo, hi = _cluster_pooled_ci(by_cluster)
             buckets[b] = {"n": len(v), "n_scored": n_scored[b],
                           "accuracy": acc, "ci95": [lo, hi]}
             accs.append(acc)
         else:
             buckets[b] = {"n": 0, "n_scored": n_scored[b],
                           "accuracy": None, "ci95": [None, None]}
-    mlo, mhi = stratified_macro_ci([vals[b] for b in MARGIN_BUCKETS])
+    mlo, mhi = _cluster_stratified_macro_ci([vals[b] for b in MARGIN_BUCKETS],
+                                            [clus[b] for b in MARGIN_BUCKETS])
     return {"definition": "sejmbench.margin-buckets/1.0 (CODEBOOK §13)",
             "buckets": buckets,
             "n_no_margin": n_no_margin,
             "margin_macro": (sum(accs) / len(accs)) if accs else None,
             "margin_macro_ci95": [mlo, mhi]}
+
+
+def _fixture_cluster(name: str):
+    """Cluster key for the bootstrap (issue #20): the sitting (term + sitting
+    number) parsed from the fixture name. Unparseable names are their own
+    cluster — the clustered bootstrap then reduces to the per-item bootstrap."""
+    base = name[:-5] if name.endswith(".json") else name
+    parts = base.split("-")
+    if len(parts) >= 2 and parts[1].startswith("s") and parts[1][1:].isdigit():
+        return f"{parts[0]}-{parts[1][1:]}"
+    return name
+
+
+def _cluster_pooled_ci(by_cluster: dict, replicates: int = BOOTSTRAP_REPLICATES,
+                       seed: int = BOOTSTRAP_SEED):
+    """Cluster bootstrap (issue #20): resample sittings with replacement, pool the
+    selected sittings' values. Returns (point, lo, hi) — the point is the observed
+    mean; deterministic (§8.1)."""
+    keys = list(by_cluster)
+    sums = [sum(by_cluster[c]) for c in keys]
+    sizes = [len(by_cluster[c]) for c in keys]
+    rng = random.Random(seed)
+    accs = []
+    for _ in range(replicates):
+        ps = pn = 0
+        for _ in range(len(keys)):
+            i = rng.randrange(len(keys))
+            ps += sums[i]; pn += sizes[i]
+        accs.append(ps / pn)
+    accs.sort()
+    lo = accs[int(0.025 * replicates)]
+    hi = accs[min(replicates - 1, int(0.975 * replicates))]
+    point = sum(sum(v) for v in by_cluster.values()) / sum(len(v) for v in by_cluster.values())
+    return point, lo, hi
+
+
+def cluster_bootstrap_ci(values, clusters, replicates: int = BOOTSTRAP_REPLICATES,
+                         seed: int = BOOTSTRAP_SEED):
+    """Cluster bootstrap CI of the mean (issue #20): the resampling unit is the
+    sitting — divisions within a sitting share the agenda and the political
+    moment. Point estimate = the observed mean (unchanged); CIs widen.
+    Deterministic (§8.1)."""
+    if not values:
+        return None, None, None
+    by_cluster = {}
+    for v, c in zip(values, clusters):
+        by_cluster.setdefault(c, []).append(v)
+    return _cluster_pooled_ci(by_cluster, replicates, seed)
+
+
+def _cluster_stratified_macro_ci(vals_by_bucket, clus_by_bucket,
+                                 replicates: int = BOOTSTRAP_REPLICATES, seed: int = BOOTSTRAP_SEED):
+    """Cluster-stratified macro CI (issue #20): each replicate resamples the sittings
+    of every bucket and takes the unweighted mean of the pooled bucket means."""
+    pre = []
+    for v, cs in zip(vals_by_bucket, clus_by_bucket):
+        by_cluster = {}
+        for val, c in zip(v, cs):
+            by_cluster.setdefault(c, []).append(val)
+        if by_cluster:
+            keys = list(by_cluster)
+            sums = [sum(by_cluster[c]) for c in keys]
+            sizes = [len(by_cluster[c]) for c in keys]
+            pre.append((sums, sizes))
+    if not pre:
+        return None, None
+    rng = random.Random(seed)
+    accs = []
+    for _ in range(replicates):
+        means = []
+        for sums, sizes in pre:
+            ps = pn = 0
+            for _ in range(len(sizes)):
+                i = rng.randrange(len(sizes))
+                ps += sums[i]; pn += sizes[i]
+            means.append(ps / pn)
+        accs.append(sum(means) / len(means))
+    accs.sort()
+    return accs[int(0.025 * replicates)], accs[min(replicates - 1, int(0.975 * replicates))]
+
+
+def cluster_stratified_macro_ci(values_by_bucket: dict, clusters_by_bucket: dict,
+                                replicates: int = BOOTSTRAP_REPLICATES, seed: int = BOOTSTRAP_SEED):
+    """Public wrapper: macro CI over the buckets keyed by bucket name (issue #20)."""
+    order = sorted(values_by_bucket)
+    return _cluster_stratified_macro_ci([values_by_bucket[b] for b in order],
+                                        [clusters_by_bucket[b] for b in order], replicates, seed)
 
 
 def macro_rank_verdict(bucket_ns: dict, excludes_zero: bool, min_cell: int = None):
@@ -635,19 +730,24 @@ def load_post_ids(repo_root: str, cutoff: str, set_name: str) -> dict:
 
 def _subset_l01(entries: list) -> dict:
     correct = [it["layer0_1"]["correct"] for it in entries]
+    clusters = [_fixture_cluster(it["fixture"]) for it in entries]
     if not correct:
         return {"n": 0, "accuracy": None, "ci95": [None, None]}
-    acc, lo, hi = bootstrap_ci(correct)
+    acc, lo, hi = cluster_bootstrap_ci(correct, clusters)
     return {"n": len(correct), "accuracy": acc, "ci95": [lo, hi]}
 
 
 def _subset_l02(entries: list) -> dict:
     ys = [it["layer0_2"]["mae_yes_share"] for it in entries
           if it["layer0_2"] and it["layer0_2"]["mae_yes_share"] is not None]
+    ys_clusters = [_fixture_cluster(it["fixture"]) for it in entries
+                   if it["layer0_2"] and it["layer0_2"]["mae_yes_share"] is not None]
     pol = [it["layer0_2"]["mae_polarization"] for it in entries
            if it["layer0_2"] and it["layer0_2"]["mae_polarization"] is not None]
-    yst = bootstrap_ci(ys) if ys else (None, None, None)
-    polst = bootstrap_ci(pol) if pol else (None, None, None)
+    pol_clusters = [_fixture_cluster(it["fixture"]) for it in entries
+                    if it["layer0_2"] and it["layer0_2"]["mae_polarization"] is not None]
+    yst = cluster_bootstrap_ci(ys, ys_clusters) if ys else (None, None, None)
+    polst = cluster_bootstrap_ci(pol, pol_clusters) if pol else (None, None, None)
     return {"n_scored": len(ys),
             "mae_yes_share": yst[0], "ci95_yes_share": [yst[1], yst[2]],
             "mae_polarization": polst[0], "ci95_polarization": [polst[1], polst[2]]}
@@ -813,7 +913,8 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
     for name in names:
         margins[name] = (fixtures[name].get("__gt__")
                          or seed_rule.compute_metric(fixtures[name])).get("margin_all")
-    mb = margin_bucket_stats(per_item, margins)
+    item_clusters = {name: _fixture_cluster(name) for name in names}
+    mb = margin_bucket_stats(per_item, margins, item_clusters)
 
     counts = _counts_by_status(statuses.values())
     n_total = len(names)
@@ -822,14 +923,21 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
     exact_set = sum(1 for it in per_item if it["layer0_2"] and it["layer0_2"]["n_missing"] == 0
                     and it["layer0_2"]["n_extra"] == 0 and it["layer0_2"]["n_invalid_entries"] == 0)
     correct = [it["layer0_1"]["correct"] for it in per_item if it["status"] != "excluded"]
-    acc, acc_lo, acc_hi = bootstrap_ci(correct)
+    correct_clusters = [item_clusters[os.path.basename(it["fixture"])] for it in per_item
+                        if it["status"] != "excluded"]
+    acc, acc_lo, acc_hi = cluster_bootstrap_ci(correct, correct_clusters)
 
-    mae_ys_vals = [it["layer0_2"]["mae_yes_share"] for it in per_item
-                   if it["layer0_2"] and it["layer0_2"]["mae_yes_share"] is not None]
-    mae_pol_vals = [it["layer0_2"]["mae_polarization"] for it in per_item
-                    if it["layer0_2"] and it["layer0_2"]["mae_polarization"] is not None]
-    ys_stat = bootstrap_ci(mae_ys_vals) if mae_ys_vals else (None, None, None)
-    pol_stat = bootstrap_ci(mae_pol_vals) if mae_pol_vals else (None, None, None)
+    mae_ys_vals, mae_ys_clusters = [], []
+    mae_pol_vals, mae_pol_clusters = [], []
+    for it in per_item:
+        if it["layer0_2"] and it["layer0_2"]["mae_yes_share"] is not None:
+            mae_ys_vals.append(it["layer0_2"]["mae_yes_share"])
+            mae_ys_clusters.append(item_clusters[os.path.basename(it["fixture"])])
+        if it["layer0_2"] and it["layer0_2"]["mae_polarization"] is not None:
+            mae_pol_vals.append(it["layer0_2"]["mae_polarization"])
+            mae_pol_clusters.append(item_clusters[os.path.basename(it["fixture"])])
+    ys_stat = cluster_bootstrap_ci(mae_ys_vals, mae_ys_clusters) if mae_ys_vals else (None, None, None)
+    pol_stat = cluster_bootstrap_ci(mae_pol_vals, mae_pol_clusters) if mae_pol_vals else (None, None, None)
     n_scored = counts["n_scored"]
     n_tracks_answered = sum(1 for it in per_item if it["layer0_2"]
                             and not it["layer0_2"].get("tracks_abstained"))

@@ -113,8 +113,8 @@ merged with these rows.
 
 | model | set | n | accuracy (95% CI) | close-division acc (95% CI) | margin-macro | yes_share MAE (95% CI) | polarization MAE (95% CI) | scorecard |
 |---|---|---|---|---|---|---|---|---|
-| baseline:majority-class\* | public | 49 | 0.7143 [0.5918, 0.8367] | 0.5385 [0.3077, 0.7692] | 0.7446 | 0.3956 [0.3221, 0.4692] | 0.1036 [0.0752, 0.1345] | [results/baseline-majority-class-public.scorecard.json](results/baseline-majority-class-public.scorecard.json) |
-| baseline:random\* | public | 49 | 0.4898 [0.3469, 0.6327] | 0.3077 [0.0769, 0.5385] | 0.3669 | 0.4738 [0.4376, 0.5098] | 0.4341 [0.4049, 0.4624] | [results/baseline-random-public.scorecard.json](results/baseline-random-public.scorecard.json) |
+| baseline:majority-class\* | public | 49 | 0.7143 [0.5800, 0.8478] | 0.5385 [0.3077, 0.7692] | 0.7446 | 0.3956 [0.3192, 0.4714] | 0.1036 [0.0747, 0.1355] | [results/baseline-majority-class-public.scorecard.json](results/baseline-majority-class-public.scorecard.json) |
+| baseline:random\* | public | 49 | 0.4898 [0.3462, 0.6327] | 0.3077 [0.0769, 0.5385] | 0.3669 | 0.4738 [0.4378, 0.5098] | 0.4341 [0.4045, 0.4620] | [results/baseline-random-public.scorecard.json](results/baseline-random-public.scorecard.json) |
 <!-- LEADERBOARD:END -->
 
 ## Principles
@@ -193,7 +193,7 @@ accepted by CI; schema in issue #4).
 | benchmark (contract) | `CODEBOOK.md` | v0.3 |
 | metric | `CODEBOOK.md` | v0.3 |
 | dataset | HF dataset card | v0.4.0 |
-| pipeline / harness | `VERSION` | 0.7.0 |
+| pipeline / harness | `VERSION` | 0.8.0 |
 | scorecard schema | `docs/scorecard-schema.md` | 1.4 |
 | release | git tags | — |
 
