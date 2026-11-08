@@ -53,14 +53,27 @@ def main():
         name = it["fixture"][:-5] if it["fixture"].endswith(".json") else it["fixture"]
         items[name] = it["layer0_1"]
 
+    # hard join-completeness checks (external review of #19)
+    if set(items) != set(gt) or len(items) != len(gt):
+        raise SystemExit(f"population mismatch: card {len(items)} vs GT {len(gt)}")
+    for gid, it in items.items():
+        if it.get("correct") not in (0, 1):
+            raise SystemExit(f"item {gid}: correct must be 0 or 1, got {it.get('correct')!r}")
+
     recs = defaultdict(list)  # term -> close-bucket records
+    div_per_sitting = defaultdict(int)  # (term, sitting) -> all divisions (true sitting length)
     for gid, m in gt.items():
         term = gid.split("-")[0]
+        sit = int(gid.split("-")[1][1:])
+        div_per_sitting[(term, sit)] += 1
         it = items.get(gid)
         if it is None:
             continue
-        margin = abs(int(m.get("margin_all") or 0))
-        if margin is None or not (CLOSE_LO <= margin <= CLOSE_HI):
+        margin_raw = m.get("margin_all")
+        if margin_raw is None:
+            continue  # unbucketed — a missing margin must not become a tie
+        margin = abs(int(margin_raw))
+        if not (CLOSE_LO <= margin <= CLOSE_HI):
             continue
         s, v = int(gid.split("-")[1][1:]), int(gid.split("-")[2][1:])
         inni = m.get("inni_totals") or {}
@@ -101,6 +114,7 @@ def main():
         for r in rs:
             per_sitting[r["sitting"]] += 1
         vps = list(per_sitting.values())
+        sittings_all = [n for (t, _), n in div_per_sitting.items() if t == term]
         dates = sorted(r["date"][:10] for r in rs if r["date"])
         return {
             "n": n, "acc": acc, "margin_med": med(margins),
@@ -110,7 +124,8 @@ def main():
             "n_active_med": med(act), "n_tracks_med": med(trk),
             "inni_mean": mean(inni), "inni_nonv_mean": mean(nonv),
             "pol_mean": mean(pol),
-            "sittings": len(per_sitting), "vps_mean": mean(vps),
+            "sittings": len(per_sitting), "close_vps_mean": mean(vps),
+            "vps_mean": mean(sittings_all) if sittings_all else None,
             "date_min": dates[0] if dates else "", "date_max": dates[-1] if dates else "",
         }
 
@@ -145,7 +160,8 @@ def main():
         ("inni share of active, mean", "inni_mean", "{:.4f}"),
         ("inni ABSENT+NO_VOTE share, mean", "inni_nonv_mean", "{:.4f}"),
         ("polarization, mean", "pol_mean", "{:.4f}"),
-        ("votings per sitting, mean", "vps_mean", "{:.1f}"),
+        ("votings per sitting, mean (all divisions of the term)", "vps_mean", "{:.1f}"),
+        ("close divisions per sitting, mean (sittings with >=1 close)", "close_vps_mean", "{:.1f}"),
         ("sittings with close divisions", "sittings", "{:.0f}"),
         ("date span", None, "{}"),
     ):
@@ -261,9 +277,78 @@ def main():
         A("(vote-type axis skipped: pass --votings with the term-8/10 mirror slice)")
 
     A("")
+    A("## 5. Definitional reconciliation: the #14 numbers used the seed-rule margin")
+    A("")
+    A("The #14 body's error analysis (98.7% / 84.0%) predates §13; it keyed close on the")
+    A("seed-rule margin (club-tracked, excludes unaffiliated `inni`). §13 froze the headline")
+    A("`margin_all` (includes `inni`) — the T10 close set gains 137 divisions (1,461 → 1,598)")
+    A("and the accuracy moves 84.0% → 84.7%; T8 is unchanged (98.8%). Same construct up to")
+    A("the `inni` inclusion; the frozen §13 definition is canonical going forward.")
+    A("")
+    A("| close definition | T8 n (acc) | T10 n (acc) |")
+    A("|---|---|---|")
+    for label, key in (("seed-rule margin (the #14 body)", "seed"),
+                       ("§13 headline margin_all", "headline")):
+        row = []
+        for term in FOCUS:
+            rs = []
+            for gid, m in gt.items():
+                if not gid.startswith(f"{term}-"):
+                    continue
+                it = items.get(gid)
+                if it is None:
+                    continue
+                margin = (m.get("seed_rule") or {}).get("margin") if key == "seed" else m.get("margin_all")
+                if margin is None:
+                    continue
+                margin = abs(int(margin))
+                if CLOSE_LO <= margin <= CLOSE_HI:
+                    rs.append(it["correct"])
+            acc = (sum(rs) / len(rs)) if rs else None
+            row.append(f"{len(rs)} ({acc:.4f})" if acc is not None else "0 (n/a)")
+        A(f"| {label} | {row[0]} | {row[1]} |")
+
+    A("")
     A("## Candidate explanations (ranked; evidence from the tables above)")
     A("")
-    A("_To be filled after data review — see the committed version for the ranked list._")
+    A("1. **Winner-side composition shift that the model's yes-rate did not track.** Close")
+    A("   divisions are won by \"yes\" far more often in T10 (31.7%) than in T8 (15.2%) —")
+    A("   and post-cutoff even more (34.1%). The model's pred-yes share rose only 13.98% →")
+    A("   20.21% while the actual share rose 15.16% → 31.73%. The accuracy gap (14.09 pp)")
+    A("   decomposes as Δfalse-no (12.21 pp) + Δfalse-yes (1.88 pp); the net")
+    A("   yes-underprediction changed by 10.34 pp (gt-yes shift 16.57 pp − pred-yes shift")
+    A("   6.23 pp) — related to, but not identical with, the accuracy gap. The error mass")
+    A("   is one-sided: false-no dominates (1.18% → 13.39%) while false-yes is 0 in T8")
+    A("   and 1.88% in T10. Caveat: T9 had an even higher yes-share (37.7%) and scored")
+    A("   0.9871 — the share alone does not determine accuracy.")
+    A("2. **The T10 close collapse deepens after the §9 cutoff.** Within T10, close")
+    A("   accuracy drops 0.8688 (pre-2026) → 0.8099 (post-2026), −5.9 pp — much larger")
+    A("   than the −1.7 pp overall pre/post gap, so the close bucket carries most of the")
+    A("   within-term temporal signal. The model's pred-yes share *falls* post-cutoff")
+    A("   (0.208 → 0.192) while the yes-win share rises (0.304 → 0.341). Descriptive")
+    A("   only: three cutoff points, no CIs, `declared_cutoff` unknown; a cluster")
+    A("   bootstrap by sitting is queued as a follow-up.")
+    A("3. **The observed gap persists within major vote types in the described subset.**")
+    A("   bill_whole 0.953 → 0.661, resolution_whole 1.000 → 0.696, appointment 1.000 →")
+    A("   0.714, wotum 1.000 → 0.636; only `first_reading_rejection` is nearly flat")
+    A("   (0.923 → 0.890) — the one type whose outcome is structurally one-sided")
+    A("   (rejection motions almost always fail). The described subset is small (T8 258,")
+    A("   T10 300) and conditional on description availability.")
+    A("4. **The measured room-structure axes are mostly flat — except sitting length.**")
+    A("   n_active (422/424), club tracks (6/7), polarization (0.908/0.904), inni share")
+    A("   (0.012/0.018) are flat; votings per sitting differs (95.9 vs 76.7) and the")
+    A("   non-active `inni` share is higher in T8 (0.170 vs 0.112) — measured, but their")
+    A("   connection to accuracy is unproven. The gap may live in party-system alignment")
+    A("   structure or a training-data era effect — not captured by these artifacts.")
+    A("5. **Margin-band composition contributes but does not explain.** T10 close")
+    A("   divisions concentrate in higher bands (36–50: 1,021 vs T8 161) and the gap is")
+    A("   largest at 11–20/21–35 (−0.28/−0.22) — but even the 36–50 band shows −0.09,")
+    A("   and T10 outperforms T8 at 6–10 (+0.17).")
+    A("")
+    A("Definitional note: the #14 body's numbers (98.7% / 84.0%) were computed on the")
+    A("seed-rule margin (club-tracked, excludes `inni`) — section 5; under the frozen")
+    A("§13 definition (headline `margin_all`, includes `inni`) they are 98.8% / 84.7%.")
+    A("Canonical going forward: the frozen §13 definition.")
     A("")
 
     os.makedirs(os.path.dirname(args.out), exist_ok=True)

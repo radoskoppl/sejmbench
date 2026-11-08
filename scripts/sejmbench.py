@@ -336,21 +336,19 @@ def cmd_compare(args) -> int:
         macro_mean = sum(sum(d) / len(d) for d in macro_diffs.values()) / len(macro_diffs)
         mlo, mhi = scoring.stratified_macro_ci([macro_diffs[b] for b in sorted(macro_diffs)])
         excludes = mlo is not None and (mlo > 0 or mhi < 0)
-        if excludes and macro_n >= scoring.MIN_CELL_COUNT:
-            ranked, provisional = True, False
-        elif excludes:
-            ranked, provisional = False, True
-        else:
-            ranked, provisional = False, False
+        verdict = scoring.macro_rank_verdict({b: len(d) for b, d in macro_diffs.items()}, excludes)
+        ranked, provisional = verdict["ranked"], verdict["provisional"]
         macro_note = ("stratified bootstrap: resample within buckets, unweighted mean "
                       "of bucket means (CODEBOOK §13, issue #18)")
-        if excludes and macro_n < scoring.MIN_CELL_COUNT:
-            macro_note = (f"stratified bootstrap; CI excludes zero but n={macro_n} < minimum "
-                          f"cell count {scoring.MIN_CELL_COUNT} (§8.3) — provisional, not a ranking")
-        macro_block = {"n_shared": macro_n, "mean_diff": macro_mean, "ci95": [mlo, mhi],
+        if provisional:
+            macro_note = (f"stratified bootstrap; CI excludes zero but smallest bucket "
+                          f"n={min(len(d) for d in macro_diffs.values())} < minimum cell count "
+                          f"{scoring.MIN_CELL_COUNT} per bucket (§8 rule 3) — provisional, not a ranking")
+        macro_block = {"n_shared": macro_n, "bucket_n": {b: len(d) for b, d in macro_diffs.items()},
+                       "mean_diff": macro_mean, "ci95": [mlo, mhi],
                        "ranked": ranked, "provisional": provisional, "note": macro_note}
     else:
-        macro_block = {"n_shared": 0, "mean_diff": None, "ci95": [None, None],
+        macro_block = {"n_shared": 0, "bucket_n": {}, "mean_diff": None, "ci95": [None, None],
                        "ranked": False, "provisional": False,
                        "note": "no margin data in the shared fixtures"}
 

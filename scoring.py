@@ -426,6 +426,18 @@ def margin_bucket_stats(per_item: list, margins: dict) -> dict:
             "margin_macro_ci95": [mlo, mhi]}
 
 
+def macro_rank_verdict(bucket_ns: dict, excludes_zero: bool, min_cell: int = None):
+    """§8 rule 3 (per bucket) applied to the macro ranking (issue #18 follow-up):
+    ranked only when the CI excludes zero AND every included bucket meets the
+    per-bucket minimum. A sum-based check would rank 19+1 as 20."""
+    min_cell = min_cell if min_cell is not None else MIN_CELL_COUNT
+    if not bucket_ns or not excludes_zero:
+        return {"ranked": False, "provisional": False}
+    if min(bucket_ns.values()) >= min_cell:
+        return {"ranked": True, "provisional": False}
+    return {"ranked": False, "provisional": True}
+
+
 def stratified_macro_ci(lists, replicates: int = BOOTSTRAP_REPLICATES, seed: int = BOOTSTRAP_SEED):
     """Stratified percentile bootstrap of the margin-macro (CODEBOOK §13, §8.1;
     issue #18): each replicate resamples *within* every bucket and takes the
