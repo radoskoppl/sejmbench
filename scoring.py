@@ -694,7 +694,7 @@ def _outcome_metrics(per_item: list, clusters: dict) -> dict:
         reps.append((rec, side, legacy, prec, recl, f1))
 
     def pct(i):
-        vals = sorted(r[i] for r in reps)
+        vals = sorted(r[i] for r in reps if r[i] is not None)
         return vals[int(0.025 * len(vals))], vals[min(len(vals) - 1, int(0.975 * len(vals)))]
 
     obs = {key: sum(per_cluster[c][key] for c in keys)
