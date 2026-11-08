@@ -96,6 +96,18 @@ def test_macro_rank_verdict_per_bucket_minimum():
     assert v({}, True) == {"ranked": False, "provisional": False}
 
 
+def test_gt_outcome_zero_zero_is_tie():
+    # CODEBOOK §14: the tie is the arithmetic definition (issue #17) — a
+    # YES=NO=0 headline would classify as tie; the guard documents the
+    # contract-level semantics for future benchmark extensions.
+    m = {"margin_all": 0,
+         "seed_totals": {"YES": 0, "NO": 0, "ABSTAIN": 5, "ABSENT": 10, "NO_VOTE": 0},
+         "inni_totals": {"YES": 0, "NO": 0, "ABSTAIN": 0, "ABSENT": 2, "NO_VOTE": 0}}
+    assert scoring.gt_outcome(m) == "tie"
+    assert scoring.gt_outcome({"margin_all": 1}) == "yes"
+    assert scoring.gt_outcome({"margin_all": -1}) == "no"
+
+
 def test_outcome_metrics_legacy_table():
     cases = [("yes", "yes"), ("no", "no"), ("tie", "tie"),
              ("yes", "tie"), ("no", "tie")]
