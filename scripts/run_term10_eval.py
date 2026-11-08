@@ -144,7 +144,9 @@ def main():
                    "inference_attempts": attempts,
                    "model_answer": {"choice": choice,
                                     "confidence": ans.get("confidence"),
-                                    "tie_flag": tie_flag}}
+                                    "tie_flag": tie_flag,
+                                    "probabilities": ans.get("probabilities"),
+                                    "abstain": ans.get("abstain")}}
             tmp = out_path + ".tmp"
             with open(tmp, "w", encoding="utf-8") as fh:
                 json.dump(rec, fh, ensure_ascii=False)
