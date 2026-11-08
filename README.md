@@ -190,8 +190,8 @@ accepted by CI; schema in issue #4).
 
 | axis | where | current |
 |---|---|---|
-| benchmark (contract) | `CODEBOOK.md` | v0.3 |
-| metric | `CODEBOOK.md` | v0.3 |
+| benchmark (contract) | `CODEBOOK.md` | v0.4 |
+| metric | `CODEBOOK.md` | v0.4 |
 | dataset | HF dataset card | v0.4.0 |
 | pipeline / harness | `VERSION` | 0.8.0 |
 | scorecard schema | `docs/scorecard-schema.md` | 1.4 |

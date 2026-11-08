@@ -127,11 +127,84 @@ def corpus_reference_prompt_hash() -> str:
     return hashlib.sha256(REFERENCE_PROMPT_CORPUS.encode("utf-8")).hexdigest()
 
 
+# v0.4 outcome contract (issue #17): the model reports the actual outcome —
+# "tie" when the tallies are equal (including 0:0) — without the earlier-seed
+# convention (which becomes a measured metric: legacy_seed_convention_compliance).
+REFERENCE_PROMPT_V04 = """You are analyzing a roll-call division (głosowanie imienne) of the Sejm
+of the Republic of Poland. Each line below is one MP: club | name | vote,
+where vote is YES / NO / ABSTAIN / ABSENT — or NO_VOTE in term-3-era data.
+
+{VOTE_RECORDS}
+
+Answer ONLY with a JSON object:
+{
+  "outcome": "yes" | "no" | "tie",
+  "tracks": [
+    {"club": "<label>", "yes_share": <float>, "polarization": <float>}
+  ]
+}
+Rules:
+- A club counts toward the tracks if it appears in at least 5 vote records.
+- Active votes are YES / NO / ABSTAIN; ABSENT and NO_VOTE never decide an outcome.
+- outcome: "yes" if total active YES exceeds total active NO, "no" if active NO
+  exceeds active YES, "tie" if they are equal (including 0:0).
+- Include in "tracks" exactly the clubs with at least 5 active votes.
+- yes_share = YES / (YES + NO + ABSTAIN) for that club.
+- polarization = 1 - |YES - NO| / (YES + NO + ABSTAIN).
+"""
+
+
+def reference_prompt_v04_hash() -> str:
+    return hashlib.sha256(REFERENCE_PROMPT_V04.encode("utf-8")).hexdigest()
+
+
+REFERENCE_PROMPT_CORPUS_V04 = """You are analyzing a roll-call division (głosowanie imienne) of the Sejm
+of the Republic of Poland. Each line below is one MP: club | vote,
+where vote is YES / NO / ABSTAIN / ABSENT — or NO_VOTE in term-3-era data.
+
+{VOTE_RECORDS}
+
+Answer ONLY with a JSON object:
+{
+  "outcome": "yes" | "no" | "tie",
+  "tracks": [
+    {"club": "<label>", "yes_share": <float>, "polarization": <float>}
+  ]
+}
+Rules:
+- A club counts toward the tracks if it appears in at least 5 vote records.
+- Active votes are YES / NO / ABSTAIN; ABSENT and NO_VOTE never decide an outcome.
+- outcome: "yes" if total active YES exceeds total active NO, "no" if active NO
+  exceeds active YES, "tie" if they are equal (including 0:0).
+- Include in "tracks" exactly the clubs with at least 5 active votes.
+- yes_share = YES / (YES + NO + ABSTAIN) for that club.
+- polarization = 1 - |YES - NO| / (YES + NO + ABSTAIN).
+"""
+
+
+def corpus_reference_prompt_v04_hash() -> str:
+    return hashlib.sha256(REFERENCE_PROMPT_CORPUS_V04.encode("utf-8")).hexdigest()
+
+
+def gt_outcome(metric):
+    """v0.4 ground-truth outcome (issue #17): the official headline result —
+    YES/NO/TIE by the API headline counters (the `margin_all` sign). The
+    seed-rule winner (club tracks) is preserved as the legacy compatibility
+    field; among the 43 headline ties, 0 have YES=NO=0 (all carry real
+    YES and NO votes), so the tie is never a no-decisive-votes artifact."""
+    m = metric.get("margin_all")
+    if m is None:
+        return None
+    return "yes" if m > 0 else ("no" if m < 0 else "tie")
+
+
 # Accepted prompt versions: hash -> exact template. A scorecard must name one
 # of these; silent prompt edits fail validation.
 KNOWN_PROMPTS = {
     reference_prompt_hash(): REFERENCE_PROMPT,
     corpus_reference_prompt_hash(): REFERENCE_PROMPT_CORPUS,
+    reference_prompt_v04_hash(): REFERENCE_PROMPT_V04,
+    corpus_reference_prompt_v04_hash(): REFERENCE_PROMPT_CORPUS_V04,
 }
 
 # Issue #12: reproducible model identity. Required on model scorecards
@@ -279,6 +352,16 @@ def _usable_tracks(parsed) -> tuple[dict, int]:
 # item scoring
 # --------------------------------------------------------------------------
 
+def _layer01(pred, gt, gt_tie, correct, pred_outcome, gt_out):
+    """Layer 0.1 record; the outcome fields appear only for v0.4 responses
+    (issue #17) — v0.3-shaped items stay byte-identical with the committed cards."""
+    d = {"pred": pred, "gt": gt, "gt_tie": gt_tie, "correct": correct}
+    if pred_outcome is not None:
+        d["pred_outcome"] = pred_outcome
+        d["gt_outcome"] = gt_out
+    return d
+
+
 def score_item(item: dict, division: dict, fixture_name: str) -> dict:
     """Score one submission item (one fixture) against the seed rule."""
     import seed_rule
@@ -292,9 +375,20 @@ def score_item(item: dict, division: dict, fixture_name: str) -> dict:
     gt_tracks = metric["tracks"]
 
     pred_winner: str | None = None
+    pred_outcome: str | None = None
+    gt_out = gt_outcome(metric)
+    gt_ref = gt_winner  # legacy contract default; v0.4 responses override with the headline outcome
     if status == "scored" and parsed is not None:
-        pred_winner = parsed["winner"]
-    correct = 1 if (pred_winner is not None and pred_winner == gt_winner) else 0
+        if parsed.get("outcome") is not None:
+            # v0.4 outcome contract (issue #17): the model reports the actual
+            # outcome; recognition is scored against the headline result.
+            pred_outcome = parsed["outcome"]
+            pred_winner = pred_outcome
+            gt_ref = gt_out
+        else:
+            pred_winner = parsed.get("winner")
+            gt_ref = gt_winner  # legacy contract: the seed-rule winner
+    correct = 1 if (pred_winner is not None and pred_winner == gt_ref) else 0
 
     layer02 = None
     if status == "scored" and pred_winner is not None:
@@ -309,8 +403,8 @@ def score_item(item: dict, division: dict, fixture_name: str) -> dict:
             return {
                 "fixture": fixture_name,
                 "status": status,
-                "layer0_1": {"pred": pred_winner, "gt": gt_winner,
-                             "gt_tie": gt_tie, "correct": correct},
+                "layer0_1": _layer01(pred_winner, gt_ref, gt_tie, correct,
+                                     pred_outcome, gt_out),
                 "layer0_2": layer02,
                 **{k: item[k] for k in ("input_tokens", "context_overflow",
                                         "inference_attempts") if k in item},
@@ -346,8 +440,8 @@ def score_item(item: dict, division: dict, fixture_name: str) -> dict:
     return {
         "fixture": fixture_name,
         "status": status,
-        "layer0_1": {"pred": pred_winner, "gt": gt_winner, "gt_tie": gt_tie,
-                     "correct": correct},
+        "layer0_1": _layer01(pred_winner, gt_ref, gt_tie, correct,
+                             pred_outcome, gt_out),
         "layer0_2": layer02,
         # issue #12 operational fields, passed through from the raw response
         **{k: item[k] for k in ("input_tokens", "context_overflow",
@@ -551,6 +645,92 @@ def cluster_stratified_macro_ci(values_by_bucket: dict, clusters_by_bucket: dict
     return _cluster_stratified_macro_ci([values_by_bucket[b] for b in order],
                                         [clusters_by_bucket[b] for b in order], replicates, seed)
 
+
+def _outcome_metrics(per_item: list, clusters: dict) -> dict:
+    """v0.4 outcome metrics (issue #17): outcome recognition accuracy, side-picking
+    accuracy on non-ties, legacy seed convention compliance, tie precision/recall/F1
+    with clustered CIs, and the 3x3 confusion matrix. Excluded items leave the
+    denominators; missing/abstained/failed count as incorrect. Per-cluster sums are
+    additive, so each bootstrap replicate is O(#clusters)."""
+    per_cluster = {}
+    for it in per_item:
+        if it["status"] == "excluded":
+            continue
+        l01 = it["layer0_1"]
+        c = clusters.get(it["fixture"])
+        p, g = l01.get("pred_outcome"), l01.get("gt_outcome")
+        d = per_cluster.setdefault(c, {"n": 0, "correct": 0, "tp": 0, "pt": 0,
+                                       "gtie": 0, "non_tie": 0, "non_tie_ok": 0, "legacy": 0})
+        d["n"] += 1
+        if p == g:
+            d["correct"] += 1
+        if p == "tie" and g == "tie":
+            d["tp"] += 1
+        if p == "tie":
+            d["pt"] += 1
+        if g == "tie":
+            d["gtie"] += 1
+        if g != "tie":
+            d["non_tie"] += 1
+            if p in ("yes", "no") and p == g:
+                d["non_tie_ok"] += 1
+        if (p == "yes" and g in ("yes", "tie")) or (p == "no" and g == "no"):
+            d["legacy"] += 1
+    keys = list(per_cluster)
+    k = len(keys)
+    rng = random.Random(BOOTSTRAP_SEED)
+    reps = []
+    for _ in range(BOOTSTRAP_REPLICATES):
+        pool = dict.fromkeys(("n", "correct", "tp", "pt", "gtie", "non_tie", "non_tie_ok", "legacy"), 0)
+        for _ in range(k):
+            for key, val in per_cluster[keys[rng.randrange(k)]].items():
+                pool[key] += val
+        rec = pool["correct"] / pool["n"] if pool["n"] else None
+        side = pool["non_tie_ok"] / pool["non_tie"] if pool["non_tie"] else None
+        legacy = pool["legacy"] / pool["n"] if pool["n"] else None
+        prec = pool["tp"] / pool["pt"] if pool["pt"] else None
+        recl = pool["tp"] / pool["gtie"] if pool["gtie"] else None
+        f1 = (2 * prec * recl / (prec + recl)) if (prec and recl) else None
+        reps.append((rec, side, legacy, prec, recl, f1))
+
+    def pct(i):
+        vals = sorted(r[i] for r in reps)
+        return vals[int(0.025 * len(vals))], vals[min(len(vals) - 1, int(0.975 * len(vals)))]
+
+    obs = {key: sum(per_cluster[c][key] for c in keys)
+           for key in ("n", "correct", "tp", "pt", "gtie", "non_tie", "non_tie_ok", "legacy")}
+    def ratio(a, b):
+        return (a / b) if b else None
+    cm = {"gt_yes": {"pred_yes": 0, "pred_no": 0, "pred_tie": 0, "pred_invalid": 0},
+          "gt_no": {"pred_yes": 0, "pred_no": 0, "pred_tie": 0, "pred_invalid": 0},
+          "gt_tie": {"pred_yes": 0, "pred_no": 0, "pred_tie": 0, "pred_invalid": 0}}
+    for it in per_item:
+        if it["status"] == "excluded":
+            continue
+        l01 = it["layer0_1"]
+        g, p = l01.get("gt_outcome"), l01.get("pred_outcome")
+        if g not in cm:
+            continue
+        cm[f"gt_{g}"][f"pred_{p if p in ('yes', 'no', 'tie') else 'invalid'}"] += 1
+    return {
+        "definition": "sejmbench.outcome/1.0 (CODEBOOK §14, issue #17)",
+        "n": obs["n"],
+        "outcome_recognition": {"accuracy": ratio(obs["correct"], obs["n"]),
+                                "ci95": list(pct(0))},
+        "side_picking_non_ties": {"n": obs["non_tie"],
+                                  "accuracy": ratio(obs["non_tie_ok"], obs["non_tie"]),
+                                  "ci95": list(pct(1))},
+        "legacy_seed_convention_compliance": {"accuracy": ratio(obs["legacy"], obs["n"]),
+                                              "ci95": list(pct(2))},
+        "tie_metrics": {"precision": [ratio(obs["tp"], obs["pt"]), *pct(3)],
+                        "recall": [ratio(obs["tp"], obs["gtie"]), *pct(4)],
+                        "f1": [(2 * obs["tp"] / (obs["pt"] + obs["gtie"]))
+                               if (obs["pt"] + obs["gtie"]) else None, *pct(5)]},
+        "confusion_matrix": cm,
+        "class_counts": {"gt": {g: sum(cm[f"gt_{g}"].values()) for g in ("yes", "no", "tie")},
+                         "pred": {p: sum(cm[f"gt_{g}"][f"pred_{p}"] for g in ("yes", "no", "tie"))
+                                  for p in ("yes", "no", "tie", "invalid")}},
+    }
 
 def macro_rank_verdict(bucket_ns: dict, excludes_zero: bool, min_cell: int = None):
     """§8 rule 3 (per bucket) applied to the macro ranking (issue #18 follow-up):
@@ -951,6 +1131,13 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
         raise SystemExit(f"corpus set '{meta.get('set')}': {n_fallback} fixture names without a "
                          "(term, sitting) cluster — the cluster bootstrap requires parseable names")
     mb = margin_bucket_stats(per_item, margins, item_clusters)
+    outcome_available = all(it["layer0_1"].get("pred_outcome") is not None
+                            for it in per_item if it["status"] != "excluded")
+    outcome_block = _outcome_metrics(per_item, item_clusters) if outcome_available else None
+    benchmark_version = metric_version = ("0.4" if outcome_available
+                                          else meta.get("benchmark_version", "0.3"))
+    if outcome_available:
+        metric_version = "0.4"
 
     counts = _counts_by_status(statuses.values())
     n_total = len(names)
@@ -983,8 +1170,8 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
     card = {
         "schema": f"sejmbench.scorecard/{SCHEMA_VERSION}",
         "scorecard_version": SCHEMA_VERSION,
-        "benchmark_version": meta.get("benchmark_version", "0.3"),
-        "metric_version": meta.get("metric_version", "0.3"),
+        "benchmark_version": benchmark_version,
+        "metric_version": metric_version,
         "harness_version": meta.get("harness_version"),
         "set": meta["set"],
         "set_hash": meta["set_hash"],
@@ -1032,6 +1219,8 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
         "problems": problems,
         "generated_by": f"sejmbench scorer (scorecard schema {SCHEMA_VERSION})",
     }
+    if outcome_block is not None:
+        card["outcome"] = outcome_block
     if meta.get("population"):
         # corpus sets bind the scorecard to the frozen population (schema 1.2)
         card["population"] = meta["population"]
@@ -1066,12 +1255,15 @@ def validate_scorecard(card: dict, expected_set_hash: str | None = None,
         errs.append(f"unknown schema: {card.get('schema')!r}")
     if card.get("scorecard_version") != SCHEMA_VERSION:
         errs.append(f"scorecard_version {card.get('scorecard_version')!r} != {SCHEMA_VERSION!r}")
-    if card.get("benchmark_version") != BENCHMARK_VERSION:
-        errs.append(f"benchmark_version {card.get('benchmark_version')!r} != current "
-                    f"contract {BENCHMARK_VERSION!r}")
-    if card.get("metric_version") != METRIC_VERSION:
-        errs.append(f"metric_version {card.get('metric_version')!r} != current "
-                    f"contract {METRIC_VERSION!r}")
+    if card.get("benchmark_version") not in ("0.3", "0.4"):
+        errs.append(f"benchmark_version {card.get('benchmark_version')!r} is not one of ('0.3', '0.4')")
+    if card.get("metric_version") not in ("0.3", "0.4"):
+        errs.append(f"metric_version {card.get('metric_version')!r} is not one of ('0.3', '0.4')")
+    _ob = card.get("outcome")
+    if card.get("metric_version") == "0.4" and not _ob:
+        errs.append("a metric-0.4 card must carry the outcome block (issue #17)")
+    if card.get("metric_version") == "0.3" and _ob:
+        errs.append("a metric-0.3 card must not carry the outcome block")
     if card.get("prompt", {}).get("hash") not in KNOWN_PROMPTS:
         errs.append("prompt hash is not a known versioned prompt")
     elif card["prompt"].get("template") != KNOWN_PROMPTS[card["prompt"]["hash"]]:

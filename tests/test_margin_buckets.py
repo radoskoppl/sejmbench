@@ -96,6 +96,24 @@ def test_macro_rank_verdict_per_bucket_minimum():
     assert v({}, True) == {"ranked": False, "provisional": False}
 
 
+def test_outcome_metrics_legacy_table():
+    cases = [("yes", "yes"), ("no", "no"), ("tie", "tie"),
+             ("yes", "tie"), ("no", "tie")]
+    per = [{"fixture": f"t{i}", "status": "scored",
+            "layer0_1": {"pred": p, "gt_outcome": g, "correct": 1 if p == g else 0}}
+           for i, (p, g) in enumerate(cases)]
+    clusters = {f"t{i}": f"s{i}" for i in range(len(cases))}
+    st = scoring._outcome_metrics(per, clusters)
+    assert st["outcome_recognition"]["accuracy"] == 0.6
+    assert st["side_picking_non_ties"]["accuracy"] == 1.0
+    assert st["legacy_seed_convention_compliance"]["accuracy"] == 0.4
+    tie = st["tie_metrics"]
+    assert tie["precision"][0] == 1.0 and tie["recall"][0] == pytest.approx(1 / 3)
+    assert tie["f1"][0] == pytest.approx(0.5)
+    assert st["confusion_matrix"]["gt_tie"] == {"pred_yes": 1, "pred_no": 1,
+                                                "pred_tie": 1, "pred_invalid": 0}
+
+
 def test_macro_ci_deterministic_and_covers_point():
     per = ([{"fixture": f"a{i}", "status": "scored", "layer0_1": {"correct": 1}}
             for i in range(5)] +

@@ -30,6 +30,16 @@ accuracy. `validate_scorecard` verifies the bucket n values sum to layer
 0.1 `n_eligible`. The leaderboard gains two parallel columns
 (close-division accuracy, margin-macro); overall accuracy is never dropped.
 
+## Outcome block (v0.4 lane, issue #17)
+
+A scorecard with `metric_version` 0.4 carries an `outcome` block (CODEBOOK
+§14): the three metrics (outcome recognition, side-picking on non-ties,
+legacy seed convention compliance — each with clustered CIs), tie
+precision/recall/F1, the 3×3 confusion matrix and class counts. Lane rules
+(`validate_scorecard`): a metric-0.4 card must carry the block; a
+metric-0.3 card must not. v0.3 and v0.4 scorecards are not directly
+comparable (`cmd_compare` refuses differing metric versions).
+
 ## Two paths
 
 - `sejmbench eval` — model execution, provider-specific, only via documented

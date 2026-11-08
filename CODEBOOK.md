@@ -1,4 +1,4 @@
-# SejmBench CODEBOOK — v0.3 (frozen)
+# SejmBench CODEBOOK — v0.4 (§1–§13 frozen as v0.3; §14 outcome contract added 2026-11-08)
 
 This document is the contract. Every submitted score is graded against the
 definitions here. Definitions change only via version bump (`0.2` → `0.3`),
@@ -417,3 +417,30 @@ the `inni` inclusion — ABSENT and NO_VOTE never enter the YES/NO counters.
 Seed-rule ties stay visible in `n_ties` (layer 0.1) and, from schema 1.4, in
 the response `probabilities`. Renaming the key is a version event; the name
 stays `tie` for now (decision recorded in #18).
+
+## 14. Outcome contract (v0.4, issue #17)
+
+Ground truth: the official headline result — `outcome` = YES / NO / TIE by the
+API headline counters (`margin_all` sign); the seed-rule winner (§3, club
+tracks) is preserved as the legacy compatibility field. Among the 43 headline
+ties, 0 have YES=NO=0 — the tie is the arithmetic definition; the
+`no_decisive_votes` question is moot for this population.
+
+Three metrics (never merged into one composite):
+
+- **Outcome recognition** — pred outcome == GT outcome (YES/NO/TIE).
+- **Side-picking on non-ties** — pred ∈ {YES, NO} and pred == GT; a `tie`
+  prediction on a non-tie division is a side-pick failure.
+- **Legacy seed convention compliance** — pred YES is compliant iff the GT
+  outcome is YES or TIE (the earlier-seed convention); pred NO iff NO; pred
+  TIE is never legacy-compliant. This is the v0.3 winner accuracy (layer 0.1).
+
+Tie metrics: precision, recall, F1 (clustered CIs, §8 rule 7) + the 3×3
+confusion matrix and class counts. Missing responses, parse failures and
+abstentions count as incorrect under the relevant metric. The v0.4 reference
+prompts (agent + corpus variants) are pinned in `KNOWN_PROMPTS`; their hashes:
+`a4f39e6ba472ba87…` / `c84e3bb38e00e082…`.
+
+Lanes: v0.3 cards (binary winner) and v0.4 cards (outcome) are not directly
+comparable — `cmd_compare` refuses differing metric versions. Basal re-runs
+under the v0.4 contract before any cross-model comparison.
