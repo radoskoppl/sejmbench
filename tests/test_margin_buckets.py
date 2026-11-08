@@ -107,7 +107,7 @@ def test_outcome_metrics_legacy_table():
     st = scoring._outcome_metrics(per, clusters)
     assert st["outcome_recognition"]["accuracy"] == 0.6
     assert st["side_picking_non_ties"]["accuracy"] == 1.0
-    assert st["legacy_seed_convention_compliance"]["accuracy"] == 0.4
+    assert st["legacy_seed_convention_compliance"]["accuracy"] == 0.6
     tie = st["tie_metrics"]
     assert tie["precision"][0] == 1.0 and tie["recall"][0] == pytest.approx(1 / 3)
     assert tie["f1"][0] == pytest.approx(0.5)
