@@ -396,6 +396,7 @@ def margin_bucket_stats(per_item: list, margins: dict, clusters: dict) -> dict:
     """
     vals = {b: [] for b in MARGIN_BUCKETS}
     clus = {b: [] for b in MARGIN_BUCKETS}
+    records_by_cluster = {}
     n_scored = {b: 0 for b in MARGIN_BUCKETS}
     n_no_margin = 0
     for it in per_item:
@@ -406,8 +407,11 @@ def margin_bucket_stats(per_item: list, margins: dict, clusters: dict) -> dict:
             continue
         if it["status"] == "excluded":
             continue
-        vals[b].append(it["layer0_1"]["correct"] or 0)
-        clus[b].append(clusters.get(it["fixture"]))
+        val = it["layer0_1"]["correct"] or 0
+        c = clusters.get(it["fixture"])
+        vals[b].append(val)
+        clus[b].append(c)
+        records_by_cluster.setdefault(c, []).append((b, val))
         if it["status"] == "scored":
             n_scored[b] += 1
     buckets, accs = {}, []
@@ -425,8 +429,7 @@ def margin_bucket_stats(per_item: list, margins: dict, clusters: dict) -> dict:
         else:
             buckets[b] = {"n": 0, "n_scored": n_scored[b],
                           "accuracy": None, "ci95": [None, None]}
-    mlo, mhi = _cluster_stratified_macro_ci([vals[b] for b in MARGIN_BUCKETS],
-                                            [clus[b] for b in MARGIN_BUCKETS])
+    mlo, mhi = _joint_cluster_macro_ci(records_by_cluster)
     return {"definition": "sejmbench.margin-buckets/1.0 (CODEBOOK §13)",
             "buckets": buckets,
             "n_no_margin": n_no_margin,
@@ -480,6 +483,34 @@ def cluster_bootstrap_ci(values, clusters, replicates: int = BOOTSTRAP_REPLICATE
     for v, c in zip(values, clusters):
         by_cluster.setdefault(c, []).append(v)
     return _cluster_pooled_ci(by_cluster, replicates, seed)
+
+
+def _joint_cluster_macro_ci(records_by_cluster: dict,
+                            replicates: int = BOOTSTRAP_REPLICATES, seed: int = BOOTSTRAP_SEED):
+    """Joint cluster bootstrap of the margin-macro (issue #20 follow-up): ONE draw of
+    sittings from the whole population is applied to every bucket, so the cross-bucket
+    correlation of divisions within a sitting is preserved. Per replicate: pool the
+    selected sittings' divisions, per-bucket accuracy, macro over the non-empty buckets."""
+    keys = list(records_by_cluster)
+    if not keys:
+        return None, None
+    rng = random.Random(seed)
+    k = len(keys)
+    accs = []
+    for _ in range(replicates):
+        pooled = {}
+        for _ in range(k):
+            for b, val in records_by_cluster[keys[rng.randrange(k)]]:
+                s, n = pooled.get(b, (0, 0))
+                pooled[b] = (s + val, n + 1)
+        if pooled:
+            means = [sv / nn for sv, nn in pooled.values() if nn]
+            if means:
+                accs.append(sum(means) / len(means))
+    if not accs:
+        return None, None
+    accs.sort()
+    return accs[int(0.025 * replicates)], accs[min(replicates - 1, int(0.975 * replicates))]
 
 
 def _cluster_stratified_macro_ci(vals_by_bucket, clus_by_bucket,
@@ -914,6 +945,11 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
         margins[name] = (fixtures[name].get("__gt__")
                          or seed_rule.compute_metric(fixtures[name])).get("margin_all")
     item_clusters = {name: _fixture_cluster(name) for name in names}
+    n_clusters = len(set(item_clusters.values()))
+    n_fallback = sum(1 for name in names if item_clusters[name] == name)
+    if meta.get("set") != "public" and n_fallback:
+        raise SystemExit(f"corpus set '{meta.get('set')}': {n_fallback} fixture names without a "
+                         "(term, sitting) cluster — the cluster bootstrap requires parseable names")
     mb = margin_bucket_stats(per_item, margins, item_clusters)
 
     counts = _counts_by_status(statuses.values())
@@ -971,7 +1007,9 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
                 "n_ties": n_ties,
                 "accuracy": acc, "ci95": [acc_lo, acc_hi],
                 "margin_buckets": mb,
-                "bootstrap": {"replicates": BOOTSTRAP_REPLICATES, "seed": BOOTSTRAP_SEED},
+                "bootstrap": {"method": "cluster-sitting", "n_clusters": n_clusters,
+                              "per_item_fallback": n_fallback,
+                              "replicates": BOOTSTRAP_REPLICATES, "seed": BOOTSTRAP_SEED},
             },
             "0.2": {
                 "n_total": n_total,
@@ -985,7 +1023,9 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
                 "exact_track_set_rate": (exact_set / n_scored) if n_scored else None,
                 "mae_yes_share": ys_stat[0], "ci95_yes_share": [ys_stat[1], ys_stat[2]],
                 "mae_polarization": pol_stat[0], "ci95_polarization": [pol_stat[1], pol_stat[2]],
-                "bootstrap": {"replicates": BOOTSTRAP_REPLICATES, "seed": BOOTSTRAP_SEED},
+                "bootstrap": {"method": "cluster-sitting", "n_clusters": n_clusters,
+                              "per_item_fallback": n_fallback,
+                              "replicates": BOOTSTRAP_REPLICATES, "seed": BOOTSTRAP_SEED},
             },
         },
         "items": per_item,
