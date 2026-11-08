@@ -30,7 +30,7 @@ items = [{**it, "fixture": it.pop("_key")} for it in items]
 # match diagnostics: fixture names must join to GT ids
 matched = sum(1 for it in items if it["fixture"] in gt_date)
 print(f"items={len(items)} matched-to-GT={matched}")
-if matched < len(items) * 0.9:
+if matched != len(items):
     print("sample fixture names:", [it["fixture"] for it in items[:5]])
     print("sample GT ids:", list(gt_date)[:5])
     raise SystemExit("fixture/GT id join failed — fix the mapping first")
@@ -46,8 +46,8 @@ for cutoff in ("2024-01-01", "2025-01-01", "2026-01-01"):
     for scope, only_t10 in (("full corpus", False), ("term 10 only", True)):
         sel = [it for it in items
                if not only_t10 or it["fixture"].startswith("term10-")]
-        pre = [it for it in sel if gt_date.get(it["fixture"], "9999") < cutoff]
-        post = [it for it in sel if gt_date.get(it["fixture"], "") >= cutoff]
+        pre = [it for it in sel if gt_date.get(it["fixture"], "9999") <= cutoff]
+        post = [it for it in sel if gt_date.get(it["fixture"], "") > cutoff]
         a_pre, n_pre = acc(pre)
         a_post, n_post = acc(post)
         gap = (a_post - a_pre) if (a_pre is not None and a_post is not None) else None
@@ -71,7 +71,7 @@ for cutoff, scope, n_pre, a_pre, n_post, a_post, gap in rows:
                  f"{fmt(a_post)} | {fmt(gap)} |")
 lines += [
     "",
-    "Reading: the 2026 cutoff isolates the newest, post-training-data sittings;",
+    "Reading: the 2026 cutoff isolates the newest, post-cutoff sittings;",
     "the placebo cutoffs split older data at arbitrary points. A contamination",
     "signal would appear as a 2026-specific negative gap absent at the placebos;",
     "a gap pattern that moves smoothly with the cutoff date indicates composition,",

@@ -15,7 +15,7 @@ hold the term composition fixed (see the #5 correction).
 | 2026-01-01 | full corpus | 64187 | 0.9808 | 1917 | 0.9384 | -0.0424 |
 | 2026-01-01 | term 10 only | 3220 | 0.9556 | 1917 | 0.9384 | -0.0171 |
 
-Reading: the 2026 cutoff isolates the newest, post-training-data sittings;
+Reading: the 2026 cutoff isolates the newest, post-cutoff sittings;
 the placebo cutoffs split older data at arbitrary points. A contamination
 signal would appear as a 2026-specific negative gap absent at the placebos;
 a gap pattern that moves smoothly with the cutoff date indicates composition,

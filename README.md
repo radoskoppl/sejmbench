@@ -193,8 +193,8 @@ accepted by CI; schema in issue #4).
 | benchmark (contract) | `CODEBOOK.md` | v0.3 |
 | metric | `CODEBOOK.md` | v0.3 |
 | dataset | HF dataset card | v0.4.0 |
-| pipeline / harness | `VERSION` | 0.6.0 |
-| scorecard schema | `docs/scorecard-schema.md` | 1.3 |
+| pipeline / harness | `VERSION` | 0.7.0 |
+| scorecard schema | `docs/scorecard-schema.md` | 1.4 |
 | release | git tags | — |
 
 ## Contamination policy
