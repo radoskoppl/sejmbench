@@ -278,11 +278,37 @@ def cmd_compare(args) -> int:
         raise SystemExit("no shared fixtures (same name AND same fixture sha256) "
                          "between the two scorecards")
 
-    winner_diffs = [ia[f]["layer0_1"]["correct"] - ib[f]["layer0_1"]["correct"] for f in shared]
+    # excluded items (zero-counter divisions) carry correct=None — they leave
+    # the paired set, same denominator rule as the headline accuracy (§2)
+    pairable = [f for f in shared if ia[f]["layer0_1"]["correct"] is not None
+                and ib[f]["layer0_1"]["correct"] is not None]
+    winner_diffs = [ia[f]["layer0_1"]["correct"] - ib[f]["layer0_1"]["correct"] for f in pairable]
     ys_diffs = [ia[f]["layer0_2"]["mae_yes_share"] - ib[f]["layer0_2"]["mae_yes_share"]
                 for f in shared if ia[f]["layer0_2"] and ib[f]["layer0_2"]]
     pol_diffs = [ia[f]["layer0_2"]["mae_polarization"] - ib[f]["layer0_2"]["mae_polarization"]
                  for f in shared if ia[f]["layer0_2"] and ib[f]["layer0_2"]]
+
+    # margin buckets (issue #18): margins come from the set's GT — shared
+    # fixtures imply one set.
+    import seed_rule
+    if a.get("set") == "public":
+        manifest = scoring.load_manifest(_ROOT)
+        margins = {}
+        for f in shared:
+            try:
+                fx = scoring.load_fixture(_ROOT, f, manifest)
+                m = fx.get("__gt__") or seed_rule.compute_metric(fx)
+                margins[f] = m.get("margin_all")
+            except (ValueError, KeyError):
+                margins[f] = None  # unknown/synthetic fixture: not bucketable
+    else:
+        fx_all, _ = scoring.corpus_fixtures(_ROOT, a["set"])
+        margins = {name: (d.get("__gt__") or {}).get("margin_all") for name, d in fx_all.items()}
+    bucket_diffs = {}
+    for f in pairable:
+        bucket_name = scoring.margin_bucket(margins.get(f))
+        if bucket_name is not None:
+            bucket_diffs.setdefault(bucket_name, []).append(ia[f]["layer0_1"]["correct"] - ib[f]["layer0_1"]["correct"])
 
     def block(diffs):
         if diffs:
@@ -303,6 +329,31 @@ def cmd_compare(args) -> int:
         return {"n_shared": n, "mean_diff": mean, "ci95": [lo, hi],
                 "ranked": ranked, "provisional": provisional, "note": note}
 
+    close_block = block(bucket_diffs.get("close", []))
+    macro_diffs = {b: d for b, d in bucket_diffs.items() if d}
+    macro_n = sum(len(d) for d in macro_diffs.values())
+    if macro_diffs:
+        macro_mean = sum(sum(d) / len(d) for d in macro_diffs.values()) / len(macro_diffs)
+        mlo, mhi = scoring.stratified_macro_ci([macro_diffs[b] for b in sorted(macro_diffs)])
+        excludes = mlo is not None and (mlo > 0 or mhi < 0)
+        if excludes and macro_n >= scoring.MIN_CELL_COUNT:
+            ranked, provisional = True, False
+        elif excludes:
+            ranked, provisional = False, True
+        else:
+            ranked, provisional = False, False
+        macro_note = ("stratified bootstrap: resample within buckets, unweighted mean "
+                      "of bucket means (CODEBOOK §13, issue #18)")
+        if excludes and macro_n < scoring.MIN_CELL_COUNT:
+            macro_note = (f"stratified bootstrap; CI excludes zero but n={macro_n} < minimum "
+                          f"cell count {scoring.MIN_CELL_COUNT} (§8.3) — provisional, not a ranking")
+        macro_block = {"n_shared": macro_n, "mean_diff": macro_mean, "ci95": [mlo, mhi],
+                       "ranked": ranked, "provisional": provisional, "note": macro_note}
+    else:
+        macro_block = {"n_shared": 0, "mean_diff": None, "ci95": [None, None],
+                       "ranked": False, "provisional": False,
+                       "note": "no margin data in the shared fixtures"}
+
     cov_a = a["layers"]["0.2"].get("answer_coverage")
     cov_b = b["layers"]["0.2"].get("answer_coverage")
     out = {
@@ -319,6 +370,7 @@ def cmd_compare(args) -> int:
                     "a coverage gap can flatter the model that answers only the easy items",
         },
         "layer0_1": block(winner_diffs),
+        "margin_buckets": {"close": close_block, "margin_macro": macro_block},
         "layer0_2": {"mae_yes_share": block(ys_diffs),
                      "mae_polarization": block(pol_diffs)},
     }

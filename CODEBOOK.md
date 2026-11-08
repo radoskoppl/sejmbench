@@ -152,7 +152,8 @@ These rules do not alter any v0.2 metric definition.
    division set; differences inside the CI are not ranked.
 3. The minimum cell count is pre-registered: 20 divisions per bucket.
    Buckets below it are reported but not used in aggregates; changing the
-   minimum requires a version bump.
+   minimum requires a version bump. The margin-macro reporting aggregate is
+   the §13 exception (see §13, issue #18).
 4. No composite score across layers or metric versions. A composite requires
    a written aggregation rule in this CODEBOOK first.
 5. `n` is reported with every number: scored, excluded (with reason),
@@ -390,3 +391,25 @@ same construct as §11's strata):
 - The bucket names overlap §11's stratification buckets (`narrow` there is
   6 ≤ m ≤ 20, `edge` is 1 ≤ m ≤ 5) with different ranges. §13 buckets govern
   model reporting only; §11 buckets govern fixture stratification only.
+
+### Margin-macro and the §8 cell minimum (recorded 2026-11-08, issue #18)
+
+§8 rule 3 governs ranking aggregates: `cmd_compare` applies the 20-division
+minimum to per-bucket comparisons. The margin-macro is the pre-registered
+*reporting* aggregate over all non-empty buckets and deliberately includes
+sub-minimum buckets — per-bucket CIs carry the small-n uncertainty explicitly
+(9A: tie n=3, narrow n=17; the published macro 0.9167 stands). The minimum is
+not waived; it does not apply to this reporting aggregate. Changing this scope
+is a version event. `margin_macro_ci95` (stratified bootstrap: resample within
+buckets, equal weights per replicate) makes the small-n noise visible in the
+aggregate too.
+
+### The `tie` bucket is the headline balance, not the seed-rule tie
+
+`tie` (m = 0) keys on `margin_all` over the API headline counts, which include
+the unaffiliated `inni` votes; the seed-rule tie (§3) is decided over club
+tracks with at least 5 active records (9B: n = 43 vs 37). The difference is
+the `inni` inclusion — ABSENT and NO_VOTE never enter the YES/NO counters.
+Seed-rule ties stay visible in `n_ties` (layer 0.1) and, from schema 1.4, in
+the response `probabilities`. Renaming the key is a version event; the name
+stays `tie` for now (decision recorded in #18).

@@ -70,3 +70,16 @@ def test_validate_margin_buckets_consistency():
     assert any("margin_buckets n values" in e for e in bad)
     wrong_keys = scoring.validate_scorecard(card({"tie": 1, "edge": 1, "wide": 0, "close": 0}))
     assert any("must carry exactly" in e for e in wrong_keys)
+
+
+def test_macro_ci_deterministic_and_covers_point():
+    per = ([{"fixture": f"a{i}", "status": "scored", "layer0_1": {"correct": 1}}
+            for i in range(5)] +
+           [{"fixture": f"b{i}", "status": "scored", "layer0_1": {"correct": 0}}
+            for i in range(3)])
+    margins = {**{f"a{i}": 100 for i in range(5)}, **{f"b{i}": 0 for i in range(3)}}
+    st = scoring.margin_bucket_stats(per, margins)
+    lo, hi = st["margin_macro_ci95"]
+    assert lo is not None and lo <= st["margin_macro"] <= hi
+    st2 = scoring.margin_bucket_stats(per, margins)
+    assert st2["margin_macro_ci95"] == st["margin_macro_ci95"]  # deterministic (§8.1)

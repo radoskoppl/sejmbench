@@ -418,10 +418,29 @@ def margin_bucket_stats(per_item: list, margins: dict) -> dict:
         else:
             buckets[b] = {"n": 0, "n_scored": n_scored[b],
                           "accuracy": None, "ci95": [None, None]}
+    mlo, mhi = stratified_macro_ci([vals[b] for b in MARGIN_BUCKETS])
     return {"definition": "sejmbench.margin-buckets/1.0 (CODEBOOK §13)",
             "buckets": buckets,
             "n_no_margin": n_no_margin,
-            "margin_macro": (sum(accs) / len(accs)) if accs else None}
+            "margin_macro": (sum(accs) / len(accs)) if accs else None,
+            "margin_macro_ci95": [mlo, mhi]}
+
+
+def stratified_macro_ci(lists, replicates: int = BOOTSTRAP_REPLICATES, seed: int = BOOTSTRAP_SEED):
+    """Stratified percentile bootstrap of the margin-macro (CODEBOOK §13, §8.1;
+    issue #18): each replicate resamples *within* every bucket and takes the
+    unweighted mean of the bucket means, so the equal-weight macro structure
+    survives the resample (a pooled bootstrap would let `wide` dominate).
+    Returns (lo, hi); the point estimate is the observed macro. Deterministic."""
+    nonempty = [list(v) for v in lists if v]
+    if not nonempty:
+        return None, None
+    rng = random.Random(seed)
+    accs = []
+    for _ in range(replicates):
+        accs.append(sum(sum(rng.choices(b, k=len(b))) / len(b) for b in nonempty) / len(nonempty))
+    accs.sort()
+    return accs[int(0.025 * replicates)], accs[min(replicates - 1, int(0.975 * replicates))]
 
 
 # --------------------------------------------------------------------------

@@ -22,7 +22,9 @@ v1.4 adds pre-registered margin buckets (issue #14, CODEBOOK §13):
 `layers["0.1"]` carries a `margin_buckets` block — per-bucket
 `n` / `n_scored` / `accuracy` / `ci95` over tie | narrow | close | wide,
 plus `margin_macro` (unweighted mean over non-empty buckets; weights frozen
-in CODEBOOK §13). The denominator rule per bucket matches the headline
+in CODEBOOK §13) and `margin_macro_ci95` (stratified bootstrap: resample
+within buckets, equal weights per replicate — the macro structure survives
+the resample). The denominator rule per bucket matches the headline
 accuracy. `validate_scorecard` verifies the bucket n values sum to layer
 0.1 `n_eligible`. The leaderboard gains two parallel columns
 (close-division accuracy, margin-macro); overall accuracy is never dropped.
