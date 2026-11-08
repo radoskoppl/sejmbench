@@ -100,7 +100,8 @@ def test_outcome_metrics_legacy_table():
     cases = [("yes", "yes"), ("no", "no"), ("tie", "tie"),
              ("yes", "tie"), ("no", "tie")]
     per = [{"fixture": f"t{i}", "status": "scored",
-            "layer0_1": {"pred": p, "gt_outcome": g, "correct": 1 if p == g else 0}}
+            "layer0_1": {"pred": p, "gt_outcome": g, "correct": 1 if p == g else 0,
+                         "pred_outcome": p}}
            for i, (p, g) in enumerate(cases)]
     clusters = {f"t{i}": f"s{i}" for i in range(len(cases))}
     st = scoring._outcome_metrics(per, clusters)
