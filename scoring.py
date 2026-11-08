@@ -709,7 +709,7 @@ def _outcome_metrics(per_item: list, clusters: dict) -> dict:
             continue
         l01 = it["layer0_1"]
         g, p = l01.get("gt_outcome"), l01.get("pred_outcome")
-        if g not in cm:
+        if f"gt_{g}" not in cm:
             continue
         cm[f"gt_{g}"][f"pred_{p if p in ('yes', 'no', 'tie') else 'invalid'}"] += 1
     return {
