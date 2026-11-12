@@ -303,6 +303,15 @@ def parse_answer(raw_output):
 
     if parsed.get("abstain") is True:
         return "abstain", parsed
+    # v0.4 outcome contract (issue #17): a payload reporting the actual outcome
+    # directly is scored without the legacy `winner` key. Additive rule; the
+    # winner path below is unchanged.
+    outcome = parsed.get("outcome")
+    if isinstance(outcome, str) and outcome.strip().lower() in ("yes", "no", "tie"):
+        parsed["outcome"] = outcome.strip().lower()
+        if parsed.get("tracks_abstained"):
+            parsed["tracks_abstained"] = True
+        return "scored", parsed
     winner = parsed.get("winner")
     if winner is None or not isinstance(winner, str):
         return "parse_failure", parsed

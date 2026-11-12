@@ -591,3 +591,31 @@ def test_tie_model_answer_remis_is_abstain_not_converted():
     it = card["items"][0]
     assert it["status"] == "abstain"
     assert card["layers"]["0.1"]["n_abstained"] == 1
+
+
+def test_parse_answer_v04_outcome_only_is_scored():
+    # v0.4 runner writes raw_output = {"outcome": ...} without `winner`
+    # (issue #17); the scorer must accept it, not report parse_failure.
+    status, parsed = scoring.parse_answer({"outcome": "yes"})
+    assert status == "scored"
+    assert parsed["outcome"] == "yes"
+    status, parsed = scoring.parse_answer({"outcome": "Tie", "tracks_abstained": "why"})
+    assert status == "scored" and parsed["tracks_abstained"] is True
+    assert scoring.parse_answer({"outcome": "maybe"})[0] == "parse_failure"
+    # legacy payloads keep their old status
+    assert scoring.parse_answer({"winner": "yes"})[0] == "scored"
+    assert scoring.parse_answer({"abstain": True})[0] == "abstain"
+
+
+def test_score_item_v04_outcome_only_scores_against_headline():
+    division = {"__gt__": {
+        "seed_rule": {"winner": "yes", "tie": False},
+        "tracks": {},
+        "margin_all": 2,
+    }}
+    item = {"raw_output": {"outcome": "yes", "tracks_abstained": "typed API"}}
+    res = scoring.score_item(item, division, "x.json")
+    assert res["status"] == "scored"
+    assert res["layer0_1"]["correct"] == 1
+    res = scoring.score_item({"raw_output": {"outcome": "no"}}, division, "x.json")
+    assert res["layer0_1"]["correct"] == 0
