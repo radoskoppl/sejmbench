@@ -5,6 +5,8 @@ Format follows Keep-a-Changelog; versions follow SemVer.
 
 ## [Unreleased]
 
+- 9c full-corpus run (Basal v0.4, 2026-11-12→14): 66,104/66,104 items, 0 errors; card `basal-9c-full.scorecard.json` (sha `ba1d96fd…`, kept off-git), raws `results/basal-9c-v04-full.raw.tar.gz`, paired report `results/basal-9c-vs-9b-v04.md` — v0.4 scores −0.98 pp vs v0.3 on identical raw-response re-scoring (McNemar χ²=227), concentrated in close divisions and term 10; neither prompt predicts ties (0/43 GT). Scorer fixes: `parse_answer` accepts outcome-only payloads (v0.4 runner output was scoring as parse_failure); `_outcome_metrics` reports empty bootstrap pools as `null` instead of raising (zero predicted ties). Runner: `--shuffle SEED` for uniform partial checkpoints.
+
 - Outcome contract v0.4 (issue #17, metric/benchmark 0.4): `{"outcome": "yes"|"no"|"tie"}` — the GT outcome keys on the official headline counters (`margin_all` sign); `seed_rule.winner` preserved as the legacy field; the 0:0 count is 0 among the 43 headline ties (the tie is arithmetic; `no_decisive_votes` moot). Three metrics (recognition / side-picking / legacy compliance), tie precision-recall-F1, 3×3 confusion matrix; the lane rules in `validate_scorecard`; v0.3/v0.4 not comparable — Basal re-runs under v0.4.
 - Cluster bootstrap by sitting (issue #20, harness 0.8.0): the §8.1 bootstrap resampling unit is the sitting, not the division — divisions within a sitting share the agenda and the political moment. Point estimates unchanged; CIs widen. All committed cards recomputed (CIs only); rescore-check 8/8.
 
