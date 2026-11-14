@@ -117,11 +117,16 @@ def main():
     ap.add_argument("--ids", default=os.path.join(ROOT, "docs", "population", "ids-term10.txt"))
     ap.add_argument("--out", default=os.path.join(ROOT, "results", "basal-9a-term10"))
     ap.add_argument("--limit", type=int, default=0, help="stop after N items (smoke)")
+    ap.add_argument("--model-id", default=None,
+                    help="override recorded model id (default: basal-omni-1.0-ultra (local))")
     ap.add_argument("--shuffle", type=int, default=0,
                     help="seed > 0: process not-yet-done items in seeded random "
                          "order so any checkpoint is a uniform sample of the corpus")
     args = ap.parse_args()
 
+    global MODEL_ID
+    if args.model_id:
+        MODEL_ID = args.model_id
     ids = set()
     with open(args.ids, encoding="utf-8") as fh:
         for line in fh:
