@@ -14,10 +14,11 @@
 | C | fitted (`basal-calibrate` on fit-300) | 203 | 193 (95.1%) | 0.542 | 0.570 | 0.107 | 0.093 |
 | ref | m2 full-corpus run, same 203 items | 203 | 193 | 0.542 | 0.570 | 0.218 | — |
 
-Arm B ≡ arm A: `max_error` is accepted in a `choice` question payload but has no effect
-(0 deferred; 187 answered items below the certified 0.9343 threshold). Per API.md `max_error`
-defers only for `act`/`tool`; for `choice` the gating must happen in application code against
-the certified threshold.
+Arm B vs arm A: `max_error` is accepted in a `choice` question payload but has no effect
+(identical choice in 203/203 items, 0 deferred, 187 answered items below the certified 0.9343
+threshold; 43 confidence values differ by up to 1.9e-2 — the arms ran concurrently in `fast`
+mode without `--deterministic`). Per API.md `max_error` defers only for `act`/`tool`; for
+`choice` the gating must happen in application code against the certified threshold.
 
 ## Client-side threshold simulation (arm A probabilities, certified 0.05 → conf ≥ 0.9343)
 
@@ -82,11 +83,13 @@ Per the pre-registered criterion: ECE(fitted) ≪ ECE(shipped) on the holdout (0
 conditional; the mid-band overconfidence disappears — no band above 0.74 carries invented
 accuracy). For the probability layer, calibration/config mismatch dominates, not model
 capability: a task-fitted temperature halves ECE without touching the model. What refitting
-does NOT fix is the decision layer: accuracy, the ZA bias and the inverted
-`nie_do_okreslenia` selections are bit-identical across arms A and C (10/10 same items) —
+does NOT fix is the decision layer: the ZA bias and the inverted
+`nie_do_okreslenia` selections are unchanged across arms A and C (10/10 same items; decisions
+differ on exactly one near-coin-flip item, term6-s29-v21 — A przeciw 0.472 vs C za 0.414) —
 those remain a model/readout question. Secondary findings: `max_error` on a `choice` question
-is accepted by 2.8.1 but silently ignored (deferred: 0, 187 answered items below the certified
-0.9343); and 300 items in 136 sitting-groups is too few to certify a 0.05 threshold — group
+is accepted by 2.8.1 but silently ignored (0 deferred, 187 answered items below the certified
+0.9343; identical choices in both arms, small confidence drift from concurrent fast-mode
+serving); and 300 items in 136 sitting-groups is too few to certify a 0.05 threshold — group
 structure, not item count, binds (`--keep-shipped choice` keeps shipped thresholds together).
 
 Artifacts: `calib/labelled-{fit,holdout}.jsonl`, `docs/population/ids-calib-{500,holdout}.txt`,

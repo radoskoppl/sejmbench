@@ -43,10 +43,12 @@ The 0.90-0.95 band (42% of all items) carries accuracy 0.396 at stated confidenc
 ## Certified-threshold flag for the maintainer
 
 `GET /v1/models` on 2.8.1 fast reports `certified {0.05: {choice 0.5994}}` for this build.
-Gating this run's probabilities at 0.5994 accepts ~99% of decisions with an observed error of
-~35% — two orders of magnitude above the 5% target. Either the 0.05 certification does not
-transfer to this task family / build, or the preview weights changed after certification.
-Worth a line in the issue alongside the 2.0-max control experiment.
+Gating at 0.5994 does not hold the 5% error target on our data: on the fit set (300 items,
+out-of-sample for the shipped file) `basal-calibrate` reports 100% automated at 35.3% observed
+error at max_error 0.05; on the 203-item holdout, 196/203 = 96.6% of decisions are accepted
+with an observed error of 43.9%. Either the 0.05 certification does not transfer to this task
+family / build, or the preview weights changed after certification. Worth a line in the issue
+alongside the 2.0-max control experiment.
 
 ## Throughput
 
