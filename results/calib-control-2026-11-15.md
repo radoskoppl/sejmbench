@@ -1,34 +1,43 @@
 # Calibration control experiment — basal-2.0-max, 2026-11-15
 
-**Setup.** Same 203-item holdout (stratified 503-item set, seed 20261027, split whole-sittings:
-300 fit / 203 holdout, 308 sittings). Engine 2.8.1 (`release_date 2026-11-15`, revision
+**Setup.** Same 203-item holdout (stratified 503-item set, seed 20261027, split by whole sittings:
+a 300-item calibration pool (184 sitting-groups) and a 203-item untouched external holdout (124
+sitting-groups; zero shared sittings, 308 in union). Within the pool, `basal-calibrate`'s group-hash
+split (`sha256(group) % 10 < 3` → CERT, the shipped-file rule) yields 232 FIT decisions / 136 groups
+and 68 CERT decisions / 48 groups. Engine 2.8.1 (`release_date 2026-11-15`, revision
 `4a48f84e…`, model_files `ece70feeff45b8d4`), mode fast, bf16, GB10, temperature 0, prompt v0.4
 (`c84e3bb3…`). Server reported `certified: {"0.05": {"choice": 0.9343, "noul": 0.8903}}`.
 
 ## Arms
 
-| arm | config | n | answered | acc (abstain=incorrect) | acc (determinate) | ECE cond | ECE uncond |
-|---|---|---|---|---|---|---|---|
-| A | shipped calibration | 203 | 193 (95.1%) | 0.547 | 0.575 | 0.207 | 0.222 |
-| B | shipped + `max_error: 0.05` on choice | 203 | 193 | 0.547 | 0.575 | 0.207 | 0.222 |
-| C | fitted (`basal-calibrate` on fit-300) | 203 | 193 (95.1%) | 0.542 | 0.570 | 0.107 | 0.093 |
-| ref | m2 full-corpus run, same 203 items | 203 | 193 | 0.542 | 0.570 | 0.218 | — |
+| arm | config | n | answered | acc (abstain=incorrect) | acc (determinate) | ECE cond | ECE uncond | NLL | Brier (4-class) |
+|---|---|---|---|---|---|---|---|---|---|
+| A | shipped calibration | 203 | 193 (95.1%) | 0.547 | 0.575 | 0.207 | 0.222 | 1.082 | 0.637 |
+| B | shipped + `max_error: 0.05` on choice | 203 | 193 | 0.547 | 0.575 | 0.207 | 0.222 | 1.081 | 0.636 |
+| C | fitted (`basal-calibrate` on fit-300) | 203 | 193 (95.1%) | 0.542 | 0.570 | 0.107 | 0.093 | 1.017 | 0.572 |
+| ref | m2 full-corpus run, same 203 items | 203 | 193 | 0.542 | 0.570 | 0.218 | — | — | — |
 
-Arm B vs arm A: `max_error` is accepted in a `choice` question payload but has no effect
-(identical choice in 203/203 items, 0 deferred, 187 answered items below the certified 0.9343
-threshold; 43 confidence values differ by up to 1.9e-2 — the arms ran concurrently in `fast`
-mode without `--deterministic`). Per API.md `max_error` defers only for `act`/`tool`; for
-`choice` the gating must happen in application code against the certified threshold.
+Arm B vs arm A: `max_error: 0.05` on `choice` works as documented (API.md, "Answer sets and
+abstain"): every arm B answer carries a boolean `abstain` — False on the 6 decisions at or above
+the certified 0.9343 threshold (term6-s68-v59, term6-s80-v2, term8-s56-v396, term8-s66-v32,
+term8-s78-v59, term9-s11-v58; all gold `za`, all correct), True on the other 197 — while the
+choice itself is identical to arm A in 203/203 items (`deferred` is the `act`/`tool` field and
+never appears for `choice`). Arms A and C (no `max_error`) have `abstain: null` on every answer.
+An earlier version of this report said `max_error` "has no effect" — that was our verification
+error (we grepped for `deferred`), corrected 2026-11-16. 43 confidence values still differ by up
+to 1.9e-2 (concurrent `fast` serving without `--deterministic`).
 
 ## Client-side threshold simulation (arm A probabilities, certified 0.05 → conf ≥ 0.9343)
 
-accepted 6/203 = 3.0%, accuracy of accepted 100% (0 wrong), deferred 97.0%.
+accepted 6/203 = 3.0%, accuracy of accepted 100% (0 wrong), `abstain: true` on the remaining 97.0%.
+One-sided 95% Clopper–Pearson upper bound for 0 errors in 6 accepted: 39.3% — consistent with the
+5% target, not an in-domain validation of it.
 Per bucket (accepted share): wide_yes 14.6%, wide_no 0%, close 0%, narrow 0%, tie 0%.
 ECE on the accepted set: 0.053.
 
-Interpretation: the shipped certified threshold is *valid* (100% accuracy on the accepted set,
-consistent with a 5% error target) but automates only 3% of decisions on this task family —
-it is conservative, not wrong. The mid-band overconfidence lives entirely in the deferred tail.
+Interpretation: the shipped certified threshold is conservative on this task family (3% coverage;
+zero observed errors in the six accepted decisions, but six decisions cannot validate a 5% target).
+The mid-band overconfidence lives entirely in the abstain tail.
 
 ## Arm A band table (conditional, answered-only, 8 fixed bands)
 
@@ -49,13 +58,14 @@ stratified subset, concentrated on wide-margin NO-won divisions.
 
 ## Arm C — fitted calibration
 
-`basal-calibrate` on labelled-fit.jsonl (300 items, 232 FIT / 68 CERT decisions, 136 groups;
+`basal-calibrate` on labelled-fit.jsonl (300 items / 184 sitting-groups; group-hash split
+`sha256(group) % 10 < 3` → CERT: 232 FIT decisions / 136 groups, 68 CERT decisions / 48 groups;
 sha `ab14e0fc…`; holdout sha `cfff12d8…`). Fitted choice temperature 1.354 → 2.997
 (bucket 2-10: 1.634 → 2.997). On the fit set itself ECE shipped → fitted = 0.203 → 0.135;
 on the untouched holdout (this table) 0.207 → 0.107 conditional / 0.222 → 0.093 unconditional.
 The fitted file certifies **no** threshold at max_error 0.05 for choice (the first tested level,
-confidence 0.5904, carries 43 errors against a 0.553 bound — with only 136 independent groups
-the certification stops there), so serving it defers every automatic act/tool decision; for
+confidence 0.5904, carries 43 errors against a 0.553 bound — with only 136 FIT groups the
+certification stops there), so serving it defers every automatic act/tool decision; for
 plain `choice` answers it only re-temperatures the probabilities.
 
 Band table (conditional): confidence collapses into 0.43-0.74 — [0,0.5) n=56 acc 0.554,
@@ -86,11 +96,13 @@ capability: a task-fitted temperature halves ECE without touching the model. Wha
 does NOT fix is the decision layer: the ZA bias and the inverted
 `nie_do_okreslenia` selections are unchanged across arms A and C (10/10 same items; decisions
 differ on exactly one near-coin-flip item, term6-s29-v21 — A przeciw 0.472 vs C za 0.414) —
-those remain a model/readout question. Secondary findings: `max_error` on a `choice` question
-is accepted by 2.8.1 but silently ignored (0 deferred, 187 answered items below the certified
-0.9343; identical choices in both arms, small confidence drift from concurrent fast-mode
-serving); and 300 items in 136 sitting-groups is too few to certify a 0.05 threshold — group
-structure, not item count, binds (`--keep-shipped choice` keeps shipped thresholds together).
+those remain a model/readout question. Secondary findings: `max_error` on `choice` returns the
+documented `abstain` flag (False on the 6 decisions at/above the certified 0.9343, True on the
+other 197; `deferred` never appears for `choice` — an earlier version of this report called the
+feature silently ignored, a verification error, corrected 2026-11-16); and the 300-item pool
+(184 sitting-groups) is too small to certify a 0.05 threshold on the FIT side (232 decisions /
+136 groups) — group structure, not item count, binds (`--keep-shipped choice` keeps shipped
+thresholds together).
 
 Artifacts: `calib/labelled-{fit,holdout}.jsonl`, `docs/population/ids-calib-{500,holdout}.txt`,
 `results/calib-A-shipped/`, `results/calib-B-maxerr/`, `results/calib-C-fitted/` (ATX),
