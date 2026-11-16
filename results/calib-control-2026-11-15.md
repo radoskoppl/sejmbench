@@ -62,6 +62,20 @@ Band table (conditional): confidence collapses into 0.43-0.74 — [0,0.5) n=56 a
 Accuracy is unchanged (0.542 vs 0.547) and the model-selected `nie_do_okreslenia` abstentions are
 identical (same 10 items, all wide-margin NO-won).
 
+## Mini-preview addendum (2026-11-16)
+
+The same two arms were run for `basal-omni-2.0-mini-preview` (pinned rev `2c8a5783…`) on the
+identical holdout: shipped ECE conditional **0.347** → fitted **0.0987** (temperature fit again
+collapses confidences under 0.73; accuracy unchanged at 0.5665, zero selections in both arms).
+The shipped file, "as served", automates 100% of decisions at 35.3% error at max_error 0.05 —
+the certified 0.5994 threshold is not merely conservative or loose, it is wrong for this task
+family. So for mini too, the probability layer is a calibration problem (fit fixes ECE to the
+2.0-max fitted level, 0.099 ≈ 0.107); the decision layer (accuracy 0.567 on the stratified
+subset, ZA bias) is not touched by refitting.
+
+Artifacts: `results/calib-A-mini-shipped/`, `results/calib-C-mini-fitted/` (ATX),
+`calib/models-omni-mini-fitted.json`.
+
 ## Verdict
 
 Per the pre-registered criterion: ECE(fitted) ≪ ECE(shipped) on the holdout (0.107 vs 0.207
