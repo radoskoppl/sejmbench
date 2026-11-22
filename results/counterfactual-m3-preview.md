@@ -23,14 +23,20 @@ only the records differ. Verdicts matched per item_id (`cf-verdicts.jsonl`).
 
 ## Reading
 
+- **Zero `przeciw` answers on 108 winner-reversing perturbations.** This is
+  the headline diagnostic: the model did not produce a single NO answer when
+  the provided tally said NO. A degenerate always-ZA predictor scores exactly
+  the same on this sample (68/108 = 0.630 = the model's accuracy) with
+  **balanced accuracy 0.500** (100% recall on perturbed-yes, 0% on
+  perturbed-no). The 0.630 therefore provides no evidence of input reliance
+  beyond a constant-yes predictor — and the experiment does not distinguish
+  outcome memorization from positional or other decision bias.
 - **† The flip metric is confounded with the model's ZA-bias.** Arm B answered
   `za` on **108/108 flipped tallies** (arm A on the same items: 104 yes / 4 no).
   "Follows perturbed GT 0.630" is therefore exactly the share of flip items
   whose perturbed GT is `yes` (68/108 — i.e. original GT `no`), and "matches
-  original 0.370" is exactly the share whose original GT is `yes`. The model's
-  answer was **invariant to the perturbation**: it does not compute from the
-  provided votes on flip items — under a contradictory tally it defaults to ZA,
-  consistent with its documented 82.2% yes-rate on the committed full run.
+  original 0.370" is exactly the share whose original GT is `yes`. Consistent
+  with the documented 82.2% yes-rate on the committed full run.
 - On unperturbed tallies (reorder + pseudonymize arms, GT unchanged) arm B
   reproduces arm A 99/100 (49/50, 50/50) and answers `no` 23× — the model does
   produce `no` when the tally reads `no`; the uniform-yes behaviour is specific
@@ -40,8 +46,13 @@ only the records differ. Verdicts matched per item_id (`cf-verdicts.jsonl`).
   original-GT-yes items for that trivial reason), and the 4 items where arm A
   itself answered `no` (correctly) also got `za` from arm B — recall of arm A's
   answers does not explain them, uniform-yes does.
-- Order and club-label pseudonymization do not move the answer (0.98/1.00
-  stability) — no dependence on label names or record layout.
+- Order and club-label pseudonymization: 49/50 and 50/50 are **empirical
+  stability rates, not proof of invariance**. The single reorder divergence
+  (`term10-s52-v52`: arm A `tie` → arm B `no`, GT `no` in both) shows the
+  answer can move on semantically identical input; with no repeated-original
+  control we cannot attribute it to record order rather than serving-mode
+  variability (`--mode fast`). A repeated-original/permuted control is part of
+  the follow-up.
 - All 108 flip items are term 10 — by construction (arm A is the term-10
   checkpoint), not by data choice. The `flip_narrow` stratum is
   under-sampled for the same reason (18/60 shortfalls, insufficient
@@ -49,13 +60,17 @@ only the records differ. Verdicts matched per item_id (`cf-verdicts.jsonl`).
   per-stratum. Original-GT composition of the flip pool: 68 `no` / 40 `yes`
   (drives both flip rates — see †).
 - Perturbed-GT balance in the flip arm: 68 yes / 40 no — the perturbation is
-  not a constant signal (`scripts/cf_leakage_check.py`, report-only).
+  not a constant signal, but an always-yes predictor still scores 0.630
+  (`scripts/cf_leakage_check.py` reports it; it does not gate — the
+  acceptance criterion "leakage test" stays open, see issue #15).
 - **Net for issue #15**: input-reliance is not measurable for this model with
   the flip design as built (one outcome question, yes-biased responder). The
   measurable statement: answers are 100% invariant to the perturbation on flip
   items. A separation of "reads the tally" from "always says yes" needs a
-  responder without the degenerate policy, or a design that perturbs toward
-  `no`-GT on a balanced pool.
+  class-balanced flip pool (perturbed GT 60/60, stratified by margin and flip
+  direction), a responder without the degenerate policy, or a design that
+  perturbs toward `no`-GT on a balanced pool — before any positive claim about
+  input reliance.
 
 ## Provenance
 
