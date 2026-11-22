@@ -221,7 +221,7 @@
     }
   ],
   "generated_by": "sejmbench scorer (scorecard schema 1.4)",
-  "harness_version": "0.8.1",
+  "harness_version": "0.9.0",
   "items": [
     {
       "abstain_marker": false,
@@ -1583,7 +1583,8 @@
   "submission": {
     "files": [],
     "kind": "baseline",
-    "note": "predictions generated in-harness (deterministic), stored in items"
+    "note": "predictions generated in-harness (deterministic), stored in items",
+    "random_seed": null
   },
   "token_usage": {
     "input_tokens": 0,

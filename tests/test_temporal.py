@@ -203,6 +203,48 @@ def test_rescore_tar_missing_is_hard_error(tmp_path):
         scoring.rescore(card, repo, {"fixtures": []})
 
 
+def _tar_from(repo, item_paths, arcname_root="basal-x"):
+    tar_path = os.path.join(repo, "results", "basal-x.raw.tar.gz")
+    with tarfile.open(tar_path, "w:gz") as tf:
+        for p in item_paths:
+            tf.add(p, arcname=f"{arcname_root}/" + os.path.basename(p))
+    shutil.rmtree(os.path.join(repo, "results", "basal-x"))
+    return tar_path
+
+
+def test_rescore_tar_tampered_file_fails(tmp_path):
+    """A per-item file edited inside the tar must fail its sha256 pin."""
+    repo = _write_repo(tmp_path, _rows())
+    item_paths = _model_items(repo)
+    card = _model_card_with_tar(repo, item_paths)
+    tar_path = _tar_from(repo, item_paths)
+    # rewrite one member with different content (same name)
+    with tarfile.open(tar_path, "r:gz") as tf:
+        members = {m.name: m for m in tf.getmembers()}
+        payloads = {m.name: tf.extractfile(m).read() for m in members.values() if m.isfile()}
+    key = "basal-x/term3-s1-v1.json"
+    payloads[key] = payloads[key].replace(b'"winner": "yes"', b'"winner": "no"')
+    assert b'"winner": "no"' in payloads[key]
+    import io
+    with tarfile.open(tar_path, "w:gz") as tf:
+        for name, data in payloads.items():
+            m = tarfile.TarInfo(name)
+            m.size = len(data)
+            tf.addfile(m, io.BytesIO(data))
+    with pytest.raises(SystemExit, match="sha256 mismatch"):
+        scoring.rescore(card, repo, {"fixtures": []})
+
+
+def test_rescore_tar_missing_entry_fails(tmp_path):
+    """A tar lacking one of the card's files must fail loudly."""
+    repo = _write_repo(tmp_path, _rows())
+    item_paths = _model_items(repo)
+    card = _model_card_with_tar(repo, item_paths)
+    tar_path = _tar_from(repo, item_paths[:1])  # archive only the first item
+    with pytest.raises(SystemExit, match="not present in"):
+        scoring.rescore(card, repo, {"fixtures": []})
+
+
 def test_corpus_binding_errors(tmp_path):
     repo = _write_repo(tmp_path, _rows())
     card = _temporal_card(repo)

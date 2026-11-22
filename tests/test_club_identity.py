@@ -37,7 +37,10 @@ def test_every_corpus_label_has_an_entry():
     for term, labels in by_term.items():
         assert str(term) in table["terms"], f"term {term} missing from the registry"
         registered = set(table["terms"][str(term)]["labels"])
-        assert registered == set(labels), f"term {term}: registry/snapshot label mismatch"
+        missing = sorted(set(labels) - registered)
+        extra = sorted(registered - set(labels))
+        assert not missing, f"term {term}: labels in the snapshot but not in the registry: {missing}"
+        assert not extra, f"term {term}: labels in the registry but not in the snapshot: {extra}"
 
 
 def test_canonical_targets_resolve():

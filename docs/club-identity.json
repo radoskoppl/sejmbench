@@ -11,7 +11,9 @@
   "Only relay/alias edges collapse a label into its canonical target; split-from/absorbed-into edges never move the canonical id.",
   "'niez.' (non-attached) is always its own canonical label and carries no edges — its membership is churn by definition.",
   "backtest_layers.CLUB_MAP (pre-table, term-10-only) chose Polska2050-TD as the alias representative; this table uses the terminal label Polska2050 — the alias edge preserves the equivalence.",
-  "PSL-PBL (term 4) and PSL-UED (term 8) are coalition labels: kept whole (never decomposed), components recorded from the overlap evidence."
+  "PSL-PBL (term 4) and PSL-UED (term 8) are coalition labels: kept whole (never decomposed), components recorded from the overlap evidence.",
+  "jaccard/containment are set-similarity measures over full-term MP membership; they are evidence for continuity, not a definition of organizational history. Direction of a relay edge A→B means 'B's sittings continue A's' and is checked against per-label sitting runs (a label's span may be non-contiguous — e.g. PLD term 4 pauses while FKP carries the same members), so first/last dates alone cannot decide direction.",
+  "Renaming cycles (A→B→A where the same continuity changes label and changes back) are possible; the canonical id still resolves to the terminal label of the chain (e.g. PLD→FKP→PLD→SG in term 4, all resolving to SG)."
  ],
  "scope": "terms 3-10 (frozen evaluation corpus); registry of every raw API club label",
  "terms": {
@@ -30,6 +32,16 @@
        "kind": "split-from",
        "with": "Polska2050"
       }
+     ],
+     "sitting_runs": [
+      [
+       52,
+       69
+      ]
+     ],
+     "sittings": [
+      52,
+      69
      ]
     },
     "Demokracja": {
@@ -45,6 +57,16 @@
        "kind": "split-from",
        "with": "PiS"
       }
+     ],
+     "sitting_runs": [
+      [
+       50,
+       69
+      ]
+     ],
+     "sittings": [
+      50,
+      69
      ]
     },
     "KO": {
@@ -54,7 +76,17 @@
      "last_date": "2026-11-19",
      "n_divisions": 5451,
      "n_mps": 175,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       69
+      ]
+     ],
+     "sittings": [
+      1,
+      69
+     ]
     },
     "Konfederacja": {
      "canonical": "Konfederacja",
@@ -63,7 +95,17 @@
      "last_date": "2026-11-19",
      "n_divisions": 5451,
      "n_mps": 21,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       69
+      ]
+     ],
+     "sittings": [
+      1,
+      69
+     ]
     },
     "Konfederacja_KP": {
      "canonical": "Konfederacja_KP",
@@ -72,7 +114,17 @@
      "last_date": "2026-11-19",
      "n_divisions": 3498,
      "n_mps": 3,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       36,
+       69
+      ]
+     ],
+     "sittings": [
+      36,
+      69
+     ]
     },
     "Kukiz15": {
      "canonical": "Demokracja",
@@ -87,6 +139,16 @@
        "kind": "relay",
        "with": "Republikanie"
       }
+     ],
+     "sitting_runs": [
+      [
+       1,
+       20
+      ]
+     ],
+     "sittings": [
+      1,
+      20
      ]
     },
     "Lewica": {
@@ -96,7 +158,17 @@
      "last_date": "2026-11-19",
      "n_divisions": 5443,
      "n_mps": 29,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       69
+      ]
+     ],
+     "sittings": [
+      1,
+      69
+     ]
     },
     "Nowa_Lewica": {
      "canonical": "Lewica",
@@ -111,6 +183,16 @@
        "kind": "relay",
        "with": "Lewica"
       }
+     ],
+     "sitting_runs": [
+      [
+       1,
+       1
+      ]
+     ],
+     "sittings": [
+      1,
+      1
      ]
     },
     "PSL": {
@@ -126,6 +208,16 @@
        "kind": "relay",
        "with": "PSL-TD"
       }
+     ],
+     "sitting_runs": [
+      [
+       1,
+       1
+      ]
+     ],
+     "sittings": [
+      1,
+      1
      ]
     },
     "PSL-TD": {
@@ -135,7 +227,17 @@
      "last_date": "2026-11-19",
      "n_divisions": 5443,
      "n_mps": 33,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       69
+      ]
+     ],
+     "sittings": [
+      1,
+      69
+     ]
     },
     "PiS": {
      "canonical": "PiS",
@@ -144,7 +246,17 @@
      "last_date": "2026-11-19",
      "n_divisions": 5451,
      "n_mps": 207,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       69
+      ]
+     ],
+     "sittings": [
+      1,
+      69
+     ]
     },
     "Polska2050": {
      "canonical": "Polska2050",
@@ -153,7 +265,21 @@
      "last_date": "2026-11-19",
      "n_divisions": 2847,
      "n_mps": 34,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       1
+      ],
+      [
+       43,
+       69
+      ]
+     ],
+     "sittings": [
+      1,
+      69
+     ]
     },
     "Polska2050-TD": {
      "canonical": "Polska2050",
@@ -168,6 +294,16 @@
        "kind": "alias",
        "with": "Polska2050"
       }
+     ],
+     "sitting_runs": [
+      [
+       1,
+       42
+      ]
+     ],
+     "sittings": [
+      1,
+      42
      ]
     },
     "Razem": {
@@ -183,6 +319,16 @@
        "kind": "split-from",
        "with": "Lewica"
       }
+     ],
+     "sitting_runs": [
+      [
+       21,
+       69
+      ]
+     ],
+     "sittings": [
+      21,
+      69
      ]
     },
     "Republikanie": {
@@ -194,15 +340,20 @@
      "n_mps": 4,
      "relations": [
       {
-       "jaccard": 1.0,
-       "kind": "relay",
-       "with": "Kukiz15"
-      },
-      {
        "jaccard": 0.8,
        "kind": "relay",
        "with": "Demokracja"
       }
+     ],
+     "sitting_runs": [
+      [
+       20,
+       50
+      ]
+     ],
+     "sittings": [
+      20,
+      50
      ]
     },
     "RozwojPlus": {
@@ -218,6 +369,16 @@
        "kind": "split-from",
        "with": "PiS"
       }
+     ],
+     "sitting_runs": [
+      [
+       63,
+       69
+      ]
+     ],
+     "sittings": [
+      63,
+      69
      ]
     },
     "niez.": {
@@ -227,7 +388,17 @@
      "last_date": "2026-11-19",
      "n_divisions": 5206,
      "n_mps": 16,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       7,
+       69
+      ]
+     ],
+     "sittings": [
+      7,
+      69
+     ]
     }
    }
   },
@@ -240,7 +411,29 @@
      "last_date": "2001-09-18",
      "n_divisions": 11801,
      "n_mps": 209,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       18
+      ],
+      [
+       20,
+       52
+      ],
+      [
+       54,
+       76
+      ],
+      [
+       78,
+       119
+      ]
+     ],
+     "sittings": [
+      1,
+      119
+     ]
     },
     "Alternatyw": {
      "canonical": "Alternatyw",
@@ -255,6 +448,16 @@
        "kind": "split-from",
        "with": "AWS"
       }
+     ],
+     "sitting_runs": [
+      [
+       106,
+       119
+      ]
+     ],
+     "sittings": [
+      106,
+      119
      ]
     },
     "KPN-O": {
@@ -275,6 +478,16 @@
        "kind": "split-from",
        "with": "AWS"
       }
+     ],
+     "sitting_runs": [
+      [
+       37,
+       42
+      ]
+     ],
+     "sittings": [
+      37,
+      42
      ]
     },
     "KPN-OP": {
@@ -295,6 +508,16 @@
        "kind": "split-from",
        "with": "AWS"
       }
+     ],
+     "sitting_runs": [
+      [
+       21,
+       36
+      ]
+     ],
+     "sittings": [
+      21,
+      36
      ]
     },
     "KPN-Ojcz": {
@@ -315,6 +538,24 @@
        "kind": "split-from",
        "with": "AWS"
       }
+     ],
+     "sitting_runs": [
+      [
+       43,
+       52
+      ],
+      [
+       54,
+       76
+      ],
+      [
+       78,
+       81
+      ]
+     ],
+     "sittings": [
+      43,
+      81
      ]
     },
     "KdP": {
@@ -324,7 +565,17 @@
      "last_date": "2001-03-30",
      "n_divisions": 2901,
      "n_mps": 8,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       82,
+       105
+      ]
+     ],
+     "sittings": [
+      82,
+      105
+     ]
     },
     "MN": {
      "canonical": "MN",
@@ -333,7 +584,17 @@
      "last_date": "1997-11-06",
      "n_divisions": 11,
      "n_mps": 2,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       1
+      ]
+     ],
+     "sittings": [
+      1,
+      1
+     ]
     },
     "NK": {
      "canonical": "PP",
@@ -348,6 +609,20 @@
        "kind": "relay",
        "with": "PP"
       }
+     ],
+     "sitting_runs": [
+      [
+       28,
+       52
+      ],
+      [
+       54,
+       64
+      ]
+     ],
+     "sittings": [
+      28,
+      64
      ]
     },
     "PP": {
@@ -357,7 +632,21 @@
      "last_date": "2001-09-18",
      "n_divisions": 8052,
      "n_mps": 7,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       65,
+       76
+      ],
+      [
+       78,
+       119
+      ]
+     ],
+     "sittings": [
+      65,
+      119
+     ]
     },
     "PPS-RLP": {
      "canonical": "PPS-RLP",
@@ -372,6 +661,20 @@
        "kind": "split-from",
        "with": "SLD"
       }
+     ],
+     "sitting_runs": [
+      [
+       64,
+       76
+      ],
+      [
+       78,
+       87
+      ]
+     ],
+     "sittings": [
+      64,
+      87
      ]
     },
     "PRS": {
@@ -381,7 +684,21 @@
      "last_date": "2000-06-30",
      "n_divisions": 1230,
      "n_mps": 3,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       69,
+       76
+      ],
+      [
+       78,
+       81
+      ]
+     ],
+     "sittings": [
+      69,
+      81
+     ]
     },
     "PSL": {
      "canonical": "PSL",
@@ -390,7 +707,29 @@
      "last_date": "2001-09-18",
      "n_divisions": 11801,
      "n_mps": 30,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       18
+      ],
+      [
+       20,
+       52
+      ],
+      [
+       54,
+       76
+      ],
+      [
+       78,
+       119
+      ]
+     ],
+     "sittings": [
+      1,
+      119
+     ]
     },
     "PiS": {
      "canonical": "PiS",
@@ -405,6 +744,16 @@
        "kind": "split-from",
        "with": "AWS"
       }
+     ],
+     "sitting_runs": [
+      [
+       113,
+       119
+      ]
+     ],
+     "sittings": [
+      113,
+      119
      ]
     },
     "ROP": {
@@ -414,7 +763,33 @@
      "last_date": "2001-09-18",
      "n_divisions": 5081,
      "n_mps": 8,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       18
+      ],
+      [
+       20,
+       52
+      ],
+      [
+       54,
+       66
+      ],
+      [
+       70,
+       73
+      ],
+      [
+       116,
+       119
+      ]
+     ],
+     "sittings": [
+      1,
+      119
+     ]
     },
     "ROP-PC": {
      "canonical": "ROP-PC",
@@ -429,6 +804,20 @@
        "kind": "split-from",
        "with": "ROP"
       }
+     ],
+     "sitting_runs": [
+      [
+       73,
+       76
+      ],
+      [
+       78,
+       112
+      ]
+     ],
+     "sittings": [
+      73,
+      112
      ]
     },
     "SKL": {
@@ -444,6 +833,16 @@
        "kind": "split-from",
        "with": "AWS"
       }
+     ],
+     "sitting_runs": [
+      [
+       105,
+       119
+      ]
+     ],
+     "sittings": [
+      105,
+      119
      ]
     },
     "SLD": {
@@ -453,7 +852,29 @@
      "last_date": "2001-09-18",
      "n_divisions": 11801,
      "n_mps": 171,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       18
+      ],
+      [
+       20,
+       52
+      ],
+      [
+       54,
+       76
+      ],
+      [
+       78,
+       119
+      ]
+     ],
+     "sittings": [
+      1,
+      119
+     ]
     },
     "UW": {
      "canonical": "UW",
@@ -462,7 +883,29 @@
      "last_date": "2001-09-18",
      "n_divisions": 11801,
      "n_mps": 64,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       18
+      ],
+      [
+       20,
+       52
+      ],
+      [
+       54,
+       76
+      ],
+      [
+       78,
+       119
+      ]
+     ],
+     "sittings": [
+      1,
+      119
+     ]
     },
     "niez.": {
      "canonical": "niez.",
@@ -471,7 +914,29 @@
      "last_date": "2001-09-18",
      "n_divisions": 11790,
      "n_mps": 58,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       18
+      ],
+      [
+       20,
+       52
+      ],
+      [
+       54,
+       76
+      ],
+      [
+       78,
+       119
+      ]
+     ],
+     "sittings": [
+      1,
+      119
+     ]
     }
    }
   },
@@ -490,10 +955,20 @@
        "kind": "split-from",
        "with": "LPR"
       }
+     ],
+     "sitting_runs": [
+      [
+       74,
+       109
+      ]
+     ],
+     "sittings": [
+      74,
+      109
      ]
     },
     "FKP": {
-     "canonical": "SG",
+     "canonical": "PLD",
      "first_date": "2004-01-20",
      "kind": "relay",
      "last_date": "2004-07-16",
@@ -505,6 +980,16 @@
        "kind": "relay",
        "with": "PLD"
       }
+     ],
+     "sitting_runs": [
+      [
+       67,
+       79
+      ]
+     ],
+     "sittings": [
+      67,
+      79
      ]
     },
     "KL": {
@@ -514,7 +999,17 @@
      "last_date": "2005-08-29",
      "n_divisions": 2321,
      "n_mps": 5,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       95,
+       109
+      ]
+     ],
+     "sittings": [
+      95,
+      109
+     ]
     },
     "KN": {
      "canonical": "RKN",
@@ -529,6 +1024,16 @@
        "kind": "relay",
        "with": "RKN"
       }
+     ],
+     "sitting_runs": [
+      [
+       34,
+       38
+      ]
+     ],
+     "sittings": [
+      34,
+      38
      ]
     },
     "LPR": {
@@ -538,7 +1043,21 @@
      "last_date": "2005-08-29",
      "n_divisions": 13589,
      "n_mps": 47,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       31
+      ],
+      [
+       33,
+       109
+      ]
+     ],
+     "sittings": [
+      1,
+      109
+     ]
     },
     "PBL": {
      "canonical": "PBL",
@@ -553,21 +1072,57 @@
        "kind": "coalition-component",
        "with": "PSL-PBL"
       }
+     ],
+     "sitting_runs": [
+      [
+       38,
+       71
+      ],
+      [
+       73,
+       95
+      ]
+     ],
+     "sittings": [
+      38,
+      95
      ]
     },
     "PLD": {
-     "canonical": "SG",
+     "canonical": "PLD",
      "first_date": "2002-04-04",
-     "kind": "relay",
+     "kind": "canonical",
      "last_date": "2005-03-22",
      "n_divisions": 8560,
      "n_mps": 16,
      "relations": [
       {
        "jaccard": 0.69,
-       "kind": "relay",
+       "kind": "absorbed-into",
        "with": "SG"
       }
+     ],
+     "sitting_runs": [
+      [
+       18,
+       31
+      ],
+      [
+       33,
+       67
+      ],
+      [
+       79,
+       81
+      ],
+      [
+       84,
+       99
+      ]
+     ],
+     "sittings": [
+      18,
+      99
      ]
     },
     "PO": {
@@ -577,7 +1132,21 @@
      "last_date": "2005-08-29",
      "n_divisions": 13589,
      "n_mps": 70,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       31
+      ],
+      [
+       33,
+       109
+      ]
+     ],
+     "sittings": [
+      1,
+      109
+     ]
     },
     "PP": {
      "canonical": "PP",
@@ -592,6 +1161,16 @@
        "kind": "split-from",
        "with": "LPR"
       }
+     ],
+     "sitting_runs": [
+      [
+       40,
+       109
+      ]
+     ],
+     "sittings": [
+      40,
+      109
      ]
     },
     "PRS": {
@@ -607,6 +1186,16 @@
        "kind": "split-from",
        "with": "Samoobrona"
       }
+     ],
+     "sitting_runs": [
+      [
+       57,
+       67
+      ]
+     ],
+     "sittings": [
+      57,
+      67
      ]
     },
     "PSL": {
@@ -622,6 +1211,24 @@
        "kind": "coalition-component",
        "with": "PSL-PBL"
       }
+     ],
+     "sitting_runs": [
+      [
+       1,
+       31
+      ],
+      [
+       33,
+       71
+      ],
+      [
+       73,
+       109
+      ]
+     ],
+     "sittings": [
+      1,
+      109
      ]
     },
     "PSL-PBL": {
@@ -635,7 +1242,17 @@
      "last_date": "2004-04-02",
      "n_divisions": 400,
      "n_mps": 43,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       71,
+       72
+      ]
+     ],
+     "sittings": [
+      71,
+      72
+     ]
     },
     "PiS": {
      "canonical": "PiS",
@@ -644,7 +1261,21 @@
      "last_date": "2005-08-29",
      "n_divisions": 13589,
      "n_mps": 53,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       31
+      ],
+      [
+       33,
+       109
+      ]
+     ],
+     "sittings": [
+      1,
+      109
+     ]
     },
     "RKN": {
      "canonical": "RKN",
@@ -659,6 +1290,16 @@
        "kind": "split-from",
        "with": "LPR"
       }
+     ],
+     "sitting_runs": [
+      [
+       39,
+       109
+      ]
+     ],
+     "sittings": [
+      39,
+      109
      ]
     },
     "ROP": {
@@ -674,6 +1315,20 @@
        "kind": "split-from",
        "with": "LPR"
       }
+     ],
+     "sitting_runs": [
+      [
+       28,
+       31
+      ],
+      [
+       33,
+       109
+      ]
+     ],
+     "sittings": [
+      28,
+      109
      ]
     },
     "RP": {
@@ -687,8 +1342,18 @@
       {
        "jaccard": 0.03,
        "kind": "split-from",
-       "with": "Samoobrona"
+       "with": "niez."
       }
+     ],
+     "sitting_runs": [
+      [
+       106,
+       108
+      ]
+     ],
+     "sittings": [
+      106,
+      108
      ]
     },
     "SDPL": {
@@ -704,6 +1369,16 @@
        "kind": "split-from",
        "with": "SLD"
       }
+     ],
+     "sitting_runs": [
+      [
+       72,
+       109
+      ]
+     ],
+     "sittings": [
+      72,
+      109
      ]
     },
     "SG": {
@@ -713,7 +1388,17 @@
      "last_date": "2005-08-29",
      "n_divisions": 1910,
      "n_mps": 11,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       99,
+       109
+      ]
+     ],
+     "sittings": [
+      99,
+      109
+     ]
     },
     "SKL": {
      "canonical": "SKL",
@@ -728,6 +1413,20 @@
        "kind": "split-from",
        "with": "PO"
       }
+     ],
+     "sitting_runs": [
+      [
+       5,
+       31
+      ],
+      [
+       33,
+       94
+      ]
+     ],
+     "sittings": [
+      5,
+      94
      ]
     },
     "SLD": {
@@ -737,7 +1436,21 @@
      "last_date": "2005-08-29",
      "n_divisions": 13589,
      "n_mps": 208,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       31
+      ],
+      [
+       33,
+       109
+      ]
+     ],
+     "sittings": [
+      1,
+      109
+     ]
     },
     "Samoobrona": {
      "canonical": "Samoobrona",
@@ -746,7 +1459,21 @@
      "last_date": "2005-08-29",
      "n_divisions": 13589,
      "n_mps": 57,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       31
+      ],
+      [
+       33,
+       109
+      ]
+     ],
+     "sittings": [
+      1,
+      109
+     ]
     },
     "UP": {
      "canonical": "UP",
@@ -755,7 +1482,21 @@
      "last_date": "2005-08-29",
      "n_divisions": 13587,
      "n_mps": 20,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       31
+      ],
+      [
+       33,
+       109
+      ]
+     ],
+     "sittings": [
+      1,
+      109
+     ]
     },
     "niez.": {
      "canonical": "niez.",
@@ -764,7 +1505,21 @@
      "last_date": "2005-08-29",
      "n_divisions": 13589,
      "n_mps": 117,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       31
+      ],
+      [
+       33,
+       109
+      ]
+     ],
+     "sittings": [
+      1,
+      109
+     ]
     }
    }
   },
@@ -783,6 +1538,16 @@
        "kind": "split-from",
        "with": "RLN"
       }
+     ],
+     "sitting_runs": [
+      [
+       40,
+       46
+      ]
+     ],
+     "sittings": [
+      40,
+      46
      ]
     },
     "LPR": {
@@ -792,7 +1557,21 @@
      "last_date": "2007-09-19",
      "n_divisions": 3473,
      "n_mps": 36,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       7
+      ],
+      [
+       9,
+       48
+      ]
+     ],
+     "sittings": [
+      1,
+      48
+     ]
     },
     "NKP": {
      "canonical": "NKP",
@@ -807,6 +1586,16 @@
        "kind": "split-from",
        "with": "LPR"
       }
+     ],
+     "sitting_runs": [
+      [
+       18,
+       25
+      ]
+     ],
+     "sittings": [
+      18,
+      25
      ]
     },
     "PO": {
@@ -816,7 +1605,21 @@
      "last_date": "2007-09-19",
      "n_divisions": 3473,
      "n_mps": 138,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       7
+      ],
+      [
+       9,
+       48
+      ]
+     ],
+     "sittings": [
+      1,
+      48
+     ]
     },
     "PR": {
      "canonical": "Prawica",
@@ -836,6 +1639,16 @@
        "kind": "split-from",
        "with": "PiS"
       }
+     ],
+     "sitting_runs": [
+      [
+       40,
+       45
+      ]
+     ],
+     "sittings": [
+      40,
+      45
      ]
     },
     "PSL": {
@@ -845,7 +1658,21 @@
      "last_date": "2007-09-19",
      "n_divisions": 3473,
      "n_mps": 28,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       7
+      ],
+      [
+       9,
+       48
+      ]
+     ],
+     "sittings": [
+      1,
+      48
+     ]
     },
     "PiS": {
      "canonical": "PiS",
@@ -854,7 +1681,21 @@
      "last_date": "2007-09-19",
      "n_divisions": 3473,
      "n_mps": 170,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       7
+      ],
+      [
+       9,
+       48
+      ]
+     ],
+     "sittings": [
+      1,
+      48
+     ]
     },
     "Prawica": {
      "canonical": "Prawica",
@@ -869,6 +1710,16 @@
        "kind": "split-from",
        "with": "PiS"
       }
+     ],
+     "sitting_runs": [
+      [
+       45,
+       48
+      ]
+     ],
+     "sittings": [
+      45,
+      48
      ]
     },
     "RLCh": {
@@ -884,6 +1735,16 @@
        "kind": "split-from",
        "with": "RLN"
       }
+     ],
+     "sitting_runs": [
+      [
+       32,
+       40
+      ]
+     ],
+     "sittings": [
+      32,
+      40
      ]
     },
     "RLN": {
@@ -893,7 +1754,17 @@
      "last_date": "2007-09-19",
      "n_divisions": 2185,
      "n_mps": 18,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       26,
+       48
+      ]
+     ],
+     "sittings": [
+      26,
+      48
+     ]
     },
     "SLD": {
      "canonical": "SLD",
@@ -902,7 +1773,21 @@
      "last_date": "2007-09-19",
      "n_divisions": 3473,
      "n_mps": 56,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       7
+      ],
+      [
+       9,
+       48
+      ]
+     ],
+     "sittings": [
+      1,
+      48
+     ]
     },
     "Samoobrona": {
      "canonical": "Samoobrona",
@@ -911,7 +1796,21 @@
      "last_date": "2007-09-19",
      "n_divisions": 3473,
      "n_mps": 56,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       7
+      ],
+      [
+       9,
+       48
+      ]
+     ],
+     "sittings": [
+      1,
+      48
+     ]
     },
     "niez.": {
      "canonical": "niez.",
@@ -920,7 +1819,21 @@
      "last_date": "2007-09-19",
      "n_divisions": 3473,
      "n_mps": 34,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       7
+      ],
+      [
+       9,
+       48
+      ]
+     ],
+     "sittings": [
+      1,
+      48
+     ]
     }
    }
   },
@@ -939,6 +1852,16 @@
        "kind": "relay",
        "with": "DKP_SD"
       }
+     ],
+     "sitting_runs": [
+      [
+       13,
+       45
+      ]
+     ],
+     "sittings": [
+      13,
+      45
      ]
     },
     "DKP_SD": {
@@ -954,6 +1877,20 @@
        "kind": "split-from",
        "with": "LiD"
       }
+     ],
+     "sitting_runs": [
+      [
+       46,
+       72
+      ],
+      [
+       74,
+       94
+      ]
+     ],
+     "sittings": [
+      46,
+      94
      ]
     },
     "Lewica": {
@@ -969,6 +1906,20 @@
        "kind": "relay",
        "with": "SLD"
       }
+     ],
+     "sitting_runs": [
+      [
+       14,
+       72
+      ],
+      [
+       74,
+       74
+      ]
+     ],
+     "sittings": [
+      14,
+      74
      ]
     },
     "LiD": {
@@ -984,6 +1935,16 @@
        "kind": "relay",
        "with": "Lewica"
       }
+     ],
+     "sitting_runs": [
+      [
+       1,
+       13
+      ]
+     ],
+     "sittings": [
+      1,
+      13
      ]
     },
     "PJN": {
@@ -999,6 +1960,16 @@
        "kind": "split-from",
        "with": "PiS"
       }
+     ],
+     "sitting_runs": [
+      [
+       78,
+       100
+      ]
+     ],
+     "sittings": [
+      78,
+      100
      ]
     },
     "PO": {
@@ -1008,7 +1979,21 @@
      "last_date": "2011-09-16",
      "n_divisions": 8437,
      "n_mps": 240,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       72
+      ],
+      [
+       74,
+       100
+      ]
+     ],
+     "sittings": [
+      1,
+      100
+     ]
     },
     "PSL": {
      "canonical": "PSL",
@@ -1017,7 +2002,21 @@
      "last_date": "2011-09-16",
      "n_divisions": 8437,
      "n_mps": 37,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       72
+      ],
+      [
+       74,
+       100
+      ]
+     ],
+     "sittings": [
+      1,
+      100
+     ]
     },
     "PiS": {
      "canonical": "PiS",
@@ -1026,7 +2025,21 @@
      "last_date": "2011-09-16",
      "n_divisions": 8437,
      "n_mps": 186,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       72
+      ],
+      [
+       74,
+       100
+      ]
+     ],
+     "sittings": [
+      1,
+      100
+     ]
     },
     "Polska_Plus": {
      "canonical": "Polska_Plus",
@@ -1041,6 +2054,20 @@
        "kind": "split-from",
        "with": "PiS"
       }
+     ],
+     "sitting_runs": [
+      [
+       52,
+       72
+      ],
+      [
+       74,
+       74
+      ]
+     ],
+     "sittings": [
+      52,
+      74
      ]
     },
     "Polska_XXI": {
@@ -1056,6 +2083,16 @@
        "kind": "split-from",
        "with": "PiS"
       }
+     ],
+     "sitting_runs": [
+      [
+       26,
+       51
+      ]
+     ],
+     "sittings": [
+      26,
+      51
      ]
     },
     "SDPL": {
@@ -1065,7 +2102,21 @@
      "last_date": "2011-09-16",
      "n_divisions": 4652,
      "n_mps": 4,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       49,
+       72
+      ],
+      [
+       74,
+       100
+      ]
+     ],
+     "sittings": [
+      49,
+      100
+     ]
     },
     "SDPL-NL": {
      "canonical": "SDPL-NL",
@@ -1080,6 +2131,16 @@
        "kind": "split-from",
        "with": "LiD"
       }
+     ],
+     "sitting_runs": [
+      [
+       14,
+       48
+      ]
+     ],
+     "sittings": [
+      14,
+      48
      ]
     },
     "SLD": {
@@ -1089,7 +2150,17 @@
      "last_date": "2011-09-16",
      "n_divisions": 2834,
      "n_mps": 48,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       75,
+       100
+      ]
+     ],
+     "sittings": [
+      75,
+      100
+     ]
     },
     "niez.": {
      "canonical": "niez.",
@@ -1098,7 +2169,21 @@
      "last_date": "2011-09-16",
      "n_divisions": 8437,
      "n_mps": 32,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       72
+      ],
+      [
+       74,
+       100
+      ]
+     ],
+     "sittings": [
+      1,
+      100
+     ]
     }
    }
   },
@@ -1111,7 +2196,21 @@
      "last_date": "2015-10-09",
      "n_divisions": 755,
      "n_mps": 4,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       96,
+       99
+      ],
+      [
+       101,
+       102
+      ]
+     ],
+     "sittings": [
+      96,
+      102
+     ]
     },
     "BiG": {
      "canonical": "BiG",
@@ -1126,6 +2225,20 @@
        "kind": "split-from",
        "with": "RP"
       }
+     ],
+     "sitting_runs": [
+      [
+       77,
+       81
+      ],
+      [
+       83,
+       86
+      ]
+     ],
+     "sittings": [
+      77,
+      86
      ]
     },
     "ID": {
@@ -1146,6 +2259,16 @@
        "kind": "split-from",
        "with": "RP"
       }
+     ],
+     "sitting_runs": [
+      [
+       45,
+       56
+      ]
+     ],
+     "sittings": [
+      45,
+      56
      ]
     },
     "KPSP": {
@@ -1161,6 +2284,20 @@
        "kind": "relay",
        "with": "ZP"
       }
+     ],
+     "sitting_runs": [
+      [
+       72,
+       81
+      ],
+      [
+       83,
+       88
+      ]
+     ],
+     "sittings": [
+      72,
+      88
      ]
     },
     "PO": {
@@ -1170,7 +2307,41 @@
      "last_date": "2015-10-09",
      "n_divisions": 6298,
      "n_mps": 235,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       21
+      ],
+      [
+       23,
+       28
+      ],
+      [
+       30,
+       39
+      ],
+      [
+       41,
+       61
+      ],
+      [
+       63,
+       81
+      ],
+      [
+       83,
+       99
+      ],
+      [
+       101,
+       102
+      ]
+     ],
+     "sittings": [
+      1,
+      102
+     ]
     },
     "PSL": {
      "canonical": "PSL",
@@ -1179,7 +2350,41 @@
      "last_date": "2015-10-09",
      "n_divisions": 6298,
      "n_mps": 43,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       21
+      ],
+      [
+       23,
+       28
+      ],
+      [
+       30,
+       39
+      ],
+      [
+       41,
+       61
+      ],
+      [
+       63,
+       81
+      ],
+      [
+       83,
+       99
+      ],
+      [
+       101,
+       102
+      ]
+     ],
+     "sittings": [
+      1,
+      102
+     ]
     },
     "PiS": {
      "canonical": "PiS",
@@ -1188,7 +2393,41 @@
      "last_date": "2015-10-09",
      "n_divisions": 6298,
      "n_mps": 163,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       21
+      ],
+      [
+       23,
+       28
+      ],
+      [
+       30,
+       39
+      ],
+      [
+       41,
+       61
+      ],
+      [
+       63,
+       81
+      ],
+      [
+       83,
+       99
+      ],
+      [
+       101,
+       102
+      ]
+     ],
+     "sittings": [
+      1,
+      102
+     ]
     },
     "RP": {
      "canonical": "RP",
@@ -1197,7 +2436,37 @@
      "last_date": "2015-10-09",
      "n_divisions": 3832,
      "n_mps": 44,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       21
+      ],
+      [
+       23,
+       28
+      ],
+      [
+       30,
+       39
+      ],
+      [
+       41,
+       50
+      ],
+      [
+       89,
+       99
+      ],
+      [
+       101,
+       102
+      ]
+     ],
+     "sittings": [
+      1,
+      102
+     ]
     },
     "SLD": {
      "canonical": "SLD",
@@ -1206,7 +2475,41 @@
      "last_date": "2015-10-09",
      "n_divisions": 6298,
      "n_mps": 39,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       21
+      ],
+      [
+       23,
+       28
+      ],
+      [
+       30,
+       39
+      ],
+      [
+       41,
+       61
+      ],
+      [
+       63,
+       81
+      ],
+      [
+       83,
+       99
+      ],
+      [
+       101,
+       102
+      ]
+     ],
+     "sittings": [
+      1,
+      102
+     ]
     },
     "SP": {
      "canonical": "SP",
@@ -1215,7 +2518,37 @@
      "last_date": "2014-07-11",
      "n_divisions": 3639,
      "n_mps": 21,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       21
+      ],
+      [
+       23,
+       28
+      ],
+      [
+       30,
+       39
+      ],
+      [
+       41,
+       61
+      ],
+      [
+       63,
+       67
+      ],
+      [
+       69,
+       71
+      ]
+     ],
+     "sittings": [
+      1,
+      71
+     ]
     },
     "TR": {
      "canonical": "TR",
@@ -1230,6 +2563,24 @@
        "kind": "split-from",
        "with": "RP"
       }
+     ],
+     "sitting_runs": [
+      [
+       51,
+       61
+      ],
+      [
+       63,
+       81
+      ],
+      [
+       83,
+       87
+      ]
+     ],
+     "sittings": [
+      51,
+      87
      ]
     },
     "ZP": {
@@ -1239,7 +2590,21 @@
      "last_date": "2015-10-09",
      "n_divisions": 1430,
      "n_mps": 16,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       89,
+       99
+      ],
+      [
+       101,
+       102
+      ]
+     ],
+     "sittings": [
+      89,
+      102
+     ]
     },
     "niez.": {
      "canonical": "niez.",
@@ -1248,7 +2613,41 @@
      "last_date": "2015-10-09",
      "n_divisions": 6298,
      "n_mps": 78,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       21
+      ],
+      [
+       23,
+       28
+      ],
+      [
+       30,
+       39
+      ],
+      [
+       41,
+       61
+      ],
+      [
+       63,
+       81
+      ],
+      [
+       83,
+       99
+      ],
+      [
+       101,
+       102
+      ]
+     ],
+     "sittings": [
+      1,
+      102
+     ]
     }
    }
   },
@@ -1267,6 +2666,16 @@
        "kind": "relay",
        "with": "UED"
       }
+     ],
+     "sitting_runs": [
+      [
+       26,
+       32
+      ]
+     ],
+     "sittings": [
+      26,
+      32
      ]
     },
     "Konfederacja": {
@@ -1282,6 +2691,16 @@
        "kind": "split-from",
        "with": "Kukiz15"
       }
+     ],
+     "sitting_runs": [
+      [
+       79,
+       86
+      ]
+     ],
+     "sittings": [
+      79,
+      86
      ]
     },
     "Kukiz15": {
@@ -1291,7 +2710,21 @@
      "last_date": "2019-10-16",
      "n_divisions": 8157,
      "n_mps": 43,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       8
+      ],
+      [
+       10,
+       86
+      ]
+     ],
+     "sittings": [
+      1,
+      86
+     ]
     },
     "L-S": {
      "canonical": "TERAZ!",
@@ -1306,6 +2739,16 @@
        "kind": "relay",
        "with": "TERAZ!"
       }
+     ],
+     "sitting_runs": [
+      [
+       65,
+       71
+      ]
+     ],
+     "sittings": [
+      65,
+      71
      ]
     },
     "N": {
@@ -1315,7 +2758,21 @@
      "last_date": "2019-06-13",
      "n_divisions": 7538,
      "n_mps": 32,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       8
+      ],
+      [
+       10,
+       82
+      ]
+     ],
+     "sittings": [
+      1,
+      82
+     ]
     },
     "PO": {
      "canonical": "PO-KO",
@@ -1330,6 +2787,20 @@
        "kind": "relay",
        "with": "PO-KO"
       }
+     ],
+     "sitting_runs": [
+      [
+       1,
+       8
+      ],
+      [
+       10,
+       73
+      ]
+     ],
+     "sittings": [
+      1,
+      73
      ]
     },
     "PO-KO": {
@@ -1339,7 +2810,17 @@
      "last_date": "2019-10-16",
      "n_divisions": 1685,
      "n_mps": 160,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       73,
+       86
+      ]
+     ],
+     "sittings": [
+      73,
+      86
+     ]
     },
     "PP": {
      "canonical": "PP",
@@ -1354,6 +2835,16 @@
        "kind": "split-from",
        "with": "Kukiz15"
       }
+     ],
+     "sitting_runs": [
+      [
+       85,
+       86
+      ]
+     ],
+     "sittings": [
+      85,
+      86
      ]
     },
     "PSL": {
@@ -1363,7 +2854,21 @@
      "last_date": "2018-02-08",
      "n_divisions": 4951,
      "n_mps": 17,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       8
+      ],
+      [
+       10,
+       58
+      ]
+     ],
+     "sittings": [
+      1,
+      58
+     ]
     },
     "PSL-KP": {
      "canonical": "PSL-KP",
@@ -1372,7 +2877,17 @@
      "last_date": "2019-10-16",
      "n_divisions": 375,
      "n_mps": 22,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       84,
+       86
+      ]
+     ],
+     "sittings": [
+      84,
+      86
+     ]
     },
     "PSL-UED": {
      "canonical": "PSL-KP",
@@ -1391,6 +2906,16 @@
        "kind": "relay",
        "with": "PSL-KP"
       }
+     ],
+     "sitting_runs": [
+      [
+       59,
+       83
+      ]
+     ],
+     "sittings": [
+      59,
+      83
      ]
     },
     "PiS": {
@@ -1400,7 +2925,21 @@
      "last_date": "2019-10-16",
      "n_divisions": 8157,
      "n_mps": 278,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       8
+      ],
+      [
+       10,
+       86
+      ]
+     ],
+     "sittings": [
+      1,
+      86
+     ]
     },
     "Republikanie": {
      "canonical": "Republikanie",
@@ -1409,7 +2948,17 @@
      "last_date": "2017-09-15",
      "n_divisions": 949,
      "n_mps": 3,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       37,
+       47
+      ]
+     ],
+     "sittings": [
+      37,
+      47
+     ]
     },
     "TERAZ!": {
      "canonical": "TERAZ!",
@@ -1418,7 +2967,17 @@
      "last_date": "2019-10-16",
      "n_divisions": 1747,
      "n_mps": 3,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       72,
+       86
+      ]
+     ],
+     "sittings": [
+      72,
+      86
+     ]
     },
     "UED": {
      "canonical": "UED",
@@ -1427,7 +2986,17 @@
      "last_date": "2018-02-08",
      "n_divisions": 2538,
      "n_mps": 4,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       32,
+       58
+      ]
+     ],
+     "sittings": [
+      32,
+      58
+     ]
     },
     "UPR": {
      "canonical": "UPR",
@@ -1442,6 +3011,16 @@
        "kind": "split-from",
        "with": "Kukiz15"
       }
+     ],
+     "sitting_runs": [
+      [
+       85,
+       86
+      ]
+     ],
+     "sittings": [
+      85,
+      86
      ]
     },
     "W-S": {
@@ -1457,6 +3036,16 @@
        "kind": "split-from",
        "with": "Kukiz15"
       }
+     ],
+     "sitting_runs": [
+      [
+       72,
+       78
+      ]
+     ],
+     "sittings": [
+      72,
+      78
      ]
     },
     "WiS": {
@@ -1472,6 +3061,16 @@
        "kind": "split-from",
        "with": "Kukiz15"
       }
+     ],
+     "sitting_runs": [
+      [
+       19,
+       86
+      ]
+     ],
+     "sittings": [
+      19,
+      86
      ]
     },
     "niez.": {
@@ -1481,7 +3080,21 @@
      "last_date": "2019-10-16",
      "n_divisions": 8157,
      "n_mps": 49,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       8
+      ],
+      [
+       10,
+       86
+      ]
+     ],
+     "sittings": [
+      1,
+      86
+     ]
     }
    }
   },
@@ -1494,7 +3107,25 @@
      "last_date": "2023-08-30",
      "n_divisions": 9389,
      "n_mps": 140,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       31
+      ],
+      [
+       33,
+       40
+      ],
+      [
+       42,
+       81
+      ]
+     ],
+     "sittings": [
+      1,
+      81
+     ]
     },
     "KP": {
      "canonical": "KP",
@@ -1503,7 +3134,25 @@
      "last_date": "2023-08-30",
      "n_divisions": 6817,
      "n_mps": 34,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       21,
+       31
+      ],
+      [
+       33,
+       40
+      ],
+      [
+       42,
+       81
+      ]
+     ],
+     "sittings": [
+      21,
+      81
+     ]
     },
     "Konfederacja": {
      "canonical": "Konfederacja",
@@ -1512,7 +3161,25 @@
      "last_date": "2023-08-30",
      "n_divisions": 9389,
      "n_mps": 13,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       31
+      ],
+      [
+       33,
+       40
+      ],
+      [
+       42,
+       81
+      ]
+     ],
+     "sittings": [
+      1,
+      81
+     ]
     },
     "Kukiz15": {
      "canonical": "Kukiz15",
@@ -1527,6 +3194,24 @@
        "kind": "split-from",
        "with": "KP"
       }
+     ],
+     "sitting_runs": [
+      [
+       26,
+       31
+      ],
+      [
+       33,
+       40
+      ],
+      [
+       42,
+       81
+      ]
+     ],
+     "sittings": [
+      26,
+      81
      ]
     },
     "LD": {
@@ -1536,7 +3221,17 @@
      "last_date": "2023-08-30",
      "n_divisions": 1543,
      "n_mps": 3,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       72,
+       81
+      ]
+     ],
+     "sittings": [
+      72,
+      81
+     ]
     },
     "Lewica": {
      "canonical": "Lewica",
@@ -1545,7 +3240,25 @@
      "last_date": "2023-08-30",
      "n_divisions": 9382,
      "n_mps": 49,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       31
+      ],
+      [
+       33,
+       40
+      ],
+      [
+       42,
+       81
+      ]
+     ],
+     "sittings": [
+      1,
+      81
+     ]
     },
     "PPS": {
      "canonical": "LD",
@@ -1560,6 +3273,16 @@
        "kind": "relay",
        "with": "LD"
       }
+     ],
+     "sitting_runs": [
+      [
+       44,
+       71
+      ]
+     ],
+     "sittings": [
+      44,
+      71
      ]
     },
     "PS": {
@@ -1569,7 +3292,25 @@
      "last_date": "2023-08-30",
      "n_divisions": 5961,
      "n_mps": 4,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       29,
+       31
+      ],
+      [
+       33,
+       40
+      ],
+      [
+       42,
+       81
+      ]
+     ],
+     "sittings": [
+      29,
+      81
+     ]
     },
     "PSL": {
      "canonical": "KP",
@@ -1584,6 +3325,16 @@
        "kind": "relay",
        "with": "PSL-Kukiz15"
       }
+     ],
+     "sitting_runs": [
+      [
+       1,
+       1
+      ]
+     ],
+     "sittings": [
+      1,
+      1
      ]
     },
     "PSL-Kukiz15": {
@@ -1599,6 +3350,16 @@
        "kind": "relay",
        "with": "KP"
       }
+     ],
+     "sitting_runs": [
+      [
+       1,
+       21
+      ]
+     ],
+     "sittings": [
+      1,
+      21
      ]
     },
     "PiS": {
@@ -1608,7 +3369,25 @@
      "last_date": "2023-08-30",
      "n_divisions": 9389,
      "n_mps": 247,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       31
+      ],
+      [
+       33,
+       40
+      ],
+      [
+       42,
+       81
+      ]
+     ],
+     "sittings": [
+      1,
+      81
+     ]
     },
     "Polska2050": {
      "canonical": "Polska2050",
@@ -1623,6 +3402,24 @@
        "kind": "split-from",
        "with": "KO"
       }
+     ],
+     "sitting_runs": [
+      [
+       26,
+       31
+      ],
+      [
+       33,
+       40
+      ],
+      [
+       42,
+       81
+      ]
+     ],
+     "sittings": [
+      26,
+      81
      ]
     },
     "Porozumienie": {
@@ -1638,6 +3435,20 @@
        "kind": "split-from",
        "with": "PiS"
       }
+     ],
+     "sitting_runs": [
+      [
+       36,
+       40
+      ],
+      [
+       42,
+       79
+      ]
+     ],
+     "sittings": [
+      36,
+      79
      ]
     },
     "SLD": {
@@ -1653,6 +3464,16 @@
        "kind": "relay",
        "with": "Lewica"
       }
+     ],
+     "sitting_runs": [
+      [
+       1,
+       1
+      ]
+     ],
+     "sittings": [
+      1,
+      1
      ]
     },
     "WP": {
@@ -1668,6 +3489,16 @@
        "kind": "split-from",
        "with": "PiS"
       }
+     ],
+     "sitting_runs": [
+      [
+       34,
+       34
+      ]
+     ],
+     "sittings": [
+      34,
+      34
      ]
     },
     "Wolnościowcy": {
@@ -1683,6 +3514,16 @@
        "kind": "split-from",
        "with": "Konfederacja"
       }
+     ],
+     "sitting_runs": [
+      [
+       73,
+       80
+      ]
+     ],
+     "sittings": [
+      73,
+      80
      ]
     },
     "niez.": {
@@ -1692,7 +3533,25 @@
      "last_date": "2023-08-30",
      "n_divisions": 9389,
      "n_mps": 27,
-     "relations": []
+     "relations": [],
+     "sitting_runs": [
+      [
+       1,
+       31
+      ],
+      [
+       33,
+       40
+      ],
+      [
+       42,
+       81
+      ]
+     ],
+     "sittings": [
+      1,
+      81
+     ]
     }
    }
   }

@@ -172,13 +172,31 @@ def render_report(raw, by_term, rels) -> str:
 
 
 def verify(by_term):
-    """Recompute every relation recorded in the identity table from the snapshot."""
+    """Recompute every relation recorded in the identity table from the snapshot.
+
+    Per-kind thresholds (must match the frozen rules):
+      relay         time-adjacency: the successor's sitting runs must cover a
+                    window starting within RELAY_GAP sittings of the
+                    predecessor's last sitting (checked against per-label
+                    sitting runs, not dates — spans can be non-contiguous)
+                    and jaccard >= RELAY_JACCARD.
+      alias         jaccard >= ALIAS_JACCARD.
+      split-from    containment of the label in the target >= SPLIT_CONTAINMENT.
+      absorbed-into containment in the target >= ABSORB_CONTAINMENT.
+      coalition-component containment of the component in the coalition
+                    label >= ABSORB_CONTAINMENT (components need not be
+                    fully contained: the coalition label also carries other
+                    members).
+    """
     table = json.load(open(IDENTITY, encoding="utf-8"))
     problems = []
     checked = 0
 
     def containment(sets_from, sets_to):
         return len(sets_from & sets_to) / len(sets_from) if sets_from else 0.0
+
+    def runs_covers_window(runs, last_sitting, gap):
+        return any(r[0] <= last_sitting + gap and r[1] >= last_sitting for r in runs)
 
     for term_s, entry in table["terms"].items():
         term = int(term_s)
@@ -188,29 +206,61 @@ def verify(by_term):
                 continue
             e = by_term[term][label]
             se = set(e["mp_ids"])
+            label_runs = sorted((int(s) for s in e["per_sitting"]))
+            import itertools as _it
+            label_run_ranges = []
+            for _, grp in _it.groupby(enumerate(label_runs), lambda x: x[1] - x[0]):
+                grp = [g[1] for g in grp]
+                label_run_ranges.append((grp[0], grp[-1]))
             if rec.get("first_date") != (e["first_date"] or "")[:10]:
                 problems.append(f"term {term} `{label}`: first_date mismatch")
             if rec.get("last_date") != (e["last_date"] or "")[:10]:
                 problems.append(f"term {term} `{label}`: last_date mismatch")
             if rec.get("n_mps") != len(e["mp_ids"]):
                 problems.append(f"term {term} `{label}`: n_mps mismatch")
+            if rec.get("sitting_runs") != [list(r) for r in label_run_ranges]:
+                problems.append(f"term {term} `{label}`: sitting_runs mismatch")
             for edge in rec.get("relations", []):
                 other = edge["with"]
                 if other not in by_term.get(term, {}):
                     problems.append(f"term {term} `{label}`: relation target `{other}` not in snapshot")
                     continue
-                so = set(by_term[term][other]["mp_ids"])
+                o = by_term[term][other]
+                so = set(o["mp_ids"])
+                other_runs = sorted(int(s) for s in o["per_sitting"])
                 checked += 1
-                st = pair_stats(e, by_term[term][other])
+                st = pair_stats(e, o)
                 if abs(st["jaccard"] - edge["jaccard"]) > 0.005:
                     problems.append(f"term {term} `{label}`→`{other}`: jaccard {edge['jaccard']} != {st['jaccard']:.3f}")
                 kind = edge["kind"]
-                if kind in ("split-from", "absorbed-into", "coalition-component") \
-                        and containment(se, so) < ABSORB_CONTAINMENT:
-                    problems.append(f"term {term} `{label}` {kind} `{other}`: containment lost ({containment(se, so):.2f})")
-                if kind == "split-source" and containment(so, se) < ABSORB_CONTAINMENT:
-                    problems.append(f"term {term} `{label}` split-source `{other}`: containment lost ({containment(so, se):.2f})")
+                if kind == "split-from" and containment(se, so) < SPLIT_CONTAINMENT:
+                    problems.append(f"term {term} `{label}` split-from `{other}`: containment {containment(se, so):.2f} < {SPLIT_CONTAINMENT}")
+                if kind == "absorbed-into" and containment(se, so) < ABSORB_CONTAINMENT:
+                    problems.append(f"term {term} `{label}` absorbed-into `{other}`: containment lost ({containment(se, so):.2f})")
+                if kind == "coalition-component" and containment(se, so) < ABSORB_CONTAINMENT:
+                    problems.append(f"term {term} `{label}` coalition-component `{other}`: containment lost ({containment(se, so):.2f})")
+                if kind == "relay":
+                    if st["jaccard"] < RELAY_JACCARD:
+                        problems.append(f"term {term} `{label}` relay `{other}`: jaccard {st['jaccard']:.2f} < {RELAY_JACCARD}")
+                    # direction: the target's sittings must cover a window
+                    # starting within RELAY_GAP of the label's last sitting
+                    last = max(label_runs)
+                    if not runs_covers_window(_runs_of(other_runs), last, RELAY_GAP):
+                        problems.append(f"term {term} `{label}` relay `{other}`: target does not continue the label's last sitting ({last})")
     return problems, checked
+
+
+def _runs_of(sorted_sittings):
+    if not sorted_sittings:
+        return []
+    out, start, prev = [], sorted_sittings[0], sorted_sittings[0]
+    for s in sorted_sittings[1:]:
+        if s != prev + 1:
+            out.append((start, prev))
+            start = s
+        prev = s
+    out.append((start, prev))
+    return out
 
 
 def main() -> int:
