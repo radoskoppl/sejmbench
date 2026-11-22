@@ -10,15 +10,19 @@ Formalizes the frozen definitions of `CODEBOOK.md`:
 * §3 (seed rule, frozen as v0.3): the seed with the majority of active votes
   (summed over tracks) wins; ties (including 0:0) resolve by seeding order,
   the `YES` seed being the earlier seed; `seed_rule.tie` is `true` iff
-  `YES == NO`; a tie is never reported as "the motion passed"; `ABSTAIN`
-  counts toward `n_active` but never decides the winner;
+  `YES == NO`; a tie is carried explicitly by the tie flag and
+  `method = tie_seed_order` (the model constrains the representation, not
+  downstream reporting); `ABSTAIN` counts toward `n_active` but never
+  decides the winner;
 * §4 (invariants, item 5): `0 ≤ polarization ≤ 1` for every track and
   overall.
 
-Everything proved here is a property of the *specification*. Equivalence of
-the reference implementation `seed_rule.py` to this spec is enforced by the
-pytest suite (`tests/`), not by this file — this artifact removes trust in
-prose, not in tests.
+Everything proved here is a property of the *specification*. The reference
+implementation `seed_rule.py` is validated *independently* by the pytest
+suite (`tests/`) — hand-computed cases and invariants; there is as yet no
+machine-checked equivalence between the two implementations (no shared test
+vectors, no differential testing). This artifact removes trust in prose,
+not in tests.
 
 Faithfulness note: `seed_rule.py` aggregates per-club dicts and keeps as
 tracks the clubs with `sum(t.values()) >= 5`. The vote-filter definitions
@@ -169,10 +173,12 @@ theorem winner_no_iff (d : Division) :
 theorem tieFlag_iff (d : Division) : tieFlag d = true ↔ seedYes d = seedNo d := by
   simp [tieFlag, beq_iff_eq]
 
-/-- CODEBOOK §3: a tie keeps the scorer-convention winner (`yes`, the earlier
-seed) and is *labelled* `tie_seed_order`; it must never be reported as
-"the motion passed" — the tie flag carries the information. -/
-theorem tie_never_passed (d : Division) (h : tieFlag d = true) :
+/-- CODEBOOK §3: a tie is represented explicitly — the tie flag is `true`,
+the winner keeps the scorer-convention value (`yes`, the earlier seed) and
+`method` is `tie_seed_order`. This is a contract on the *representation in
+the metric*; whether a downstream consumer describes the outcome as "the
+motion passed" is outside the model (the CODEBOOK governs that prose). -/
+theorem tie_is_explicit (d : Division) (h : tieFlag d = true) :
     winner d = Winner.yes ∧ method d = Method.tieSeedOrder := by
   have he : seedYes d = seedNo d := (tieFlag_iff d).mp h
   simp [winner, method, he, Nat.lt_irrefl]
@@ -310,11 +316,44 @@ theorem abstain_never_decides (r : Record) (d : Division)
   have h2 : seedNo (r :: d) = seedNo d := hn
   exact ⟨by simp only [winner, h1, h2], by simp only [tieFlag, h1, h2]⟩
 
+/-- Companion to `abstain_never_decides`: an ABSTAIN record by an
+already-tracked club *does* increment `n_active` by one — ABSTAIN counts
+toward activity (CODEBOOK §2/§3), it merely never decides the winner. -/
+theorem abstain_increments_nActive (r : Record) (d : Division)
+    (hk : r.kind = VoteKind.abstain) (h : IsTrack d r.club) :
+    nActive (r :: d) = nActive d + 1 := by
+  obtain ⟨hy, hn, hab⟩ := seed_cons_of_track r d h
+  rw [hk] at hy hn hab
+  simp [isYesKind, isNoKind, isAbstainKind] at hy hn hab
+  have h1 : seedYes (r :: d) = seedYes d := hy
+  have h2 : seedNo (r :: d) = seedNo d := hn
+  have h3 : seedAbstain (r :: d) = seedAbstain d + 1 := hab
+  simp only [nActive, h1, h2, h3]
+  omega
+
 /-- An ABSENT record by an already-tracked club changes neither the winner,
 the tie flag, nor `n_active` (CODEBOOK §1: ABSENT is non-active; it can only
 affect *membership*, never the totals). -/
 theorem absent_never_decides (r : Record) (d : Division)
     (hk : r.kind = VoteKind.absent) (h : IsTrack d r.club) :
+    winner (r :: d) = winner d ∧ tieFlag (r :: d) = tieFlag d
+      ∧ nActive (r :: d) = nActive d := by
+  obtain ⟨hy, hn, hab⟩ := seed_cons_of_track r d h
+  rw [hk] at hy hn hab
+  simp [isYesKind, isNoKind, isAbstainKind] at hy hn hab
+  have h1 : seedYes (r :: d) = seedYes d := hy
+  have h2 : seedNo (r :: d) = seedNo d := hn
+  have h3 : seedAbstain (r :: d) = seedAbstain d := hab
+  exact ⟨by simp only [winner, h1, h2], by simp only [tieFlag, h1, h2],
+    by simp only [nActive, h1, h2, h3]⟩
+
+/-- NO_VOTE (a term-3-era non-active value, CODEBOOK §1) behaves like ABSENT:
+for an already-tracked club it changes neither the winner, the tie flag, nor
+`n_active`. Same already-tracked caveat as `absent_never_decides` — a NO_VOTE
+record can promote a club *into* a track (membership counts all five kinds),
+it just never adds to the totals. -/
+theorem noVote_never_decides (r : Record) (d : Division)
+    (hk : r.kind = VoteKind.noVote) (h : IsTrack d r.club) :
     winner (r :: d) = winner d ∧ tieFlag (r :: d) = tieFlag d
       ∧ nActive (r :: d) = nActive d := by
   obtain ⟨hy, hn, hab⟩ := seed_cons_of_track r d h
