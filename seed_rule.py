@@ -12,6 +12,12 @@ Scope (CODEBOOK.md 0.2, frozen):
     Ties resolve by seeding order (earlier seed wins) - deterministic.
     v0.3 addition: the result exposes `seed_rule.tie` (true iff YES == NO,
     including 0:0) so ties are explicit and never reported as "passed".
+
+A machine-checked Lean formalization of this frozen spec lives in
+`docs/lean/` (module `Sejmbench.SeedRule`): the winner/tie/method/margin
+definitions, the ABSTAIN/ABSENT non-decidence properties and the integer
+core of the polarization bounds are proved there. Equivalence of THIS
+module to that formalization is enforced by the test suite, not by Lean.
 """
 
 from __future__ import annotations

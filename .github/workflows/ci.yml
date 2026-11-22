@@ -24,3 +24,16 @@ jobs:
       - run: python scripts/fetch_scorecards.py
       - run: python scripts/sejmbench.py rescore-check "results/*.scorecard.json"
       - run: python scripts/sejmbench.py leaderboard --check
+
+  lean-spec:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install elan (Lean toolchain manager; pins via docs/lean/lean-toolchain)
+        run: |
+          curl -sSf https://elan.lean-lang.org/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain stable
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Build machine-checked spec (docs/lean)
+        working-directory: docs/lean
+        run: lake build
