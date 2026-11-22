@@ -19,6 +19,27 @@ machine-checked, no prose trusted — the properties listed below.
 | `seedYes_le_countYes` | §0.2: seed totals see only track clubs (`inni` never decides) |
 | `abs_le_n`, `abs_lt_n_when_abstain`, `polarization_nonneg`, `polarization_le_one` | §2 + §4 item 5: the integer core of `polarization = 1 - \|YES-NO\|/n ∈ [0,1]`; abstention dilutes the yes/no disparity and never sharpens it |
 
+## Counterfactual spike (issue #15) — `Sejmbench.Counterfactual`
+
+The counterfactual input-reliance spike perturbs divisions and re-checks
+whether the model's answer follows the *perturbed* tally. The perturbation
+types and their ground-truth effect are machine-checked:
+
+| Theorem (in `Sejmbench/Counterfactual.lean`) | Claim |
+|---|---|
+| `gt_unchanged_by_reorder` | **reorder** (P2): permuting vote records leaves winner, tie flag, method, margin and `n_active` unchanged — the ground truth is a function of the record multiset |
+| `recordCount_relabel` / `isTrack_relabel` | **pseudonymize** (P3): the relabeled division's club partition is the original's transported through the bijection — track membership corresponds label-for-label, so the seed totals computed from the relabeled records are the original's (the composite folding is the pipeline's per-item assertion) |
+| `flip_shift_cons` | **flip** (P1): converting a winning-side YES record of a tracked club to NO moves the totals by exactly `(−1, +1)` — kind changes never move track membership (`isTrack_flip_kind`) |
+| `winner_no_of_shift` | after such a shift by `k`, the winner is `no` exactly when `2·k > seedYes − seedNo` (original winner `yes`) |
+| `winner_yes_of_shift` | mirror: the winner flips to `yes` exactly when `2·k ≥ seedNo − seedYes` — the boundary is inclusive because the exact-boundary case is a TIE and the frozen tie convention resolves it to the `YES` seed |
+| `flip_quota_sufficient` | the spike's quota `k = ⌊margin/2⌋ + 1` meets the strict inequality |
+
+Scope note: as with `SeedRule`, these are properties of the
+*specification*; the Python pipeline (`scripts/cf_build.py`) realizes the
+constructions on concrete records and validates each item's ground truth
+with `seed_rule.compute_metric`. There is no machine-checked equivalence
+between the two.
+
 ## Scope — read before citing
 
 * This is a spec artifact: it proves properties of the **specification**.
