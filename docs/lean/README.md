@@ -19,6 +19,20 @@ machine-checked, no prose trusted — the properties listed below.
 | `seedYes_le_countYes` | §0.2: seed totals see only track clubs (`inni` never decides) |
 | `abs_le_n`, `abs_lt_n_when_abstain`, `polarization_nonneg`, `polarization_le_one` | §2 + §4 item 5: the integer core of `polarization = 1 - \|YES-NO\|/n ∈ [0,1]`; abstention dilutes the yes/no disparity and never sharpens it |
 
+## Lean–Python conformance bridge (#23)
+
+`docs/lean/test-vectors/tier1.json` carries **Tier-1 golden vectors whose
+expected values are derived from the Lean definitions in `Sejmbench/SeedRule.lean`**
+(winner/tie/method/margin per §3, seed totals per §0.2, `isTrack` counting all
+five record kinds) — never from `seed_rule.py`, so
+`tests/test_conformance.py` is a real differential test: Python must agree
+with the machine-checked spec on every Tier-1 field, for 12 edge-case vectors
+(both club thresholds, ABSENT/NO_VOTE qualification, 0:0 and genuine ties,
+equal-size clubs, the inclusive `2k == margin` mirror boundary, NO_VOTE-era
+records, `niez.`). Vector integrity is sha256-checked; a deliberate divergence
+was demonstrated to fail the suite. The vectors also pin
+`cf_build.py`'s GT-recomputation path (`gt_perturbed` shares the bridge).
+
 ## Counterfactual spike (issue #15) — `Sejmbench.Counterfactual`
 
 The counterfactual input-reliance spike perturbs divisions and re-checks

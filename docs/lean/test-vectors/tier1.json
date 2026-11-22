@@ -1,0 +1,1096 @@
+{
+  "codebook_version": "0.3",
+  "spec_revision": "2c8a5783",
+  "vectors": [
+    {
+      "vector_id": "T01-basic-majority",
+      "description": "6 YES vs 4 NO across two 5+ clubs",
+      "source": "synthetic edge case",
+      "input": [
+        {
+          "mp": 1,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 2,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 3,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 4,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 5,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 6,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 50,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 51,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 52,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 53,
+          "club": "B",
+          "kind": "no"
+        }
+      ],
+      "expected": {
+        "winner": "yes",
+        "tie": false,
+        "method": "majority",
+        "margin": 6,
+        "n_active": 6,
+        "seedYes": 6,
+        "seedNo": 0,
+        "seedAbstain": 0,
+        "track_membership": {
+          "A": true,
+          "B": false
+        }
+      },
+      "codebook_version": "0.3",
+      "spec_revision": "2c8a5783",
+      "sha256": "cb472e4f500a6cadcff3b29fa9244c80ad16aa58df868303bb91d66cc535ecc3"
+    },
+    {
+      "vector_id": "T02-boundary-5-records",
+      "description": "club C with exactly 5 records (3y/2n) — qualifies",
+      "source": "synthetic edge case",
+      "input": [
+        {
+          "mp": 1,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 2,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 3,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 4,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 5,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 6,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 50,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 51,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 52,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 53,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 100,
+          "club": "C",
+          "kind": "yes"
+        },
+        {
+          "mp": 101,
+          "club": "C",
+          "kind": "yes"
+        },
+        {
+          "mp": 102,
+          "club": "C",
+          "kind": "yes"
+        },
+        {
+          "mp": 110,
+          "club": "C",
+          "kind": "no"
+        },
+        {
+          "mp": 111,
+          "club": "C",
+          "kind": "no"
+        }
+      ],
+      "expected": {
+        "winner": "yes",
+        "tie": false,
+        "method": "majority",
+        "margin": 7,
+        "n_active": 11,
+        "seedYes": 9,
+        "seedNo": 2,
+        "seedAbstain": 0,
+        "track_membership": {
+          "A": true,
+          "B": false,
+          "C": true
+        }
+      },
+      "codebook_version": "0.3",
+      "spec_revision": "2c8a5783",
+      "sha256": "ec57977d6256178a821b0f1648d2046fcd823362b3c4d2a6d48651acb61b34cf"
+    },
+    {
+      "vector_id": "T03-below-5-records",
+      "description": "club D with 4 records — NOT a track",
+      "source": "synthetic edge case",
+      "input": [
+        {
+          "mp": 1,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 2,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 3,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 4,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 5,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 6,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 50,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 51,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 52,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 53,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 100,
+          "club": "D",
+          "kind": "yes"
+        },
+        {
+          "mp": 101,
+          "club": "D",
+          "kind": "yes"
+        },
+        {
+          "mp": 110,
+          "club": "D",
+          "kind": "no"
+        },
+        {
+          "mp": 111,
+          "club": "D",
+          "kind": "no"
+        }
+      ],
+      "expected": {
+        "winner": "yes",
+        "tie": false,
+        "method": "majority",
+        "margin": 6,
+        "n_active": 6,
+        "seedYes": 6,
+        "seedNo": 0,
+        "seedAbstain": 0,
+        "track_membership": {
+          "A": true,
+          "B": false,
+          "D": false
+        }
+      },
+      "codebook_version": "0.3",
+      "spec_revision": "2c8a5783",
+      "sha256": "3e391f6713e606b5c1e501d69eaeaee00152951dd58a3c7176a84f33e5449853"
+    },
+    {
+      "vector_id": "T04-6-records-4-active",
+      "description": "club E: 6 records, 4 active (2 ABSENT) — membership yes; TRACK_MIN_VOTES distinction",
+      "source": "synthetic edge case",
+      "input": [
+        {
+          "mp": 1,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 2,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 3,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 4,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 5,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 6,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 50,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 51,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 52,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 53,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 100,
+          "club": "E",
+          "kind": "yes"
+        },
+        {
+          "mp": 101,
+          "club": "E",
+          "kind": "yes"
+        },
+        {
+          "mp": 110,
+          "club": "E",
+          "kind": "no"
+        },
+        {
+          "mp": 111,
+          "club": "E",
+          "kind": "no"
+        },
+        {
+          "mp": 120,
+          "club": "E",
+          "kind": "absent"
+        },
+        {
+          "mp": 121,
+          "club": "E",
+          "kind": "absent"
+        }
+      ],
+      "expected": {
+        "winner": "yes",
+        "tie": false,
+        "method": "majority",
+        "margin": 6,
+        "n_active": 10,
+        "seedYes": 8,
+        "seedNo": 2,
+        "seedAbstain": 0,
+        "track_membership": {
+          "A": true,
+          "B": false,
+          "E": true
+        }
+      },
+      "codebook_version": "0.3",
+      "spec_revision": "2c8a5783",
+      "sha256": "653ebf45f2f1c029bf5bad4e7696b7da1c8a4d5d153296bd6554c40ac9ea8e79"
+    },
+    {
+      "vector_id": "T05-7rec-3no-4novote",
+      "description": "club F: 7 records (3 NO + 4 NO_VOTE) — track-qualified, NO counts in GT",
+      "source": "synthetic edge case",
+      "input": [
+        {
+          "mp": 1,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 2,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 3,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 4,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 5,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 6,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 50,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 51,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 52,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 53,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 100,
+          "club": "F",
+          "kind": "noVote"
+        },
+        {
+          "mp": 101,
+          "club": "F",
+          "kind": "noVote"
+        },
+        {
+          "mp": 102,
+          "club": "F",
+          "kind": "noVote"
+        },
+        {
+          "mp": 103,
+          "club": "F",
+          "kind": "noVote"
+        },
+        {
+          "mp": 120,
+          "club": "F",
+          "kind": "no"
+        },
+        {
+          "mp": 121,
+          "club": "F",
+          "kind": "no"
+        },
+        {
+          "mp": 122,
+          "club": "F",
+          "kind": "no"
+        }
+      ],
+      "expected": {
+        "winner": "yes",
+        "tie": false,
+        "method": "majority",
+        "margin": 3,
+        "n_active": 9,
+        "seedYes": 6,
+        "seedNo": 3,
+        "seedAbstain": 0,
+        "track_membership": {
+          "A": true,
+          "B": false,
+          "F": true
+        }
+      },
+      "codebook_version": "0.3",
+      "spec_revision": "2c8a5783",
+      "sha256": "fc3a7b36c73b344604989cfff3995f0319160416d565cc6538c6dafea6ba762c"
+    },
+    {
+      "vector_id": "T06-abstain-in-track",
+      "description": "club G 3y/3n/2a — abstain counted, margin from yes/no only",
+      "source": "synthetic edge case",
+      "input": [
+        {
+          "mp": 1,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 2,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 3,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 4,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 5,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 6,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 50,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 51,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 52,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 53,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 100,
+          "club": "G",
+          "kind": "yes"
+        },
+        {
+          "mp": 101,
+          "club": "G",
+          "kind": "yes"
+        },
+        {
+          "mp": 102,
+          "club": "G",
+          "kind": "yes"
+        },
+        {
+          "mp": 110,
+          "club": "G",
+          "kind": "no"
+        },
+        {
+          "mp": 111,
+          "club": "G",
+          "kind": "no"
+        },
+        {
+          "mp": 112,
+          "club": "G",
+          "kind": "no"
+        },
+        {
+          "mp": 120,
+          "club": "G",
+          "kind": "abstain"
+        },
+        {
+          "mp": 121,
+          "club": "G",
+          "kind": "abstain"
+        }
+      ],
+      "expected": {
+        "winner": "yes",
+        "tie": false,
+        "method": "majority",
+        "margin": 6,
+        "n_active": 14,
+        "seedYes": 9,
+        "seedNo": 3,
+        "seedAbstain": 2,
+        "track_membership": {
+          "A": true,
+          "B": false,
+          "G": true
+        }
+      },
+      "codebook_version": "0.3",
+      "spec_revision": "2c8a5783",
+      "sha256": "1d79daedbfbe66d4838265162bc916160c0a01e296b1688b494883fc6bf0935d"
+    },
+    {
+      "vector_id": "T07-zero-zero",
+      "description": "5 ABSENT records: seedYes=0 seedNo=0 — explicit 0:0 tie",
+      "source": "synthetic edge case",
+      "input": [
+        {
+          "mp": 1,
+          "club": "H",
+          "kind": "absent"
+        },
+        {
+          "mp": 2,
+          "club": "H",
+          "kind": "absent"
+        },
+        {
+          "mp": 3,
+          "club": "H",
+          "kind": "absent"
+        },
+        {
+          "mp": 4,
+          "club": "H",
+          "kind": "absent"
+        },
+        {
+          "mp": 5,
+          "club": "H",
+          "kind": "absent"
+        }
+      ],
+      "expected": {
+        "winner": null,
+        "tie": true,
+        "method": "tie_seed_order",
+        "margin": 0,
+        "n_active": 0,
+        "seedYes": 0,
+        "seedNo": 0,
+        "seedAbstain": 0,
+        "track_membership": {
+          "H": true
+        }
+      },
+      "codebook_version": "0.3",
+      "spec_revision": "2c8a5783",
+      "sha256": "e773c7761573e3a2b056bf4a2affa329c3a22acd1ac5eaa9cc0a3c90c14229b4"
+    },
+    {
+      "vector_id": "T08-tie-5-5",
+      "description": "5 YES vs 5 NO — tie, method tie_seed_order, winner null",
+      "source": "synthetic edge case",
+      "input": [
+        {
+          "mp": 1,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 2,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 3,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 4,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 5,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 50,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 51,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 52,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 53,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 54,
+          "club": "B",
+          "kind": "no"
+        }
+      ],
+      "expected": {
+        "winner": null,
+        "tie": true,
+        "method": "tie_seed_order",
+        "margin": 0,
+        "n_active": 10,
+        "seedYes": 5,
+        "seedNo": 5,
+        "seedAbstain": 0,
+        "track_membership": {
+          "A": true,
+          "B": true
+        }
+      },
+      "codebook_version": "0.3",
+      "spec_revision": "2c8a5783",
+      "sha256": "0a5ef0d25679d4fe9d42fabe8179c274619088259845c76cad100d27d794db6a"
+    },
+    {
+      "vector_id": "T09-equal-size-clubs",
+      "description": "three 5-record clubs with equal sizes — tie-seed-order case",
+      "source": "synthetic edge case",
+      "input": [
+        {
+          "mp": 1,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 2,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 3,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 4,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 5,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 50,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 51,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 52,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 53,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 54,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 100,
+          "club": "C",
+          "kind": "abstain"
+        },
+        {
+          "mp": 101,
+          "club": "C",
+          "kind": "abstain"
+        },
+        {
+          "mp": 102,
+          "club": "C",
+          "kind": "abstain"
+        },
+        {
+          "mp": 103,
+          "club": "C",
+          "kind": "abstain"
+        },
+        {
+          "mp": 104,
+          "club": "C",
+          "kind": "abstain"
+        }
+      ],
+      "expected": {
+        "winner": null,
+        "tie": true,
+        "method": "tie_seed_order",
+        "margin": 0,
+        "n_active": 15,
+        "seedYes": 5,
+        "seedNo": 5,
+        "seedAbstain": 5,
+        "track_membership": {
+          "A": true,
+          "B": true,
+          "C": true
+        }
+      },
+      "codebook_version": "0.3",
+      "spec_revision": "2c8a5783",
+      "sha256": "64a2489e5cd8c37cf2467c3d38d8ca35ec097d1bf0b6eb58fde289e3d6f2b957"
+    },
+    {
+      "vector_id": "T10-boundary-2k-eq-margin",
+      "description": "5y/3n (margin 2, k=2): flipping k records hits inclusive mirror boundary → 3y/5n",
+      "source": "synthetic edge case",
+      "input": [
+        {
+          "mp": 1,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 2,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 3,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 4,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 5,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 50,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 51,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 52,
+          "club": "B",
+          "kind": "no"
+        }
+      ],
+      "expected": {
+        "winner": "yes",
+        "tie": false,
+        "method": "majority",
+        "margin": 5,
+        "n_active": 5,
+        "seedYes": 5,
+        "seedNo": 0,
+        "seedAbstain": 0,
+        "track_membership": {
+          "A": true,
+          "B": false
+        }
+      },
+      "codebook_version": "0.3",
+      "spec_revision": "2c8a5783",
+      "sha256": "235f97c249b1458a15cde81dfc9af5f7f6a2eed02ddb4d14098846cd1afd25af"
+    },
+    {
+      "vector_id": "T11-novote-era",
+      "description": "club I: 3y/2n + 4 NO_VOTE — 7 records, NO_VOTE counts to membership only",
+      "source": "synthetic edge case",
+      "input": [
+        {
+          "mp": 1,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 2,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 3,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 4,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 5,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 6,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 50,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 51,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 52,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 53,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 100,
+          "club": "I",
+          "kind": "yes"
+        },
+        {
+          "mp": 101,
+          "club": "I",
+          "kind": "yes"
+        },
+        {
+          "mp": 102,
+          "club": "I",
+          "kind": "yes"
+        },
+        {
+          "mp": 110,
+          "club": "I",
+          "kind": "no"
+        },
+        {
+          "mp": 111,
+          "club": "I",
+          "kind": "no"
+        },
+        {
+          "mp": 120,
+          "club": "I",
+          "kind": "noVote"
+        },
+        {
+          "mp": 121,
+          "club": "I",
+          "kind": "noVote"
+        },
+        {
+          "mp": 122,
+          "club": "I",
+          "kind": "noVote"
+        },
+        {
+          "mp": 123,
+          "club": "I",
+          "kind": "noVote"
+        }
+      ],
+      "expected": {
+        "winner": "yes",
+        "tie": false,
+        "method": "majority",
+        "margin": 7,
+        "n_active": 11,
+        "seedYes": 9,
+        "seedNo": 2,
+        "seedAbstain": 0,
+        "track_membership": {
+          "A": true,
+          "B": false,
+          "I": true
+        }
+      },
+      "codebook_version": "0.3",
+      "spec_revision": "2c8a5783",
+      "sha256": "543826d4313c12633c9dbd6175c1dd2f3104df3cf0753a620bd74b78b401860a"
+    },
+    {
+      "vector_id": "T12-niez-small",
+      "description": "niez. with 2 records — not a track",
+      "source": "synthetic edge case",
+      "input": [
+        {
+          "mp": 1,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 2,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 3,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 4,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 5,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 6,
+          "club": "A",
+          "kind": "yes"
+        },
+        {
+          "mp": 50,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 51,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 52,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 53,
+          "club": "B",
+          "kind": "no"
+        },
+        {
+          "mp": 100,
+          "club": "niez.",
+          "kind": "yes"
+        },
+        {
+          "mp": 101,
+          "club": "niez.",
+          "kind": "yes"
+        }
+      ],
+      "expected": {
+        "winner": "yes",
+        "tie": false,
+        "method": "majority",
+        "margin": 6,
+        "n_active": 6,
+        "seedYes": 6,
+        "seedNo": 0,
+        "seedAbstain": 0,
+        "track_membership": {
+          "A": true,
+          "B": false,
+          "niez.": false
+        }
+      },
+      "codebook_version": "0.3",
+      "spec_revision": "2c8a5783",
+      "sha256": "712863a24c076fd1c6b3bb507475b9357ff7572e6b77a66131cfa8339b8fa769"
+    }
+  ]
+}
