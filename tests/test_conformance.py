@@ -2,7 +2,7 @@
 """Tier-1 conformance suite (#23): Python seed_rule.py vs Lean-derived golden vectors.
 
 The vectors in docs/lean/test-vectors/tier1.json carry expected values derived
-from the Lean definitions (SeedRule.lean @ spec_revision) — never from
+from the Lean definitions (SeedRule.lean @ lean_commit) — never from
 seed_rule.py, so the comparison is a real differential test, not a tautology.
 
 Tier 1 fields: winner, tie, method, margin, seed totals (YES/NO/ABSTAIN),
@@ -150,16 +150,23 @@ def test_reporting_threshold_excludes_low_active_clubs():
 
 
 def test_spec_provenance_is_real():
-    """lean_commit must resolve in this repository's history and
-    seed_rule_sha256 must match the committed docs/lean/Sejmbench/SeedRule.lean."""
+    """lean_commit must be an ancestor of HEAD, the SeedRule.lean blob AT that
+    commit must hash to seed_rule_sha256, and the current file must still match
+    (spec unchanged since the revision the vectors were derived from)."""
     import hashlib
     import subprocess
     with open(VECTORS_PATH, encoding="utf-8") as fh:
         data = json.load(fh)
     lean_commit = data["lean_commit"]
-    r = subprocess.run(["git", "-C", ROOT, "cat-file", "-e", lean_commit],
-                       capture_output=True)
-    assert r.returncode == 0, f"lean_commit {lean_commit} not in history"
     lean_path = os.path.join(ROOT, "docs", "lean", "Sejmbench", "SeedRule.lean")
-    digest = hashlib.sha256(open(lean_path, "rb").read()).hexdigest()
-    assert digest == data["seed_rule_sha256"], "SeedRule.lean diverged from the vector manifest"
+
+    def git(*args):
+        return subprocess.run(["git", "-C", ROOT, *args], capture_output=True, check=True)
+
+    git("cat-file", "-e", lean_commit)                      # object exists
+    git("merge-base", "--is-ancestor", lean_commit, "HEAD")  # in this branch's history
+    blob = git("show", f"{lean_commit}:docs/lean/Sejmbench/SeedRule.lean").stdout
+    assert hashlib.sha256(blob).hexdigest() == data["seed_rule_sha256"], \
+        "SeedRule.lean at lean_commit diverged from the manifest hash"
+    assert hashlib.sha256(open(lean_path, "rb").read()).hexdigest() == \
+        data["seed_rule_sha256"], "working-tree SeedRule.lean drifted from the manifest"

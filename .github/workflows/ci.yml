@@ -16,7 +16,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install pytest
-      - run: python -m pytest tests/ -v
+      - name: main suite (conformance excluded — separate blocking gate below)
+        run: python -m pytest tests/ -v --ignore=tests/test_conformance.py
       - name: conformance (Tier 1 — Lean-derived golden vectors, #23)
         run: python -m pytest tests/test_conformance.py -v
       - run: python scripts/verify_fixtures.py

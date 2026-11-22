@@ -3,7 +3,7 @@
   "vectors": [
     {
       "vector_id": "T01-basic-majority",
-      "description": "club A 6 YES (tracked) vs club B 4 NO (untracked) — winner yes, margin 2",
+      "description": "club A 6 YES (tracked) vs club B 4 NO (untracked) — seed margin 6",
       "source": "synthetic edge case",
       "input": [
         {
