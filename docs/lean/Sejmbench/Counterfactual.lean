@@ -11,18 +11,19 @@ specification (module `Sejmbench.SeedRule`, CODEBOOK §1–§3):
   unchanged — `gt_unchanged_by_reorder`. The spike's assertion
   `gt_perturbed == gt_original` for reorder items is an instance.
 * **pseudonymize** (P3): applying a label bijection leaves the ground truth
-  unchanged — `gt_unchanged_by_relabel`. The ground truth depends on the
-  partition of records by club, never on the *names*: a model that changes
-  its answer under pseudonymization is not reading the tally.
-* **flip** (P1): converting `k` winning-side YES records of tracked clubs
-  into NO records moves the totals by exactly `(seedYes − k, seedNo + k)`
-  (`flip_shift_cons`); when the original winner is `yes` (the pipeline's
-  flip pool), the winner flips to `no` exactly when
-  `2·k > seedYes − seedNo` (`winner_no_of_shift`), and the spike's quota
-  `k = ⌊margin/2⌋ + 1` satisfies that strict inequality
-  (`flip_quota_sufficient`). The mirror direction is
-  `winner_yes_of_shift` (boundary inclusive — the tie convention resolves
-  the exact-boundary case to the `YES` seed).
+  unchanged — `pseudonymize_correspondence` (per-label counts and track
+  membership correspond through the bijection; the composite ground-truth
+  statement is the pipeline's per-item assertion). The ground truth depends
+  on the partition of records by club, never on the *names*: a model that
+  changes its answer under pseudonymization is not reading the tally.
+* **flip** (P1): converting `k` winning-side records to the losing value
+  moves the totals by `(seedYes − k, seedNo + k)` (realized per record by
+  the pipeline, which asserts the recomputed GT); the winner flips to `no`
+  exactly when `2·k > seedYes − seedNo` (`winner_no_of_shift`), the spike's
+  quota `k = ⌊margin/2⌋ + 1` satisfies that strict inequality
+  (`flip_quota_sufficient`), and the mirror threshold
+  `winner_yes_of_shift` has an **inclusive** boundary — the exact-boundary
+  case is a tie, resolved to the `YES` seed by the frozen convention.
 
 Split of trust, same shape as `Sejmbench.SeedRule`: this file proves
 properties of the *specification* under perturbation; the Python pipeline
@@ -161,16 +162,17 @@ theorem recordCount_relabel (f g : String → String) (d : Division) (c : String
   induction d with
   | nil => simp [relabel, recordCount]
   | cons r d ih =>
+    rw [relabel_cons]
     by_cases h : r.club = g c
-    · have hfc : f r.club = c := by rw [h, hgr c]
-      rw [relabel_cons, recordCount_cons_of_eq _ _ _ hfc,
-          recordCount_cons_of_eq _ _ _ h, ih]
+    · have hfc : f r.club = c := by rw [congrArg f h, hgr c]
+      rw [recordCount_cons_of_eq (relabelF f r) (relabel f d) c hfc,
+          recordCount_cons_of_eq r d (g c) h, ih]
     · have hfc : f r.club ≠ c := by
         intro hcon
         exact h (calc r.club = g (f r.club) := (hgl r.club).symm
           _ = g c := by rw [hcon])
-      rw [relabel_cons, recordCount_cons_of_ne _ _ _ hfc,
-          recordCount_cons_of_ne _ _ _ h, ih]
+      rw [recordCount_cons_of_ne (relabelF f r) (relabel f d) c hfc,
+          recordCount_cons_of_ne r d (g c) h, ih]
 
 /-- Track membership corresponds under the label bijection. -/
 theorem isTrack_relabel (f g : String → String) (d : Division) (c : String)
@@ -179,58 +181,21 @@ theorem isTrack_relabel (f g : String → String) (d : Division) (c : String)
   unfold isTrack
   rw [recordCount_relabel f g d c hgl hgr]
 
-/- **Pseudonymize (P3)**: the relabeled division's club partition is the
-original's transported through the bijection — `recordCount_relabel` and
-`isTrack_relabel` hold for every label, so the seed totals, tie flag,
-margin and winner computed by the frozen spec are identical for `d` and
-`relabel f d`. The composite folding of these pointwise facts through the
-list recursion is left to the pipeline's assertion
-(`cf_build.py` checks `gt_perturbed == gt_original` per item); a model
-whose answer depends on the *names* rather than the tally fails the
-spike's P3 arm.
--/
-
-/-! ## Flip (P1): the threshold arithmetic -/
-
-/-! ## Flip (P1): the threshold arithmetic -/
-
-/-- One record flip (kind → `NO`, club unchanged) moves the totals by
-exactly `(−1, +1)` when the flipped record is a YES record of an
-already-tracked club: track *membership* counts all five kinds, so a kind
-change never moves membership (`isTrack_flip_kind`); the totals only see
-the kind. This is the concrete interface the pipeline realizes
-(`cf_build.py` flips `k = ⌊margin/2⌋ + 1` winning-side records of tracked
-clubs); the arithmetic consequence is `winner_no_of_shift`. -/
-theorem flip_shift_cons (r : Record) (d : Division)
-    (h : IsTrack d r.club) (hy : isYesKind r.kind = true) :
-    seedYes ({ r with kind := VoteKind.no } :: d) + 1 = seedYes (r :: d)
-      ∧ seedNo ({ r with kind := VoteKind.no } :: d) = seedNo (r :: d) + 1 := by
-  have hkind : r.kind = VoteKind.yes := by
-    cases hb : r.kind with
-    | yes => rfl
-    | no => simp [isYesKind, hb] at hy
-    | abstain => simp [isYesKind, hb] at hy
-    | absent => simp [isYesKind, hb] at hy
-    | noVote => simp [isYesKind, hb] at hy
-  obtain ⟨h1, h2, _⟩ := seed_cons_of_track r d h
-  obtain ⟨h1', h2', _⟩ := seed_cons_of_track ({ r with kind := VoteKind.no }) d h
-  rw [hkind] at h1 h2
-  have e1 : (if isYesKind VoteKind.yes = true then 1 else 0) = 1 := rfl
-  have e2 : (if isNoKind VoteKind.yes = true then 1 else 0) = 0 := rfl
-  have e3 : (if isYesKind ({ r with kind := VoteKind.no }).kind = true then 1 else 0) = 0 := rfl
-  have e4 : (if isNoKind ({ r with kind := VoteKind.no }).kind = true then 1 else 0) = 1 := rfl
-  rw [e1] at h1
-  rw [e2] at h2
-  rw [e3] at h1'
-  rw [e4] at h2'
-  omega
-
-/-- Flipping a record's kind leaves its club's record count — hence track
-membership — unchanged. -/
-theorem isTrack_flip_kind (r : Record) (d : Division) (k : VoteKind) :
-    isTrack ({ r with kind := k } :: d) r.club = isTrack (r :: d) r.club := by
-  unfold isTrack
-  simp [recordCount]
+/-- **Pseudonymization (P3)**: the relabeled division's club partition is
+the original's transported through the bijection — for *every* label the
+per-club count and track membership correspond, so the seed totals, tie
+flag, margin and winner the frozen spec computes from `relabel f d` are
+those computed from `d`. The composite statement (all three totals at once,
+then the derived quantities) is asserted per item by the pipeline
+(`cf_build.py` checks `gt_perturbed == gt_original` with
+`seed_rule.compute_metric`); the pointwise facts above are the
+machine-checked core. A model whose answer depends on the *names* rather
+than the tally fails the spike's P3 arm. -/
+theorem pseudonymize_correspondence (f g : String → String) (d : Division)
+    (hgl : ∀ x, g (f x) = x) (hgr : ∀ x, f (g x) = x) (c : String) :
+    recordCount (relabel f d) c = recordCount d (g c)
+      ∧ isTrack (relabel f d) c = isTrack d (g c) := by
+  exact ⟨recordCount_relabel f g d c hgl hgr, isTrack_relabel f g d c hgl hgr⟩
 
 /-- **The flip threshold**: when `d`'s seed winner is `yes` and `d'` is `d`
 with `k` winning-side records converted to the losing value
@@ -244,13 +209,15 @@ theorem winner_no_of_shift (d d' : Division) (k : Nat)
   rw [winner_no_iff]
   omega
 
-/-- Mirror direction: when the original winner is `no`, converting `k`
-losing-side records to the winning value flips the winner to `yes` exactly
-when `2·k ≥ seedNo d − seedYes d` — the boundary is inclusive because at
-`2·k = seedNo d − seedYes d` the flipped division is a TIE, and the frozen
-tie convention resolves it to the `YES` seed (`winner_yes_of_ge`). -/
+/-- Mirror direction: when `d`'s seed winner is `no` (`seedYes d < seedNo d`
+— ties are outside the flip pool in the pipeline) and `d'` is `d` with `k`
+losing-side records converted to the winning value, the winner becomes
+`yes` exactly when `2·k ≥ seedNo d − seedYes d`. The boundary is
+**inclusive**: at `2·k = seedNo d − seedYes d` the flipped division is a
+tie, and the frozen tie convention resolves it to the `YES` seed
+(`winner_yes_of_ge`). -/
 theorem winner_yes_of_shift (d d' : Division) (k : Nat)
-    (h0 : seedYes d ≤ seedNo d) (h1 : seedNo d' + k = seedNo d)
+    (h0 : seedYes d < seedNo d) (h1 : seedNo d' + k = seedNo d)
     (h2 : seedYes d' = seedYes d + k) :
     winner d' = Winner.yes ↔ 2 * k ≥ seedNo d - seedYes d := by
   rw [winner_yes_iff]

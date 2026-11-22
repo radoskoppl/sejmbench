@@ -43,3 +43,17 @@ here explicitly (PENDING). Public availability of the API is not by itself a
 complete statement of redistribution rights. Model-output licence conditions
 are the submitter's responsibility; a check item is planned for the
 scorecard contract (issue #4).
+
+## Synthetic derived data (issue #15)
+
+The counterfactual spike set (`scripts/cf_build.py` output: perturbed twins
+of term-10 divisions) is **not** official vote data. Each record is derived
+from the official mirror by a deterministic perturbation; the derivation
+(flipped records with their indices, shuffle seed, label mapping) is recorded
+per item in `manifest-cf.json` together with the SHA-256 of both the original
+and the modified record list. Synthetic records must never enter the fixture
+manifest, the evaluation corpus, or any accuracy scorecard — they are a
+separate artifact tracked only by issue #15. The perturbed records retain the
+personal data of the originals (MP names, clubs); the same GDPR note as above
+applies, and the third arm (club-label pseudonymization) renames clubs but
+keeps MP ids and names — it is not anonymization of personal data.
