@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # test_spec_provenance_is_real resolves the lean_commit in history
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
