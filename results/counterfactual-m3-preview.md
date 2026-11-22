@@ -65,12 +65,13 @@ only the records differ. Verdicts matched per item_id (`cf-verdicts.jsonl`).
   acceptance criterion "leakage test" stays open, see issue #15).
 - **Net for issue #15**: input-reliance is not measurable for this model with
   the flip design as built (one outcome question, yes-biased responder). The
-  measurable statement: answers are 100% invariant to the perturbation on flip
-  items. A separation of "reads the tally" from "always says yes" needs a
-  class-balanced flip pool (perturbed GT 60/60, stratified by margin and flip
-  direction), a responder without the degenerate policy, or a design that
-  perturbs toward `no`-GT on a balanced pool — before any positive claim about
-  input reliance.
+  measurable statement: **constant-`za` output across all 108 flipped inputs**
+  (104/108 answers identical to the paired original run; the 4 that changed
+  went `no`→`za`). A separation of "reads the tally" from "always says yes"
+  needs a class-balanced flip pool (perturbed GT 60/60, stratified by margin
+  and flip direction), a responder without the degenerate policy, or a design
+  that perturbs toward `no`-GT on a balanced pool — before any positive claim
+  about input reliance.
 
 ## Provenance
 
@@ -86,7 +87,9 @@ only the records differ. Verdicts matched per item_id (`cf-verdicts.jsonl`).
   per-item sha256 + provenance: `cf/manifest-cf.json` (HF,
   `patrykorwat/sejmbench-results`); balance of perturbation types reported
   above (108/50/50).
-- Leakage test: perturbation alone does not trivially predict the verdict
-  (68/40 perturbed-GT split, `cf_leakage_check.py`).
+- Leakage diagnostic: majority-class baselines reported
+  (`cf_leakage_check.py`, always-`za` ceiling 68/108 = 0.630 on this pool);
+  no pass/fail conclusion. The leakage acceptance criterion remains open
+  pending a class-balanced control (follow-up issue #22).
 - DATA_LICENSE note for synthetic derived data: DATA_LICENSE.md
   "Synthetic derived data" section.
