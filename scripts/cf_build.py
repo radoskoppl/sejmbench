@@ -54,6 +54,17 @@ def records_sha(votes) -> str:
         json.dumps(votes, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
 
 
+def compute_ground_truth(division):
+    """Ground-truth fields per the Lean SeedRule (PR #21): winner, tie, method,
+    seed_margin — the exact fields cf_build stores as gt_original/gt_perturbed
+    and tests/test_conformance.py pins to the golden vectors."""
+    import seed_rule  # repo root lands on sys.path via main() or the test harness
+    m = seed_rule.compute_metric(division)
+    sr = m["seed_rule"]
+    return {"winner": sr["winner"], "tie": sr["tie"], "method": sr["method"],
+            "seed_margin": sr["margin"]}
+
+
 def main():
     here = os.path.dirname(os.path.abspath(__file__))
     default_repo = os.path.dirname(here)
@@ -137,10 +148,7 @@ def main():
         kind, bucket = chosen[item_id]
         d = divisions[item_id]
         src_sha = records_sha(d["votes"])
-        m0 = seed_rule.compute_metric(d)
-        sr0 = m0["seed_rule"]
-        gt0 = {"winner": sr0["winner"], "tie": sr0["tie"], "method": sr0["method"],
-               "seed_margin": sr0["margin"]}
+        gt0 = compute_ground_truth(d)
         votes = [dict(v) for v in d["votes"]]
         entry = {"item_id": item_id, "perturbation": kind,
                  "source_url": (f"https://api.sejm.gov.pl/sejm/term{d['term']}/"
@@ -153,11 +161,11 @@ def main():
         if kind == "flip":
             cnt = Counter(v["club"] for v in votes)
             tracks = {c for c, n in cnt.items() if n >= seed_rule.MIN_TRACK_RECORDS}
-            win_vote = "YES" if sr0["winner"] == "yes" else "NO"
+            win_vote = "YES" if gt0["winner"] == "yes" else "NO"
             lose_vote = "NO" if win_vote == "YES" else "YES"
             eligible = [i for i, v in enumerate(votes)
                         if v["club"] in tracks and v["vote"] == win_vote]
-            k = abs(sr0["margin"]) // 2 + 1
+            k = abs(gt0["seed_margin"]) // 2 + 1
             if len(eligible) < k:
                 print(f"SKIP flip {item_id}: eligible {len(eligible)} < k {k}",
                       file=sys.stderr)
@@ -177,10 +185,7 @@ def main():
             dp["yes"] = tally.get("YES", 0)
             dp["no"] = tally.get("NO", 0)
             dp["abstain"] = tally.get("ABSTAIN", 0)
-            m1 = seed_rule.compute_metric(dp)
-            sr1 = m1["seed_rule"]
-            gt1 = {"winner": sr1["winner"], "tie": sr1["tie"], "method": sr1["method"],
-                   "seed_margin": sr1["margin"]}
+            gt1 = compute_ground_truth(dp)
             assert gt1["winner"] != gt0["winner"], f"flip failed to flip: {item_id}"
             entry["gt_perturbed"] = gt1
             entry["bucket"] = bucket
@@ -190,10 +195,7 @@ def main():
             random.Random(shuffle_seed).shuffle(votes)
             entry["params"] = {"shuffle_seed": shuffle_seed}
             dp["votes"] = votes
-            m1 = seed_rule.compute_metric(dp)
-            sr1 = m1["seed_rule"]
-            gt1 = {"winner": sr1["winner"], "tie": sr1["tie"], "method": sr1["method"],
-                   "seed_margin": sr1["margin"]}
+            gt1 = compute_ground_truth(dp)
             assert gt1 == gt0, f"reorder changed GT: {item_id}"
             entry["gt_perturbed"] = gt1
             out_rows.append(dp)
@@ -205,10 +207,7 @@ def main():
                 v["club"] = mapping[v["club"]]
             entry["params"] = {"label_mapping": mapping}
             dp["votes"] = votes
-            m1 = seed_rule.compute_metric(dp)
-            sr1 = m1["seed_rule"]
-            gt1 = {"winner": sr1["winner"], "tie": sr1["tie"], "method": sr1["method"],
-                   "seed_margin": sr1["margin"]}
+            gt1 = compute_ground_truth(dp)
             assert gt1 == gt0, f"pseudonymize changed GT: {item_id}"
             entry["gt_perturbed"] = gt1
             out_rows.append(dp)

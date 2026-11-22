@@ -1,10 +1,9 @@
 {
   "codebook_version": "0.3",
-  "spec_revision": "2c8a5783",
   "vectors": [
     {
       "vector_id": "T01-basic-majority",
-      "description": "6 YES vs 4 NO across two 5+ clubs",
+      "description": "club A 6 YES (tracked) vs club B 4 NO (untracked) — winner yes, margin 2",
       "source": "synthetic edge case",
       "input": [
         {
@@ -70,11 +69,11 @@
         "track_membership": {
           "A": true,
           "B": false
-        }
+        },
+        "decisive_winner": "yes"
       },
       "codebook_version": "0.3",
-      "spec_revision": "2c8a5783",
-      "sha256": "cb472e4f500a6cadcff3b29fa9244c80ad16aa58df868303bb91d66cc535ecc3"
+      "sha256": "994cf07c0d26639755ad6af32594f15626906cdc11a8298e2fc4e8f9c75aa4d7"
     },
     {
       "vector_id": "T02-boundary-5-records",
@@ -170,11 +169,11 @@
           "A": true,
           "B": false,
           "C": true
-        }
+        },
+        "decisive_winner": "yes"
       },
       "codebook_version": "0.3",
-      "spec_revision": "2c8a5783",
-      "sha256": "ec57977d6256178a821b0f1648d2046fcd823362b3c4d2a6d48651acb61b34cf"
+      "sha256": "b84994cb61380ec3d7014be174241acfbdc71ba569d1ac5b8b24dea3adecd43c"
     },
     {
       "vector_id": "T03-below-5-records",
@@ -265,11 +264,11 @@
           "A": true,
           "B": false,
           "D": false
-        }
+        },
+        "decisive_winner": "yes"
       },
       "codebook_version": "0.3",
-      "spec_revision": "2c8a5783",
-      "sha256": "3e391f6713e606b5c1e501d69eaeaee00152951dd58a3c7176a84f33e5449853"
+      "sha256": "bfcb2c69c6343568e265027cc7c517859575aea53861d2ddec837f445d2211f7"
     },
     {
       "vector_id": "T04-6-records-4-active",
@@ -370,11 +369,11 @@
           "A": true,
           "B": false,
           "E": true
-        }
+        },
+        "decisive_winner": "yes"
       },
       "codebook_version": "0.3",
-      "spec_revision": "2c8a5783",
-      "sha256": "653ebf45f2f1c029bf5bad4e7696b7da1c8a4d5d153296bd6554c40ac9ea8e79"
+      "sha256": "cd9e1246cfc0bd26a9b1c19361afb39ff83e4c05de544a8da46a5f7a16dff9bb"
     },
     {
       "vector_id": "T05-7rec-3no-4novote",
@@ -480,11 +479,11 @@
           "A": true,
           "B": false,
           "F": true
-        }
+        },
+        "decisive_winner": "yes"
       },
       "codebook_version": "0.3",
-      "spec_revision": "2c8a5783",
-      "sha256": "fc3a7b36c73b344604989cfff3995f0319160416d565cc6538c6dafea6ba762c"
+      "sha256": "af88ae09252c82ed33bc91670c8d9229cd0c1feecce7cc5ab194483b6bec3292"
     },
     {
       "vector_id": "T06-abstain-in-track",
@@ -595,11 +594,11 @@
           "A": true,
           "B": false,
           "G": true
-        }
+        },
+        "decisive_winner": "yes"
       },
       "codebook_version": "0.3",
-      "spec_revision": "2c8a5783",
-      "sha256": "1d79daedbfbe66d4838265162bc916160c0a01e296b1688b494883fc6bf0935d"
+      "sha256": "65f3dc8adf832f2282d02e953ffdbbfe7f327f7df2ee46de1742f7fe40a38711"
     },
     {
       "vector_id": "T07-zero-zero",
@@ -633,7 +632,7 @@
         }
       ],
       "expected": {
-        "winner": null,
+        "winner": "yes",
         "tie": true,
         "method": "tie_seed_order",
         "margin": 0,
@@ -643,11 +642,11 @@
         "seedAbstain": 0,
         "track_membership": {
           "H": true
-        }
+        },
+        "decisive_winner": null
       },
       "codebook_version": "0.3",
-      "spec_revision": "2c8a5783",
-      "sha256": "e773c7761573e3a2b056bf4a2affa329c3a22acd1ac5eaa9cc0a3c90c14229b4"
+      "sha256": "de0cc65656ca33e4ed43a1df6498e455b0072e78ce124dcef7d81828e91abc3f"
     },
     {
       "vector_id": "T08-tie-5-5",
@@ -706,7 +705,7 @@
         }
       ],
       "expected": {
-        "winner": null,
+        "winner": "yes",
         "tie": true,
         "method": "tie_seed_order",
         "margin": 0,
@@ -717,11 +716,11 @@
         "track_membership": {
           "A": true,
           "B": true
-        }
+        },
+        "decisive_winner": null
       },
       "codebook_version": "0.3",
-      "spec_revision": "2c8a5783",
-      "sha256": "0a5ef0d25679d4fe9d42fabe8179c274619088259845c76cad100d27d794db6a"
+      "sha256": "4fd6eb15d8ff8fa36403d9531fc222ad5e7c8fcebaa898f1deb368f2dcd7a232"
     },
     {
       "vector_id": "T09-equal-size-clubs",
@@ -805,7 +804,7 @@
         }
       ],
       "expected": {
-        "winner": null,
+        "winner": "yes",
         "tie": true,
         "method": "tie_seed_order",
         "margin": 0,
@@ -817,11 +816,11 @@
           "A": true,
           "B": true,
           "C": true
-        }
+        },
+        "decisive_winner": null
       },
       "codebook_version": "0.3",
-      "spec_revision": "2c8a5783",
-      "sha256": "64a2489e5cd8c37cf2467c3d38d8ca35ec097d1bf0b6eb58fde289e3d6f2b957"
+      "sha256": "af4da7d33c062146ac9700f73fbf536cb28a3c81b61ada0c96d7bc83297276de"
     },
     {
       "vector_id": "T10-boundary-2k-eq-margin",
@@ -881,11 +880,11 @@
         "track_membership": {
           "A": true,
           "B": false
-        }
+        },
+        "decisive_winner": "yes"
       },
       "codebook_version": "0.3",
-      "spec_revision": "2c8a5783",
-      "sha256": "235f97c249b1458a15cde81dfc9af5f7f6a2eed02ddb4d14098846cd1afd25af"
+      "sha256": "bc08562d1c8d2323c416e28e3bed0c6f8507b5c9af075dd49f03f49783c272e7"
     },
     {
       "vector_id": "T11-novote-era",
@@ -1001,11 +1000,11 @@
           "A": true,
           "B": false,
           "I": true
-        }
+        },
+        "decisive_winner": "yes"
       },
       "codebook_version": "0.3",
-      "spec_revision": "2c8a5783",
-      "sha256": "543826d4313c12633c9dbd6175c1dd2f3104df3cf0753a620bd74b78b401860a"
+      "sha256": "90df7545b1c3f3fec12ca667e1133b6fd1a3ccc71849132e1d53dded6d17d4ee"
     },
     {
       "vector_id": "T12-niez-small",
@@ -1086,11 +1085,13 @@
           "A": true,
           "B": false,
           "niez.": false
-        }
+        },
+        "decisive_winner": "yes"
       },
       "codebook_version": "0.3",
-      "spec_revision": "2c8a5783",
-      "sha256": "712863a24c076fd1c6b3bb507475b9357ff7572e6b77a66131cfa8339b8fa769"
+      "sha256": "3dc5022ee1a4664309830a27d9f75881a470c6c05fe4cc9652f17513a8e765bb"
     }
-  ]
+  ],
+  "lean_commit": "a5fa549e7efcdc1fb0c9b273a608ba59dd07a829",
+  "seed_rule_sha256": "5762a27f7977c4d6d6deeb131fe1ce34a27abc48d020803d3af0c73f0d9d06a4"
 }

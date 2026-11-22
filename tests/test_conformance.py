@@ -29,7 +29,8 @@ VECTORS_PATH = os.path.join(ROOT, "docs", "lean", "test-vectors", "tier1.json")
 def load_vectors():
     with open(VECTORS_PATH, encoding="utf-8") as fh:
         data = json.load(fh)
-    assert data["spec_revision"], "vectors must carry a spec_revision"
+    assert data["lean_commit"], "vectors must carry a lean_commit"
+    assert data["seed_rule_sha256"], "vectors must carry seed_rule_sha256"
     assert data["codebook_version"], "vectors must carry a codebook_version"
     return data["vectors"]
 
@@ -71,17 +72,20 @@ def test_tier1_conformance(v):
 
     # winner/tie/method/margin — the §3 core (Lean: winner_yes_iff, tieFlag_iff,
     # method_majority_iff_not_tie, margin_pos_of_yes_gt / margin_neg_of_no_gt)
+    # the formal winner field (Lean: else-branch of `winner` resolves Winner.yes
+    # on ties — Python agrees); decisive_winner is the normalization (null iff tie)
+    assert sr["winner"] == exp["winner"]
+    assert exp["decisive_winner"] == (None if exp["tie"] else exp["winner"])
     if exp["tie"]:
         assert sr["tie"] is True
         assert sr["method"] == "tie_seed_order"
         assert sr["margin"] == 0
-        # on ties there is no decisive winner (winner stays the legacy field;
-        # vectors record null and do not constrain seed_rule.winner)
+        assert exp["decisive_winner"] is None
     else:
         assert sr["tie"] is False
         assert sr["method"] == "majority"
-        assert sr["winner"] == exp["winner"]
         assert sr["margin"] == exp["margin"]
+        assert exp["decisive_winner"] == exp["winner"]
 
     # seed totals see only track clubs (Lean: seed_cons_of_track, seedYes_le_countYes)
     st = metric["seed_totals"]
@@ -112,14 +116,50 @@ def test_vector_integrity():
             f"vector {v['vector_id']} failed integrity"
 
 
-def test_cf_build_gt_path_agrees_with_vectors():
-    """The counterfactual GT recomputation (cf_build uses seed_rule.compute_metric)
-    must land on the same GT as the vectors — the perturbation pipeline shares the bridge."""
+def _load_cf_build():
     sys.path.insert(0, os.path.join(ROOT, "scripts"))
-    vectors = load_vectors()
-    basic = next(v for v in vectors if v["vector_id"] == "T01-basic-majority")
-    metric = seed_rule.compute_metric(to_division(basic["input"]))
-    # cf_build reads exactly these fields for gt_original / gt_perturbed
-    assert metric["seed_rule"]["winner"] == basic["expected"]["winner"]
-    assert metric["seed_rule"]["tie"] == basic["expected"]["tie"]
-    assert metric["seed_rule"]["method"] == basic["expected"]["method"]
+    import cf_build
+    return cf_build
+
+
+def test_cf_build_compute_ground_truth_agrees_with_vectors():
+    """cf_build.compute_ground_truth (the function behind gt_original/gt_perturbed)
+    must reproduce the Lean-derived expected values — the real pipeline path."""
+    cf_build = _load_cf_build()
+    for v in load_vectors():
+        gt = cf_build.compute_ground_truth(to_division(v["input"]))
+        exp = v["expected"]
+        assert gt["winner"] == exp["winner"], v["vector_id"]
+        assert gt["tie"] == exp["tie"], v["vector_id"]
+        assert gt["method"] == exp["method"], v["vector_id"]
+        assert gt["seed_margin"] == exp["margin"], v["vector_id"]
+
+
+def test_reporting_threshold_excludes_low_active_clubs():
+    """TRACK_MIN_VOTES (reporting in `tracks`) is a distinct gate from
+    MIN_TRACK_RECORDS (membership): T04's club E (6 records, 4 active) and
+    T05's club F (7 records, 3 active) are track-qualified and count in GT
+    but must be absent from track stats; clubs with >= 5 active are present."""
+    cf_build = _load_cf_build()
+    vectors = {v["vector_id"]: v for v in load_vectors()}
+    for vid, absent_club, present_club in (("T04-6-records-4-active", "E", "A"),
+                                           ("T05-7rec-3no-4novote", "F", "A")):
+        metric = seed_rule.compute_metric(to_division(vectors[vid]["input"]))
+        assert absent_club not in metric["tracks"], vid
+        assert present_club in metric["tracks"], vid
+
+
+def test_spec_provenance_is_real():
+    """lean_commit must resolve in this repository's history and
+    seed_rule_sha256 must match the committed docs/lean/Sejmbench/SeedRule.lean."""
+    import hashlib
+    import subprocess
+    with open(VECTORS_PATH, encoding="utf-8") as fh:
+        data = json.load(fh)
+    lean_commit = data["lean_commit"]
+    r = subprocess.run(["git", "-C", ROOT, "cat-file", "-e", lean_commit],
+                       capture_output=True)
+    assert r.returncode == 0, f"lean_commit {lean_commit} not in history"
+    lean_path = os.path.join(ROOT, "docs", "lean", "Sejmbench", "SeedRule.lean")
+    digest = hashlib.sha256(open(lean_path, "rb").read()).hexdigest()
+    assert digest == data["seed_rule_sha256"], "SeedRule.lean diverged from the vector manifest"
