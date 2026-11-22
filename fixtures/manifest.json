@@ -217,6 +217,64 @@
    }
   },
   {
+   "file": "fixtures/term3-s21-v2-landslide.json",
+   "sha256": "1d441f1fc67153500f4a13372a06ccf395d09a3dd651db5f8482f43206863c66",
+   "response_sha256": "afd56ff02932d0a7b9df2e062676f5f4922c2a1187a6ed8b20771a83a2bf8d13",
+   "term": 3,
+   "sitting": 21,
+   "votingNumber": 2,
+   "title": "PKT 2. PORZ. DZIEN. SPRAWOZDANIE KOMISJI O PROJEKTACH UCHWAŁ W SPRAWIE POTĘPIENIA SYSTEMU TOTALITARNEGO",
+   "date": "1998-06-18T10:20:14",
+   "kind": "ELECTRONIC",
+   "description": " ",
+   "counts": {
+    "yes": 49,
+    "no": 176,
+    "abstain": 73,
+    "notParticipating": 162,
+    "totalVoted": 298
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term3/votings/21/2",
+   "n_vote_records": 460,
+   "selection": "curated",
+   "margin_bucket": "landslide",
+   "type_bucket": "unknown",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": false
+   }
+  },
+  {
+   "file": "fixtures/term3-s37-v1-comfortable.json",
+   "sha256": "207c889b3bbab77e7690e212d98e1182ad1cee72ce4e8ef00b13c375619c121a",
+   "response_sha256": "cc3a93d4bb07da663b406ce0d11c8c6c64b72de6daa6226f55dcac8763693b4f",
+   "term": 3,
+   "sitting": 37,
+   "votingNumber": 1,
+   "title": "37. POSIEDZENIE SEJMU RZECZYPOSPOLITEJ POLSKIEJ W DNIACH 2, 3, 4 GRUDNIA 1998 ROKU",
+   "date": "1998-12-03T09:08:38",
+   "kind": "ELECTRONIC",
+   "description": " ",
+   "counts": {
+    "yes": 211,
+    "no": 150,
+    "abstain": 4,
+    "notParticipating": 95,
+    "totalVoted": 365
+   },
+   "source_url": "https://api.sejm.gov.pl/sejm/term3/votings/37/1",
+   "n_vote_records": 460,
+   "selection": "curated",
+   "margin_bucket": "comfortable",
+   "type_bucket": "unknown",
+   "layers": {
+    "0.1": true,
+    "0.2": true,
+    "1": false
+   }
+  },
+  {
    "file": "fixtures/term3-s65-v23-edge.json",
    "sha256": "78d5750b502410322f0b6f30107102c5c20adb5dfed3bb39746cc1773da56207",
    "response_sha256": "ff18b0f4d9db68739ec49ae1e7aee6a6d14ac29c207b3770769ff1d1abe92f2e",

@@ -51,7 +51,7 @@ legislative simulation, and the benchmark gap this repo fills.
 - `layer1_dictionary.json` + `layer1_classify.py` — layer-1 vote-type
   dictionary (DRAFT, issue #2): deterministic mapping from official
   description strings; coverage in `docs/layer1-coverage.md`.
-- `fixtures/` — 50 real divisions from the official Sejm API, stratified per
+- `fixtures/` — 52 real divisions from the official Sejm API, stratified per
   CODEBOOK section 11 (sha256 + provenance pins in `fixtures/manifest.json`,
   committed selection list in `fixtures/selection.json`):
   - `term10-s1-v2-landslide.json` — v0.2 anchor: resolution on the number of
@@ -62,24 +62,30 @@ legislative simulation, and the benchmark gap this repo fills.
     except PSL-TD (24 yes / 7 no); PiS votes 170 no + 1 abstention; 37 MPs
     absent. Overall polarization 0.9284 on the 0-1 scale.
   - 46 seeded samples across margin strata (unanimous / edge / narrow /
-    comfortable / landslide) and terms 3–10, plus 2 curated edge cases
-    (a real tie; a zero-counter division excluded from layers 0.1/0.2).
+    comfortable / landslide) and terms 3–10, plus 4 curated edge cases
+    (a real tie; a zero-counter division excluded from layers 0.1/0.2; two
+    club-split cases — splinter co-present with its parent — from the
+    club-identity registry).
+- `docs/club-identity.json` — per-term registry of every raw API club label
+  (terms 3–10): canonical id, relay/alias/split relations with MP-overlap
+  evidence, validity dates; `docs/club-identity-membership.json.gz` +
+  `docs/club-identity-report.md` are the evidence chain (issue #1).
 - `seed_rule.py` — the v0.2 metric: winner determination + per-track cohesion.
   Fully specified in `CODEBOOK.md`.
 - `tests/` — unit tests (synthetic hand-computed divisions, the layer-1
-  dictionary, the fixture checker) + a self-consistency test on the real
-  fixture: tallies recomputed from vote records must reconstruct the API
-  headline counts exactly.
+  dictionary, the fixture checker, the club-identity registry) + a
+  self-consistency test on the real fixture: tallies recomputed from vote
+  records must reconstruct the API headline counts exactly.
 - `scripts/fetch_fixtures.py` — reproduces the fixtures from the live API.
 - `scripts/verify_fixtures.py` — checks fixture integrity against the manifest.
 
 ```
-$ python -m pytest tests/ -v
-146 passed, 1 skipped
+$ python -m pytest tests/ -q
+194 passed, 1 skipped
 $ python scripts/verify_fixtures.py
 OK fixtures/term10-s1-v2-landslide.json 538f9709c664
 OK fixtures/term10-s6-v14-tight.json  1fd2601aeef2
-… (50 fixtures total)
+… (52 fixtures total)
 ```
 
 ## How to participate (agent track)
@@ -113,8 +119,8 @@ merged with these rows.
 
 | model | set | n | accuracy (95% CI) | close-division acc (95% CI) | margin-macro | yes_share MAE (95% CI) | polarization MAE (95% CI) | scorecard |
 |---|---|---|---|---|---|---|---|---|
-| baseline:majority-class\* | public | 49 | 0.7143 [0.5800, 0.8478] | 0.5385 [0.3077, 0.7692] | 0.7446 | 0.3956 [0.3192, 0.4714] | 0.1036 [0.0747, 0.1355] | [results/baseline-majority-class-public.scorecard.json](results/baseline-majority-class-public.scorecard.json) |
-| baseline:random\* | public | 49 | 0.4898 [0.3462, 0.6327] | 0.3077 [0.0769, 0.5385] | 0.3669 | 0.4738 [0.4378, 0.5098] | 0.4341 [0.4045, 0.4620] | [results/baseline-random-public.scorecard.json](results/baseline-random-public.scorecard.json) |
+| baseline:majority-class\* | public | 51 | 0.7059 [0.5714, 0.8367] | 0.5385 [0.3077, 0.7692] | 0.7383 | 0.4019 [0.3296, 0.4740] | 0.1112 [0.0812, 0.1438] | [results/baseline-majority-class-public.scorecard.json](results/baseline-majority-class-public.scorecard.json) |
+| baseline:random\* | public | 51 | 0.5686 [0.4314, 0.7021] | 0.6923 [0.4615, 0.9231] | 0.6777 | 0.4435 [0.4125, 0.4737] | 0.4294 [0.3962, 0.4626] | [results/baseline-random-public.scorecard.json](results/baseline-random-public.scorecard.json) |
 <!-- LEADERBOARD:END -->
 
 ## Principles
@@ -193,7 +199,8 @@ accepted by CI; schema in issue #4).
 | benchmark (contract) | `CODEBOOK.md` | v0.4 |
 | metric | `CODEBOOK.md` | v0.4 |
 | dataset | HF dataset card | v0.4.0 |
-| pipeline / harness | `VERSION` | 0.8.0 |
+| fixture set | `CODEBOOK.md` §11 | v0.3.1 |
+| pipeline / harness | `VERSION` | 0.9.0 |
 | scorecard schema | `docs/scorecard-schema.md` | 1.4 |
 | release | git tags | — |
 

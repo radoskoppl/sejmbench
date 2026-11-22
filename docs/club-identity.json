@@ -1,0 +1,1702 @@
+{
+ "evidence": {
+  "membership_snapshot": "docs/club-identity-membership.json.gz",
+  "report": "docs/club-identity-report.md",
+  "snapshot_input_sha256": "62a17ece191e8d29d0c0e8ba314bd1c8e4c4b77942df0a6becd3ae221b3d0bd1",
+  "snapshot_rows": 30626109,
+  "verify": "python3 scripts/club_overlap_report.py verify"
+ },
+ "notes": [
+  "Canonical = terminal (latest-ending) label of the continuity chain; standalone labels are their own canonical.",
+  "Only relay/alias edges collapse a label into its canonical target; split-from/absorbed-into edges never move the canonical id.",
+  "'niez.' (non-attached) is always its own canonical label and carries no edges — its membership is churn by definition.",
+  "backtest_layers.CLUB_MAP (pre-table, term-10-only) chose Polska2050-TD as the alias representative; this table uses the terminal label Polska2050 — the alias edge preserves the equivalence.",
+  "PSL-PBL (term 4) and PSL-UED (term 8) are coalition labels: kept whole (never decomposed), components recorded from the overlap evidence."
+ ],
+ "scope": "terms 3-10 (frozen evaluation corpus); registry of every raw API club label",
+ "terms": {
+  "10": {
+   "labels": {
+    "Centrum": {
+     "canonical": "Centrum",
+     "first_date": "2026-02-25",
+     "kind": "canonical",
+     "last_date": "2026-11-19",
+     "n_divisions": 1958,
+     "n_mps": 15,
+     "relations": [
+      {
+       "jaccard": 0.44,
+       "kind": "split-from",
+       "with": "Polska2050"
+      }
+     ]
+    },
+    "Demokracja": {
+     "canonical": "Demokracja",
+     "first_date": "2026-01-21",
+     "kind": "canonical",
+     "last_date": "2026-11-19",
+     "n_divisions": 2140,
+     "n_mps": 5,
+     "relations": [
+      {
+       "jaccard": 0.02,
+       "kind": "split-from",
+       "with": "PiS"
+      }
+     ]
+    },
+    "KO": {
+     "canonical": "KO",
+     "first_date": "2023-11-13",
+     "kind": "canonical",
+     "last_date": "2026-11-19",
+     "n_divisions": 5451,
+     "n_mps": 175,
+     "relations": []
+    },
+    "Konfederacja": {
+     "canonical": "Konfederacja",
+     "first_date": "2023-11-13",
+     "kind": "canonical",
+     "last_date": "2026-11-19",
+     "n_divisions": 5451,
+     "n_mps": 21,
+     "relations": []
+    },
+    "Konfederacja_KP": {
+     "canonical": "Konfederacja_KP",
+     "first_date": "2025-06-03",
+     "kind": "canonical",
+     "last_date": "2026-11-19",
+     "n_divisions": 3498,
+     "n_mps": 3,
+     "relations": []
+    },
+    "Kukiz15": {
+     "canonical": "Demokracja",
+     "first_date": "2023-11-13",
+     "kind": "relay",
+     "last_date": "2024-10-18",
+     "n_divisions": 902,
+     "n_mps": 4,
+     "relations": [
+      {
+       "jaccard": 1.0,
+       "kind": "relay",
+       "with": "Republikanie"
+      }
+     ]
+    },
+    "Lewica": {
+     "canonical": "Lewica",
+     "first_date": "2023-11-13",
+     "kind": "canonical",
+     "last_date": "2026-11-19",
+     "n_divisions": 5443,
+     "n_mps": 29,
+     "relations": []
+    },
+    "Nowa_Lewica": {
+     "canonical": "Lewica",
+     "first_date": "2023-11-13",
+     "kind": "relay",
+     "last_date": "2023-12-21",
+     "n_divisions": 8,
+     "n_mps": 26,
+     "relations": [
+      {
+       "jaccard": 0.9,
+       "kind": "relay",
+       "with": "Lewica"
+      }
+     ]
+    },
+    "PSL": {
+     "canonical": "PSL-TD",
+     "first_date": "2023-11-13",
+     "kind": "relay",
+     "last_date": "2023-12-21",
+     "n_divisions": 8,
+     "n_mps": 32,
+     "relations": [
+      {
+       "jaccard": 0.97,
+       "kind": "relay",
+       "with": "PSL-TD"
+      }
+     ]
+    },
+    "PSL-TD": {
+     "canonical": "PSL-TD",
+     "first_date": "2023-11-13",
+     "kind": "canonical",
+     "last_date": "2026-11-19",
+     "n_divisions": 5443,
+     "n_mps": 33,
+     "relations": []
+    },
+    "PiS": {
+     "canonical": "PiS",
+     "first_date": "2023-11-13",
+     "kind": "canonical",
+     "last_date": "2026-11-19",
+     "n_divisions": 5451,
+     "n_mps": 207,
+     "relations": []
+    },
+    "Polska2050": {
+     "canonical": "Polska2050",
+     "first_date": "2023-11-13",
+     "kind": "canonical",
+     "last_date": "2026-11-19",
+     "n_divisions": 2847,
+     "n_mps": 34,
+     "relations": []
+    },
+    "Polska2050-TD": {
+     "canonical": "Polska2050",
+     "first_date": "2023-11-13",
+     "kind": "alias",
+     "last_date": "2025-10-09",
+     "n_divisions": 2604,
+     "n_mps": 34,
+     "relations": [
+      {
+       "jaccard": 1.0,
+       "kind": "alias",
+       "with": "Polska2050"
+      }
+     ]
+    },
+    "Razem": {
+     "canonical": "Razem",
+     "first_date": "2024-11-06",
+     "kind": "canonical",
+     "last_date": "2026-11-19",
+     "n_divisions": 4508,
+     "n_mps": 5,
+     "relations": [
+      {
+       "jaccard": 0.17,
+       "kind": "split-from",
+       "with": "Lewica"
+      }
+     ]
+    },
+    "Republikanie": {
+     "canonical": "Demokracja",
+     "first_date": "2024-10-16",
+     "kind": "relay",
+     "last_date": "2026-01-23",
+     "n_divisions": 2401,
+     "n_mps": 4,
+     "relations": [
+      {
+       "jaccard": 1.0,
+       "kind": "relay",
+       "with": "Kukiz15"
+      },
+      {
+       "jaccard": 0.8,
+       "kind": "relay",
+       "with": "Demokracja"
+      }
+     ]
+    },
+    "RozwojPlus": {
+     "canonical": "RozwojPlus",
+     "first_date": "2026-07-29",
+     "kind": "canonical",
+     "last_date": "2026-11-19",
+     "n_divisions": 955,
+     "n_mps": 41,
+     "relations": [
+      {
+       "jaccard": 0.2,
+       "kind": "split-from",
+       "with": "PiS"
+      }
+     ]
+    },
+    "niez.": {
+     "canonical": "niez.",
+     "first_date": "2024-03-06",
+     "kind": "canonical",
+     "last_date": "2026-11-19",
+     "n_divisions": 5206,
+     "n_mps": 16,
+     "relations": []
+    }
+   }
+  },
+  "3": {
+   "labels": {
+    "AWS": {
+     "canonical": "AWS",
+     "first_date": "1997-10-20",
+     "kind": "canonical",
+     "last_date": "2001-09-18",
+     "n_divisions": 11801,
+     "n_mps": 209,
+     "relations": []
+    },
+    "Alternatyw": {
+     "canonical": "Alternatyw",
+     "first_date": "2001-04-10",
+     "kind": "canonical",
+     "last_date": "2001-09-18",
+     "n_divisions": 3642,
+     "n_mps": 6,
+     "relations": [
+      {
+       "jaccard": 0.03,
+       "kind": "split-from",
+       "with": "AWS"
+      }
+     ]
+    },
+    "KPN-O": {
+     "canonical": "KdP",
+     "first_date": "1998-12-03",
+     "kind": "relay",
+     "last_date": "1999-01-09",
+     "n_divisions": 473,
+     "n_mps": 6,
+     "relations": [
+      {
+       "jaccard": 1.0,
+       "kind": "relay",
+       "with": "KPN-Ojcz"
+      },
+      {
+       "jaccard": 0.03,
+       "kind": "split-from",
+       "with": "AWS"
+      }
+     ]
+    },
+    "KPN-OP": {
+     "canonical": "KdP",
+     "first_date": "1998-06-18",
+     "kind": "relay",
+     "last_date": "1998-11-26",
+     "n_divisions": 1361,
+     "n_mps": 7,
+     "relations": [
+      {
+       "jaccard": 0.86,
+       "kind": "relay",
+       "with": "KPN-O"
+      },
+      {
+       "jaccard": 0.03,
+       "kind": "split-from",
+       "with": "AWS"
+      }
+     ]
+    },
+    "KPN-Ojcz": {
+     "canonical": "KdP",
+     "first_date": "1999-01-20",
+     "kind": "relay",
+     "last_date": "2000-06-30",
+     "n_divisions": 2796,
+     "n_mps": 6,
+     "relations": [
+      {
+       "jaccard": 0.75,
+       "kind": "relay",
+       "with": "KdP"
+      },
+      {
+       "jaccard": 0.03,
+       "kind": "split-from",
+       "with": "AWS"
+      }
+     ]
+    },
+    "KdP": {
+     "canonical": "KdP",
+     "first_date": "2000-07-12",
+     "kind": "canonical",
+     "last_date": "2001-03-30",
+     "n_divisions": 2901,
+     "n_mps": 8,
+     "relations": []
+    },
+    "MN": {
+     "canonical": "MN",
+     "first_date": "1997-10-20",
+     "kind": "canonical",
+     "last_date": "1997-11-06",
+     "n_divisions": 11,
+     "n_mps": 2,
+     "relations": []
+    },
+    "NK": {
+     "canonical": "PP",
+     "first_date": "1998-09-16",
+     "kind": "relay",
+     "last_date": "1999-11-20",
+     "n_divisions": 2474,
+     "n_mps": 7,
+     "relations": [
+      {
+       "jaccard": 1.0,
+       "kind": "relay",
+       "with": "PP"
+      }
+     ]
+    },
+    "PP": {
+     "canonical": "PP",
+     "first_date": "1999-12-01",
+     "kind": "canonical",
+     "last_date": "2001-09-18",
+     "n_divisions": 8052,
+     "n_mps": 7,
+     "relations": []
+    },
+    "PPS-RLP": {
+     "canonical": "PPS-RLP",
+     "first_date": "1999-11-17",
+     "kind": "canonical",
+     "last_date": "2000-09-22",
+     "n_divisions": 2277,
+     "n_mps": 3,
+     "relations": [
+      {
+       "jaccard": 0.02,
+       "kind": "split-from",
+       "with": "SLD"
+      }
+     ]
+    },
+    "PRS": {
+     "canonical": "PRS",
+     "first_date": "2000-01-05",
+     "kind": "canonical",
+     "last_date": "2000-06-30",
+     "n_divisions": 1230,
+     "n_mps": 3,
+     "relations": []
+    },
+    "PSL": {
+     "canonical": "PSL",
+     "first_date": "1997-10-20",
+     "kind": "canonical",
+     "last_date": "2001-09-18",
+     "n_divisions": 11801,
+     "n_mps": 30,
+     "relations": []
+    },
+    "PiS": {
+     "canonical": "PiS",
+     "first_date": "2001-07-18",
+     "kind": "canonical",
+     "last_date": "2001-09-18",
+     "n_divisions": 1776,
+     "n_mps": 18,
+     "relations": [
+      {
+       "jaccard": 0.08,
+       "kind": "split-from",
+       "with": "AWS"
+      }
+     ]
+    },
+    "ROP": {
+     "canonical": "ROP",
+     "first_date": "1997-10-20",
+     "kind": "canonical",
+     "last_date": "2001-09-18",
+     "n_divisions": 5081,
+     "n_mps": 8,
+     "relations": []
+    },
+    "ROP-PC": {
+     "canonical": "ROP-PC",
+     "first_date": "2000-03-15",
+     "kind": "canonical",
+     "last_date": "2001-07-06",
+     "n_divisions": 5500,
+     "n_mps": 4,
+     "relations": [
+      {
+       "jaccard": 0.5,
+       "kind": "split-from",
+       "with": "ROP"
+      }
+     ]
+    },
+    "SKL": {
+     "canonical": "SKL",
+     "first_date": "2001-03-27",
+     "kind": "canonical",
+     "last_date": "2001-09-18",
+     "n_divisions": 3700,
+     "n_mps": 18,
+     "relations": [
+      {
+       "jaccard": 0.09,
+       "kind": "split-from",
+       "with": "AWS"
+      }
+     ]
+    },
+    "SLD": {
+     "canonical": "SLD",
+     "first_date": "1997-10-20",
+     "kind": "canonical",
+     "last_date": "2001-09-18",
+     "n_divisions": 11801,
+     "n_mps": 171,
+     "relations": []
+    },
+    "UW": {
+     "canonical": "UW",
+     "first_date": "1997-10-20",
+     "kind": "canonical",
+     "last_date": "2001-09-18",
+     "n_divisions": 11801,
+     "n_mps": 64,
+     "relations": []
+    },
+    "niez.": {
+     "canonical": "niez.",
+     "first_date": "1997-10-20",
+     "kind": "canonical",
+     "last_date": "2001-09-18",
+     "n_divisions": 11790,
+     "n_mps": 58,
+     "relations": []
+    }
+   }
+  },
+  "4": {
+   "labels": {
+    "D_OJCZYSTY": {
+     "canonical": "D_OJCZYSTY",
+     "first_date": "2004-04-29",
+     "kind": "canonical",
+     "last_date": "2005-08-29",
+     "n_divisions": 3952,
+     "n_mps": 10,
+     "relations": [
+      {
+       "jaccard": 0.16,
+       "kind": "split-from",
+       "with": "LPR"
+      }
+     ]
+    },
+    "FKP": {
+     "canonical": "SG",
+     "first_date": "2004-01-20",
+     "kind": "relay",
+     "last_date": "2004-07-16",
+     "n_divisions": 1907,
+     "n_mps": 17,
+     "relations": [
+      {
+       "jaccard": 0.83,
+       "kind": "relay",
+       "with": "PLD"
+      }
+     ]
+    },
+    "KL": {
+     "canonical": "KL",
+     "first_date": "2005-01-05",
+     "kind": "canonical",
+     "last_date": "2005-08-29",
+     "n_divisions": 2321,
+     "n_mps": 5,
+     "relations": []
+    },
+    "KN": {
+     "canonical": "RKN",
+     "first_date": "2002-11-12",
+     "kind": "relay",
+     "last_date": "2002-12-20",
+     "n_divisions": 764,
+     "n_mps": 5,
+     "relations": [
+      {
+       "jaccard": 1.0,
+       "kind": "relay",
+       "with": "RKN"
+      }
+     ]
+    },
+    "LPR": {
+     "canonical": "LPR",
+     "first_date": "2001-10-19",
+     "kind": "canonical",
+     "last_date": "2005-08-29",
+     "n_divisions": 13589,
+     "n_mps": 47,
+     "relations": []
+    },
+    "PBL": {
+     "canonical": "PBL",
+     "first_date": "2002-12-17",
+     "kind": "canonical",
+     "last_date": "2005-01-07",
+     "n_divisions": 7561,
+     "n_mps": 6,
+     "relations": [
+      {
+       "jaccard": 0.14,
+       "kind": "coalition-component",
+       "with": "PSL-PBL"
+      }
+     ]
+    },
+    "PLD": {
+     "canonical": "SG",
+     "first_date": "2002-04-04",
+     "kind": "relay",
+     "last_date": "2005-03-22",
+     "n_divisions": 8560,
+     "n_mps": 16,
+     "relations": [
+      {
+       "jaccard": 0.69,
+       "kind": "relay",
+       "with": "SG"
+      }
+     ]
+    },
+    "PO": {
+     "canonical": "PO",
+     "first_date": "2001-10-19",
+     "kind": "canonical",
+     "last_date": "2005-08-29",
+     "n_divisions": 13589,
+     "n_mps": 70,
+     "relations": []
+    },
+    "PP": {
+     "canonical": "PP",
+     "first_date": "2003-01-23",
+     "kind": "canonical",
+     "last_date": "2005-08-29",
+     "n_divisions": 9832,
+     "n_mps": 3,
+     "relations": [
+      {
+       "jaccard": 0.06,
+       "kind": "split-from",
+       "with": "LPR"
+      }
+     ]
+    },
+    "PRS": {
+     "canonical": "PRS",
+     "first_date": "2003-09-16",
+     "kind": "canonical",
+     "last_date": "2004-01-29",
+     "n_divisions": 1679,
+     "n_mps": 5,
+     "relations": [
+      {
+       "jaccard": 0.09,
+       "kind": "split-from",
+       "with": "Samoobrona"
+      }
+     ]
+    },
+    "PSL": {
+     "canonical": "PSL",
+     "first_date": "2001-10-19",
+     "kind": "canonical",
+     "last_date": "2005-08-29",
+     "n_divisions": 13189,
+     "n_mps": 49,
+     "relations": [
+      {
+       "jaccard": 0.7,
+       "kind": "coalition-component",
+       "with": "PSL-PBL"
+      }
+     ]
+    },
+    "PSL-PBL": {
+     "canonical": "PSL-PBL",
+     "components": [
+      "PSL",
+      "PBL"
+     ],
+     "first_date": "2004-03-17",
+     "kind": "coalition",
+     "last_date": "2004-04-02",
+     "n_divisions": 400,
+     "n_mps": 43,
+     "relations": []
+    },
+    "PiS": {
+     "canonical": "PiS",
+     "first_date": "2001-10-19",
+     "kind": "canonical",
+     "last_date": "2005-08-29",
+     "n_divisions": 13589,
+     "n_mps": 53,
+     "relations": []
+    },
+    "RKN": {
+     "canonical": "RKN",
+     "first_date": "2003-01-08",
+     "kind": "canonical",
+     "last_date": "2005-08-29",
+     "n_divisions": 9984,
+     "n_mps": 5,
+     "relations": [
+      {
+       "jaccard": 0.11,
+       "kind": "split-from",
+       "with": "LPR"
+      }
+     ]
+    },
+    "ROP": {
+     "canonical": "ROP",
+     "first_date": "2002-08-29",
+     "kind": "canonical",
+     "last_date": "2005-08-29",
+     "n_divisions": 11260,
+     "n_mps": 3,
+     "relations": [
+      {
+       "jaccard": 0.06,
+       "kind": "split-from",
+       "with": "LPR"
+      }
+     ]
+    },
+    "RP": {
+     "canonical": "RP",
+     "first_date": "2005-06-28",
+     "kind": "canonical",
+     "last_date": "2005-07-29",
+     "n_divisions": 816,
+     "n_mps": 3,
+     "relations": [
+      {
+       "jaccard": 0.03,
+       "kind": "split-from",
+       "with": "Samoobrona"
+      }
+     ]
+    },
+    "SDPL": {
+     "canonical": "SDPL",
+     "first_date": "2004-03-30",
+     "kind": "canonical",
+     "last_date": "2005-08-29",
+     "n_divisions": 4536,
+     "n_mps": 36,
+     "relations": [
+      {
+       "jaccard": 0.16,
+       "kind": "split-from",
+       "with": "SLD"
+      }
+     ]
+    },
+    "SG": {
+     "canonical": "SG",
+     "first_date": "2005-03-09",
+     "kind": "canonical",
+     "last_date": "2005-08-29",
+     "n_divisions": 1910,
+     "n_mps": 11,
+     "relations": []
+    },
+    "SKL": {
+     "canonical": "SKL",
+     "first_date": "2001-11-21",
+     "kind": "canonical",
+     "last_date": "2004-12-22",
+     "n_divisions": 11104,
+     "n_mps": 8,
+     "relations": [
+      {
+       "jaccard": 0.11,
+       "kind": "split-from",
+       "with": "PO"
+      }
+     ]
+    },
+    "SLD": {
+     "canonical": "SLD",
+     "first_date": "2001-10-19",
+     "kind": "canonical",
+     "last_date": "2005-08-29",
+     "n_divisions": 13589,
+     "n_mps": 208,
+     "relations": []
+    },
+    "Samoobrona": {
+     "canonical": "Samoobrona",
+     "first_date": "2001-10-19",
+     "kind": "canonical",
+     "last_date": "2005-08-29",
+     "n_divisions": 13589,
+     "n_mps": 57,
+     "relations": []
+    },
+    "UP": {
+     "canonical": "UP",
+     "first_date": "2001-10-19",
+     "kind": "canonical",
+     "last_date": "2005-08-29",
+     "n_divisions": 13587,
+     "n_mps": 20,
+     "relations": []
+    },
+    "niez.": {
+     "canonical": "niez.",
+     "first_date": "2001-10-19",
+     "kind": "canonical",
+     "last_date": "2005-08-29",
+     "n_divisions": 13589,
+     "n_mps": 117,
+     "relations": []
+    }
+   }
+  },
+  "5": {
+   "labels": {
+    "KPB": {
+     "canonical": "KPB",
+     "first_date": "2007-04-24",
+     "kind": "canonical",
+     "last_date": "2007-08-24",
+     "n_divisions": 748,
+     "n_mps": 3,
+     "relations": [
+      {
+       "jaccard": 0.17,
+       "kind": "split-from",
+       "with": "RLN"
+      }
+     ]
+    },
+    "LPR": {
+     "canonical": "LPR",
+     "first_date": "2005-10-19",
+     "kind": "canonical",
+     "last_date": "2007-09-19",
+     "n_divisions": 3473,
+     "n_mps": 36,
+     "relations": []
+    },
+    "NKP": {
+     "canonical": "NKP",
+     "first_date": "2006-05-23",
+     "kind": "canonical",
+     "last_date": "2006-09-22",
+     "n_divisions": 542,
+     "n_mps": 7,
+     "relations": [
+      {
+       "jaccard": 0.19,
+       "kind": "split-from",
+       "with": "LPR"
+      }
+     ]
+    },
+    "PO": {
+     "canonical": "PO",
+     "first_date": "2005-10-19",
+     "kind": "canonical",
+     "last_date": "2007-09-19",
+     "n_divisions": 3473,
+     "n_mps": 138,
+     "relations": []
+    },
+    "PR": {
+     "canonical": "Prawica",
+     "first_date": "2007-04-24",
+     "kind": "relay",
+     "last_date": "2007-07-10",
+     "n_divisions": 578,
+     "n_mps": 6,
+     "relations": [
+      {
+       "jaccard": 1.0,
+       "kind": "relay",
+       "with": "Prawica"
+      },
+      {
+       "jaccard": 0.04,
+       "kind": "split-from",
+       "with": "PiS"
+      }
+     ]
+    },
+    "PSL": {
+     "canonical": "PSL",
+     "first_date": "2005-10-19",
+     "kind": "canonical",
+     "last_date": "2007-09-19",
+     "n_divisions": 3473,
+     "n_mps": 28,
+     "relations": []
+    },
+    "PiS": {
+     "canonical": "PiS",
+     "first_date": "2005-10-19",
+     "kind": "canonical",
+     "last_date": "2007-09-19",
+     "n_divisions": 3473,
+     "n_mps": 170,
+     "relations": []
+    },
+    "Prawica": {
+     "canonical": "Prawica",
+     "first_date": "2007-07-04",
+     "kind": "canonical",
+     "last_date": "2007-09-19",
+     "n_divisions": 315,
+     "n_mps": 6,
+     "relations": [
+      {
+       "jaccard": 0.04,
+       "kind": "split-from",
+       "with": "PiS"
+      }
+     ]
+    },
+    "RLCh": {
+     "canonical": "RLCh",
+     "first_date": "2007-01-10",
+     "kind": "canonical",
+     "last_date": "2007-04-27",
+     "n_divisions": 703,
+     "n_mps": 8,
+     "relations": [
+      {
+       "jaccard": 0.44,
+       "kind": "split-from",
+       "with": "RLN"
+      }
+     ]
+    },
+    "RLN": {
+     "canonical": "RLN",
+     "first_date": "2006-10-10",
+     "kind": "canonical",
+     "last_date": "2007-09-19",
+     "n_divisions": 2185,
+     "n_mps": 18,
+     "relations": []
+    },
+    "SLD": {
+     "canonical": "SLD",
+     "first_date": "2005-10-19",
+     "kind": "canonical",
+     "last_date": "2007-09-19",
+     "n_divisions": 3473,
+     "n_mps": 56,
+     "relations": []
+    },
+    "Samoobrona": {
+     "canonical": "Samoobrona",
+     "first_date": "2005-10-19",
+     "kind": "canonical",
+     "last_date": "2007-09-19",
+     "n_divisions": 3473,
+     "n_mps": 56,
+     "relations": []
+    },
+    "niez.": {
+     "canonical": "niez.",
+     "first_date": "2005-10-19",
+     "kind": "canonical",
+     "last_date": "2007-09-19",
+     "n_divisions": 3473,
+     "n_mps": 34,
+     "relations": []
+    }
+   }
+  },
+  "6": {
+   "labels": {
+    "DKP": {
+     "canonical": "DKP_SD",
+     "first_date": "2008-04-10",
+     "kind": "relay",
+     "last_date": "2009-07-02",
+     "n_divisions": 3064,
+     "n_mps": 3,
+     "relations": [
+      {
+       "jaccard": 1.0,
+       "kind": "relay",
+       "with": "DKP_SD"
+      }
+     ]
+    },
+    "DKP_SD": {
+     "canonical": "DKP_SD",
+     "first_date": "2009-07-16",
+     "kind": "canonical",
+     "last_date": "2011-06-10",
+     "n_divisions": 4038,
+     "n_mps": 3,
+     "relations": [
+      {
+       "jaccard": 0.06,
+       "kind": "split-from",
+       "with": "LiD"
+      }
+     ]
+    },
+    "Lewica": {
+     "canonical": "SLD",
+     "first_date": "2008-04-25",
+     "kind": "relay",
+     "last_date": "2010-09-24",
+     "n_divisions": 5161,
+     "n_mps": 49,
+     "relations": [
+      {
+       "jaccard": 0.8,
+       "kind": "relay",
+       "with": "SLD"
+      }
+     ]
+    },
+    "LiD": {
+     "canonical": "SLD",
+     "first_date": "2007-11-05",
+     "kind": "relay",
+     "last_date": "2008-04-11",
+     "n_divisions": 442,
+     "n_mps": 53,
+     "relations": [
+      {
+       "jaccard": 0.79,
+       "kind": "relay",
+       "with": "Lewica"
+      }
+     ]
+    },
+    "PJN": {
+     "canonical": "PJN",
+     "first_date": "2010-11-24",
+     "kind": "canonical",
+     "last_date": "2011-09-16",
+     "n_divisions": 2673,
+     "n_mps": 19,
+     "relations": [
+      {
+       "jaccard": 0.1,
+       "kind": "split-from",
+       "with": "PiS"
+      }
+     ]
+    },
+    "PO": {
+     "canonical": "PO",
+     "first_date": "2007-11-05",
+     "kind": "canonical",
+     "last_date": "2011-09-16",
+     "n_divisions": 8437,
+     "n_mps": 240,
+     "relations": []
+    },
+    "PSL": {
+     "canonical": "PSL",
+     "first_date": "2007-11-05",
+     "kind": "canonical",
+     "last_date": "2011-09-16",
+     "n_divisions": 8437,
+     "n_mps": 37,
+     "relations": []
+    },
+    "PiS": {
+     "canonical": "PiS",
+     "first_date": "2007-11-05",
+     "kind": "canonical",
+     "last_date": "2011-09-16",
+     "n_divisions": 8437,
+     "n_mps": 186,
+     "relations": []
+    },
+    "Polska_Plus": {
+     "canonical": "Polska_Plus",
+     "first_date": "2009-10-23",
+     "kind": "canonical",
+     "last_date": "2010-09-24",
+     "n_divisions": 1648,
+     "n_mps": 9,
+     "relations": [
+      {
+       "jaccard": 0.05,
+       "kind": "split-from",
+       "with": "PiS"
+      }
+     ]
+    },
+    "Polska_XXI": {
+     "canonical": "Polska_XXI",
+     "first_date": "2008-10-21",
+     "kind": "canonical",
+     "last_date": "2009-10-09",
+     "n_divisions": 2563,
+     "n_mps": 6,
+     "relations": [
+      {
+       "jaccard": 0.03,
+       "kind": "split-from",
+       "with": "PiS"
+      }
+     ]
+    },
+    "SDPL": {
+     "canonical": "SDPL",
+     "first_date": "2009-09-09",
+     "kind": "canonical",
+     "last_date": "2011-09-16",
+     "n_divisions": 4652,
+     "n_mps": 4,
+     "relations": []
+    },
+    "SDPL-NL": {
+     "canonical": "SDPL-NL",
+     "first_date": "2008-04-25",
+     "kind": "canonical",
+     "last_date": "2009-08-28",
+     "n_divisions": 3343,
+     "n_mps": 8,
+     "relations": [
+      {
+       "jaccard": 0.15,
+       "kind": "split-from",
+       "with": "LiD"
+      }
+     ]
+    },
+    "SLD": {
+     "canonical": "SLD",
+     "first_date": "2010-10-08",
+     "kind": "canonical",
+     "last_date": "2011-09-16",
+     "n_divisions": 2834,
+     "n_mps": 48,
+     "relations": []
+    },
+    "niez.": {
+     "canonical": "niez.",
+     "first_date": "2007-11-05",
+     "kind": "canonical",
+     "last_date": "2011-09-16",
+     "n_divisions": 8437,
+     "n_mps": 32,
+     "relations": []
+    }
+   }
+  },
+  "7": {
+   "labels": {
+    "BC": {
+     "canonical": "BC",
+     "first_date": "2015-07-09",
+     "kind": "canonical",
+     "last_date": "2015-10-09",
+     "n_divisions": 755,
+     "n_mps": 4,
+     "relations": []
+    },
+    "BiG": {
+     "canonical": "BiG",
+     "first_date": "2014-10-08",
+     "kind": "canonical",
+     "last_date": "2015-02-06",
+     "n_divisions": 779,
+     "n_mps": 11,
+     "relations": [
+      {
+       "jaccard": 0.25,
+       "kind": "split-from",
+       "with": "RP"
+      }
+     ]
+    },
+    "ID": {
+     "canonical": "ID",
+     "first_date": "2013-07-11",
+     "kind": "canonical",
+     "last_date": "2013-12-12",
+     "n_divisions": 619,
+     "n_mps": 4,
+     "relations": [
+      {
+       "jaccard": 0.09,
+       "kind": "split-from",
+       "with": "PSL"
+      },
+      {
+       "jaccard": 0.09,
+       "kind": "split-from",
+       "with": "RP"
+      }
+     ]
+    },
+    "KPSP": {
+     "canonical": "ZP",
+     "first_date": "2014-07-22",
+     "kind": "relay",
+     "last_date": "2015-03-05",
+     "n_divisions": 1164,
+     "n_mps": 16,
+     "relations": [
+      {
+       "jaccard": 0.88,
+       "kind": "relay",
+       "with": "ZP"
+      }
+     ]
+    },
+    "PO": {
+     "canonical": "PO",
+     "first_date": "2011-11-08",
+     "kind": "canonical",
+     "last_date": "2015-10-09",
+     "n_divisions": 6298,
+     "n_mps": 235,
+     "relations": []
+    },
+    "PSL": {
+     "canonical": "PSL",
+     "first_date": "2011-11-08",
+     "kind": "canonical",
+     "last_date": "2015-10-09",
+     "n_divisions": 6298,
+     "n_mps": 43,
+     "relations": []
+    },
+    "PiS": {
+     "canonical": "PiS",
+     "first_date": "2011-11-08",
+     "kind": "canonical",
+     "last_date": "2015-10-09",
+     "n_divisions": 6298,
+     "n_mps": 163,
+     "relations": []
+    },
+    "RP": {
+     "canonical": "RP",
+     "first_date": "2011-11-08",
+     "kind": "canonical",
+     "last_date": "2015-10-09",
+     "n_divisions": 3832,
+     "n_mps": 44,
+     "relations": []
+    },
+    "SLD": {
+     "canonical": "SLD",
+     "first_date": "2011-11-08",
+     "kind": "canonical",
+     "last_date": "2015-10-09",
+     "n_divisions": 6298,
+     "n_mps": 39,
+     "relations": []
+    },
+    "SP": {
+     "canonical": "SP",
+     "first_date": "2011-11-08",
+     "kind": "canonical",
+     "last_date": "2014-07-11",
+     "n_divisions": 3639,
+     "n_mps": 21,
+     "relations": []
+    },
+    "TR": {
+     "canonical": "TR",
+     "first_date": "2013-10-09",
+     "kind": "canonical",
+     "last_date": "2015-02-20",
+     "n_divisions": 2451,
+     "n_mps": 36,
+     "relations": [
+      {
+       "jaccard": 0.82,
+       "kind": "split-from",
+       "with": "RP"
+      }
+     ]
+    },
+    "ZP": {
+     "canonical": "ZP",
+     "first_date": "2015-03-20",
+     "kind": "canonical",
+     "last_date": "2015-10-09",
+     "n_divisions": 1430,
+     "n_mps": 16,
+     "relations": []
+    },
+    "niez.": {
+     "canonical": "niez.",
+     "first_date": "2011-11-08",
+     "kind": "canonical",
+     "last_date": "2015-10-09",
+     "n_divisions": 6298,
+     "n_mps": 78,
+     "relations": []
+    }
+   }
+  },
+  "8": {
+   "labels": {
+    "ED": {
+     "canonical": "UED",
+     "first_date": "2016-09-21",
+     "kind": "relay",
+     "last_date": "2016-12-15",
+     "n_divisions": 521,
+     "n_mps": 4,
+     "relations": [
+      {
+       "jaccard": 1.0,
+       "kind": "relay",
+       "with": "UED"
+      }
+     ]
+    },
+    "Konfederacja": {
+     "canonical": "Konfederacja",
+     "first_date": "2019-04-03",
+     "kind": "canonical",
+     "last_date": "2019-10-16",
+     "n_divisions": 853,
+     "n_mps": 7,
+     "relations": [
+      {
+       "jaccard": 0.14,
+       "kind": "split-from",
+       "with": "Kukiz15"
+      }
+     ]
+    },
+    "Kukiz15": {
+     "canonical": "Kukiz15",
+     "first_date": "2015-11-12",
+     "kind": "canonical",
+     "last_date": "2019-10-16",
+     "n_divisions": 8157,
+     "n_mps": 43,
+     "relations": []
+    },
+    "L-S": {
+     "canonical": "TERAZ!",
+     "first_date": "2018-06-27",
+     "kind": "relay",
+     "last_date": "2018-11-09",
+     "n_divisions": 844,
+     "n_mps": 3,
+     "relations": [
+      {
+       "jaccard": 1.0,
+       "kind": "relay",
+       "with": "TERAZ!"
+      }
+     ]
+    },
+    "N": {
+     "canonical": "N",
+     "first_date": "2015-11-12",
+     "kind": "canonical",
+     "last_date": "2019-06-13",
+     "n_divisions": 7538,
+     "n_mps": 32,
+     "relations": []
+    },
+    "PO": {
+     "canonical": "PO-KO",
+     "first_date": "2015-11-12",
+     "kind": "relay",
+     "last_date": "2018-12-06",
+     "n_divisions": 6472,
+     "n_mps": 147,
+     "relations": [
+      {
+       "jaccard": 0.83,
+       "kind": "relay",
+       "with": "PO-KO"
+      }
+     ]
+    },
+    "PO-KO": {
+     "canonical": "PO-KO",
+     "first_date": "2018-12-05",
+     "kind": "canonical",
+     "last_date": "2019-10-16",
+     "n_divisions": 1685,
+     "n_mps": 160,
+     "relations": []
+    },
+    "PP": {
+     "canonical": "PP",
+     "first_date": "2019-07-31",
+     "kind": "canonical",
+     "last_date": "2019-10-16",
+     "n_divisions": 175,
+     "n_mps": 3,
+     "relations": [
+      {
+       "jaccard": 0.07,
+       "kind": "split-from",
+       "with": "Kukiz15"
+      }
+     ]
+    },
+    "PSL": {
+     "canonical": "PSL",
+     "first_date": "2015-11-12",
+     "kind": "canonical",
+     "last_date": "2018-02-08",
+     "n_divisions": 4951,
+     "n_mps": 17,
+     "relations": []
+    },
+    "PSL-KP": {
+     "canonical": "PSL-KP",
+     "first_date": "2019-07-17",
+     "kind": "canonical",
+     "last_date": "2019-10-16",
+     "n_divisions": 375,
+     "n_mps": 22,
+     "relations": []
+    },
+    "PSL-UED": {
+     "canonical": "PSL-KP",
+     "components": [
+      "PSL",
+      "UED"
+     ],
+     "first_date": "2018-02-28",
+     "kind": "coalition",
+     "last_date": "2019-07-04",
+     "n_divisions": 2831,
+     "n_mps": 20,
+     "relations": [
+      {
+       "jaccard": 0.83,
+       "kind": "relay",
+       "with": "PSL-KP"
+      }
+     ]
+    },
+    "PiS": {
+     "canonical": "PiS",
+     "first_date": "2015-11-12",
+     "kind": "canonical",
+     "last_date": "2019-10-16",
+     "n_divisions": 8157,
+     "n_mps": 278,
+     "relations": []
+    },
+    "Republikanie": {
+     "canonical": "Republikanie",
+     "first_date": "2017-03-09",
+     "kind": "canonical",
+     "last_date": "2017-09-15",
+     "n_divisions": 949,
+     "n_mps": 3,
+     "relations": []
+    },
+    "TERAZ!": {
+     "canonical": "TERAZ!",
+     "first_date": "2018-11-21",
+     "kind": "canonical",
+     "last_date": "2019-10-16",
+     "n_divisions": 1747,
+     "n_mps": 3,
+     "relations": []
+    },
+    "UED": {
+     "canonical": "UED",
+     "first_date": "2016-12-13",
+     "kind": "canonical",
+     "last_date": "2018-02-08",
+     "n_divisions": 2538,
+     "n_mps": 4,
+     "relations": []
+    },
+    "UPR": {
+     "canonical": "UPR",
+     "first_date": "2019-07-31",
+     "kind": "canonical",
+     "last_date": "2019-10-16",
+     "n_divisions": 175,
+     "n_mps": 4,
+     "relations": [
+      {
+       "jaccard": 0.09,
+       "kind": "split-from",
+       "with": "Kukiz15"
+      }
+     ]
+    },
+    "W-S": {
+     "canonical": "W-S",
+     "first_date": "2018-11-21",
+     "kind": "canonical",
+     "last_date": "2019-03-15",
+     "n_divisions": 881,
+     "n_mps": 3,
+     "relations": [
+      {
+       "jaccard": 0.07,
+       "kind": "split-from",
+       "with": "Kukiz15"
+      }
+     ]
+    },
+    "WiS": {
+     "canonical": "WiS",
+     "first_date": "2016-05-19",
+     "kind": "canonical",
+     "last_date": "2019-10-16",
+     "n_divisions": 6900,
+     "n_mps": 6,
+     "relations": [
+      {
+       "jaccard": 0.14,
+       "kind": "split-from",
+       "with": "Kukiz15"
+      }
+     ]
+    },
+    "niez.": {
+     "canonical": "niez.",
+     "first_date": "2015-11-12",
+     "kind": "canonical",
+     "last_date": "2019-10-16",
+     "n_divisions": 8157,
+     "n_mps": 49,
+     "relations": []
+    }
+   }
+  },
+  "9": {
+   "labels": {
+    "KO": {
+     "canonical": "KO",
+     "first_date": "2019-11-12",
+     "kind": "canonical",
+     "last_date": "2023-08-30",
+     "n_divisions": 9389,
+     "n_mps": 140,
+     "relations": []
+    },
+    "KP": {
+     "canonical": "KP",
+     "first_date": "2020-11-18",
+     "kind": "canonical",
+     "last_date": "2023-08-30",
+     "n_divisions": 6817,
+     "n_mps": 34,
+     "relations": []
+    },
+    "Konfederacja": {
+     "canonical": "Konfederacja",
+     "first_date": "2019-11-12",
+     "kind": "canonical",
+     "last_date": "2023-08-30",
+     "n_divisions": 9389,
+     "n_mps": 13,
+     "relations": []
+    },
+    "Kukiz15": {
+     "canonical": "Kukiz15",
+     "first_date": "2021-02-24",
+     "kind": "canonical",
+     "last_date": "2023-08-30",
+     "n_divisions": 6318,
+     "n_mps": 5,
+     "relations": [
+      {
+       "jaccard": 0.15,
+       "kind": "split-from",
+       "with": "KP"
+      }
+     ]
+    },
+    "LD": {
+     "canonical": "LD",
+     "first_date": "2023-02-07",
+     "kind": "canonical",
+     "last_date": "2023-08-30",
+     "n_divisions": 1543,
+     "n_mps": 3,
+     "relations": []
+    },
+    "Lewica": {
+     "canonical": "Lewica",
+     "first_date": "2019-11-12",
+     "kind": "canonical",
+     "last_date": "2023-08-30",
+     "n_divisions": 9382,
+     "n_mps": 49,
+     "relations": []
+    },
+    "PPS": {
+     "canonical": "LD",
+     "first_date": "2021-12-14",
+     "kind": "relay",
+     "last_date": "2023-01-26",
+     "n_divisions": 2893,
+     "n_mps": 3,
+     "relations": [
+      {
+       "jaccard": 1.0,
+       "kind": "relay",
+       "with": "LD"
+      }
+     ]
+    },
+    "PS": {
+     "canonical": "PS",
+     "first_date": "2021-05-04",
+     "kind": "canonical",
+     "last_date": "2023-08-30",
+     "n_divisions": 5961,
+     "n_mps": 4,
+     "relations": []
+    },
+    "PSL": {
+     "canonical": "KP",
+     "first_date": "2019-11-12",
+     "kind": "relay",
+     "last_date": "2019-11-22",
+     "n_divisions": 7,
+     "n_mps": 30,
+     "relations": [
+      {
+       "jaccard": 1.0,
+       "kind": "relay",
+       "with": "PSL-Kukiz15"
+      }
+     ]
+    },
+    "PSL-Kukiz15": {
+     "canonical": "KP",
+     "first_date": "2019-11-12",
+     "kind": "relay",
+     "last_date": "2020-11-28",
+     "n_divisions": 2565,
+     "n_mps": 30,
+     "relations": [
+      {
+       "jaccard": 0.88,
+       "kind": "relay",
+       "with": "KP"
+      }
+     ]
+    },
+    "PiS": {
+     "canonical": "PiS",
+     "first_date": "2019-11-12",
+     "kind": "canonical",
+     "last_date": "2023-08-30",
+     "n_divisions": 9389,
+     "n_mps": 247,
+     "relations": []
+    },
+    "Polska2050": {
+     "canonical": "Polska2050",
+     "first_date": "2021-02-24",
+     "kind": "canonical",
+     "last_date": "2023-08-30",
+     "n_divisions": 6318,
+     "n_mps": 8,
+     "relations": [
+      {
+       "jaccard": 0.05,
+       "kind": "split-from",
+       "with": "KO"
+      }
+     ]
+    },
+    "Porozumienie": {
+     "canonical": "Porozumienie",
+     "first_date": "2021-08-11",
+     "kind": "canonical",
+     "last_date": "2023-07-13",
+     "n_divisions": 5010,
+     "n_mps": 6,
+     "relations": [
+      {
+       "jaccard": 0.02,
+       "kind": "split-from",
+       "with": "PiS"
+      }
+     ]
+    },
+    "SLD": {
+     "canonical": "Lewica",
+     "first_date": "2019-11-12",
+     "kind": "relay",
+     "last_date": "2019-11-22",
+     "n_divisions": 7,
+     "n_mps": 49,
+     "relations": [
+      {
+       "jaccard": 1.0,
+       "kind": "relay",
+       "with": "Lewica"
+      }
+     ]
+    },
+    "WP": {
+     "canonical": "WP",
+     "first_date": "2021-07-07",
+     "kind": "canonical",
+     "last_date": "2021-07-08",
+     "n_divisions": 7,
+     "n_mps": 3,
+     "relations": [
+      {
+       "jaccard": 0.01,
+       "kind": "split-from",
+       "with": "PiS"
+      }
+     ]
+    },
+    "Wolnościowcy": {
+     "canonical": "Wolnościowcy",
+     "first_date": "2023-03-07",
+     "kind": "canonical",
+     "last_date": "2023-07-28",
+     "n_divisions": 1263,
+     "n_mps": 3,
+     "relations": [
+      {
+       "jaccard": 0.23,
+       "kind": "split-from",
+       "with": "Konfederacja"
+      }
+     ]
+    },
+    "niez.": {
+     "canonical": "niez.",
+     "first_date": "2019-11-12",
+     "kind": "canonical",
+     "last_date": "2023-08-30",
+     "n_divisions": 9389,
+     "n_mps": 27,
+     "relations": []
+    }
+   }
+  }
+ },
+ "updated": "2026-11-22",
+ "version": "1.0.0"
+}

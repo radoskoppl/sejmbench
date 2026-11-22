@@ -415,7 +415,7 @@ def cmd_rescore_check(args) -> int:
             print(f"FAIL {p}: scorecard carries problems (not acceptable): {card['problems']}")
             failed = True
             continue
-        rebuilt = scoring.rescore(card, _ROOT, scoring.load_manifest(_ROOT))
+        rebuilt = scoring.rescore(card, _ROOT, scoring.load_manifest(_ROOT), card_path=p)
         mismatches = scoring.rescore_matches(card, rebuilt)
         if mismatches:
             print(f"FAIL {p}: {len(mismatches)} mismatches, e.g. {mismatches[:3]}")

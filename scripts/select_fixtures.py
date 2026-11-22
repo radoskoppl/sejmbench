@@ -3,8 +3,8 @@
 
 Implements the frozen rule in CODEBOOK section 11: margin buckets (ordered),
 type buckets from the layer-1 dictionary (`unknown` when no real formula),
-allocation 2 anchors + 2 curated + 46 sampled, deterministic seeded sampling
-(pass 1 type diversity, pass 2 term round-robin, seed 20261027).
+allocation 2 anchors + 4 curated + 46 sampled (v0.3.1), deterministic seeded
+sampling (pass 1 type diversity, pass 2 term round-robin, seed 20261027).
 
 Runs against a sejm-dump directory (default on ATX: ~/sejm-dump). Writes the
 selection JSON to stdout (or --out). The output list is committed as
@@ -37,6 +37,20 @@ TERMS = list(range(3, 11))
 # sampled; the anchor slots are part of the stratum totals shown in the
 # selection report, not produced here.
 QUOTA = {"unanimous": 8, "edge": 10, "narrow": 10, "comfortable": 8, "landslide": 10}
+
+# Curated club-split cases (fixture set v0.3.1) — see the comment in main().
+CLUB_SPLIT_CURATED = [
+    {"term": 3, "sitting": 21, "votingNumber": 2, "type": "unknown", "bucket": "landslide",
+     "selection": "curated",
+     "title": "PKT 2. PORZ. DZIEN. SPRAWOZDANIE KOMISJI O PROJEKTACH UCHWAŁ W SPRAWIE POTĘPIENIA SYSTEMU TOTALITARNego",
+     "date": "1998-06-18T10:20:14",
+     "reason": "club-split case: splinter KPN-OP co-occurs with parent AWS (7 vs 192 vote records)"},
+    {"term": 3, "sitting": 37, "votingNumber": 1, "type": "unknown", "bucket": "comfortable",
+     "selection": "curated",
+     "title": "37. POSIEDZENIE SEJMU RZECZYPOSPOLITEJ POLSKIEJ W DNIACH 2, 3, 4 GRUDNIA 1998 ROKU",
+     "date": "1998-12-03T09:08:38",
+     "reason": "club-split case: splinter KPN-O co-occurs with parent AWS (6 vs 187 vote records)"},
+]
 
 
 def margin_bucket(yes: int, no: int) -> str:
@@ -125,6 +139,18 @@ def main() -> int:
     else:
         notes.append("tie: empty cell - no eligible yes==no division; slot reallocated to landslide")
         QUOTA["landslide"] = QUOTA["landslide"] + 1
+
+    # curated club-split cases (CODEBOOK section 11; fixture set v0.3.1): the two
+    # earliest divisions in (term, sitting, votingNumber) order in which a label
+    # with a `split-from` edge in docs/club-identity.json co-occurs with its
+    # parent label, provided the counters are usable and the parent carries
+    # >= 5 vote records. Derived from the committed membership snapshot
+    # (docs/club-identity-membership.json.gz) by
+    # tests/test_club_identity.py::test_club_split_curated_picks.
+    selected.extend(CLUB_SPLIT_CURATED)
+    notes.append("Fixture set v0.3.1 (issue #1 club-identity PR, 2026-11-22): two curated "
+                 "club-split cases added per CODEBOOK section 11 (50 -> 52 items; 2 anchors + "
+                 "4 curated + 46 sampled).")
 
     # sampled buckets: pass 1 type diversity, pass 2 term round-robin
     for bucket in ("unanimous", "edge", "narrow", "comfortable", "landslide"):

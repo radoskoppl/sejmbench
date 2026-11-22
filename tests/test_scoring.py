@@ -19,7 +19,9 @@ import seed_rule
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 PROMPT_HASH = "75dca1f188e01cfe041b269ce83700cf29af1b3dd9d2cacebf9bda38ce9dbf91"
-SET_HASH = "018ddcb9ec32cfae977cf176c55f5043240907fcbe0b42827ad9c8381001457b"
+# v0.3.1 (2026-11-22): two curated club-split fixtures added per CODEBOOK §11
+# (issue #1 club-identity PR) — 50 -> 52 items, set hash moves accordingly.
+SET_HASH = "1c9bd94a557c05a36ca5b7b5a67bf5ed45b018e0894ec47ef420840beb9afcdd"
 LANDSLIDE = "term10-s1-v2-landslide.json"
 TIGHT = "term10-s6-v14-tight.json"
 

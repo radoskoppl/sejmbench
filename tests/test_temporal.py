@@ -199,7 +199,7 @@ def test_rescore_tar_missing_is_hard_error(tmp_path):
     item_paths = _model_items(repo)
     card = _model_card_with_tar(repo, item_paths)
     shutil.rmtree(os.path.join(repo, "results", "basal-x"))
-    with pytest.raises(SystemExit, match="not found"):
+    with pytest.raises(SystemExit, match="none of .* found|not found"):
         scoring.rescore(card, repo, {"fixtures": []})
 
 

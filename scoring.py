@@ -1029,13 +1029,15 @@ def _validate_temporal_split(card: dict, ts: dict) -> list:
     return errs
 
 
-def _submission_paths_from_tar(card: dict, repo_root: str) -> tuple:
+def _submission_paths_from_tar(card: dict, repo_root: str, card_path: str | None = None) -> tuple:
     """Per-item files absent: rescore from the committed raw tar instead.
 
     The tar (results/<dir>.raw.tar.gz) carries the run's own bytes; every
     file sha256 is verified against the card submission manifest, so a
     rescore never runs on substitute data. Missing tar or any mismatch is a
-    hard error.
+    hard error. When the submission dir lives outside the repo (the m3
+    checkpoint card references an ATX scratch dir), the card-adjacent tar
+    results/<card-basename>.raw.tar.gz is tried as well.
     """
     import tarfile
     import tempfile
@@ -1046,37 +1048,51 @@ def _submission_paths_from_tar(card: dict, repo_root: str) -> tuple:
     if len(dirs) != 1:
         raise SystemExit("cannot rescore: submission files span %d dirs; expected "
                          "a single results/<dir> layout" % len(dirs))
-    tar_rel = dirs[0] + ".raw.tar.gz"
-    tar_path = os.path.join(repo_root, tar_rel)
-    if not os.path.exists(tar_path):
-        raise SystemExit("cannot rescore: per-item files missing and " + tar_rel + " not found")
+    candidates = [os.path.join(repo_root, dirs[0] + ".raw.tar.gz")]
+    if card_path:
+        base = os.path.basename(card_path)
+        if base.endswith(".scorecard.json"):
+            candidates.append(os.path.join(repo_root, os.path.dirname(card_path) or "results",
+                                           base[: -len(".scorecard.json")] + ".raw.tar.gz"))
+    tar_path = next((c for c in candidates if os.path.exists(c)), None)
+    if tar_path is None:
+        raise SystemExit("cannot rescore: per-item files missing and none of %s found"
+                         % ", ".join(os.path.relpath(c, repo_root) for c in candidates))
     tmp = tempfile.mkdtemp(prefix="sejmbench-rescore-")
+    # sanitized extraction dir (card paths may point outside the repo and
+    # contain "../" — the extract filter forbids escaping paths)
+    safe_dir = os.path.basename(dirs[0].rstrip("/")) or "items"
     try:
         with tarfile.open(tar_path, "r:gz") as tf:
             members = tf.getmembers()
-            # rewrite member names so the extracted layout mirrors the
-            # repo-relative paths the card references (the tar was created
-            # from inside results/)
+            # Extract every file flat under <tmp>/<safe_dir>/ and resolve the
+            # card's entries by basename — the layouts of committed raw tars
+            # vary (flat, results/-relative, repo-relative); the per-file
+            # sha256 check below is the real binding, not the path shape.
             for m in members:
-                parts = m.name.split("/", 1)
-                if len(parts) == 2 and not m.name.startswith("results/"):
-                    m.name = "results/" + m.name
+                if not m.isfile():
+                    continue
+                name = m.name
+                while name.startswith("./"):
+                    name = name[2:]
+                m.name = safe_dir + "/" + name.rsplit("/", 1)[-1]
             try:
                 tf.extractall(tmp, members=members, filter="data")
             except TypeError:  # python < 3.11.4: no filter parameter
                 tf.extractall(tmp, members=members)
     except tarfile.TarError as exc:
-        raise SystemExit("cannot rescore: " + tar_rel + " unreadable: " + str(exc))
+        raise SystemExit("cannot rescore: " + tar_path + " unreadable: " + str(exc))
     out = []
     for f in entries:
-        p = os.path.join(tmp, f["path"])
+        p = os.path.join(tmp, safe_dir, os.path.basename(f["path"]))
         if not os.path.exists(p):
-            raise SystemExit("cannot rescore: " + f["path"] + " not present in " + tar_rel)
+            raise SystemExit("cannot rescore: " + f["path"] + " not present in " + tar_path)
         if _sha256_file(p) != f.get("sha256"):
             raise SystemExit("cannot rescore: sha256 mismatch for " + f["path"] +
-                             " vs " + tar_rel)
+                             " vs " + tar_path)
         out.append(p)
-    return out, tmp
+    overrides = {os.path.basename(f["path"]): f["path"] for f in entries}
+    return out, tmp, overrides
 
 
 def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> dict:
@@ -1122,6 +1138,10 @@ def build_scorecard(fixtures: dict, items: dict, problems: list, meta: dict) -> 
             # in-harness generated answers (baselines): the marker itself is the
             # value - never CWD-dependent via relpath
             entry["submission_file"] = p
+        elif data.get("_submission_file_override"):
+            # rescore-from-tar: reproduce the committed path verbatim (the
+            # extraction dir is a tmpdir; the tar lookup is by basename)
+            entry["submission_file"] = data["_submission_file_override"]
         else:
             entry["submission_file"] = os.path.relpath(p, meta.get("repo_root") or ".")
         entry["submission_sha256"] = (_sha256_file(p)
@@ -1445,8 +1465,13 @@ def shared_fixtures(a: dict, b: dict) -> tuple[list, list]:
     return shared, mismatched
 
 
-def rescore(card: dict, repo_root: str, manifest: dict) -> dict:
-    "Rebuild a scorecard from its referenced artifacts (CI reproduction, corpus-aware)."
+def rescore(card: dict, repo_root: str, manifest: dict, card_path: str | None = None) -> dict:
+    """Rebuild a scorecard from its referenced artifacts (CI reproduction, corpus-aware).
+
+    card_path (optional) is the committed card's own path; it lets the tar
+    fallback find a card-adjacent raw tar (results/<card-basename>.raw.tar.gz)
+    when the submission paths point outside the repo (e.g. an ATX scratch dir).
+    """
     names = [os.path.basename(f["file"]) for f in card["fixtures"]]
     meta = dict(card)
     # prompt_variant is meta-only (never serialized into the card): recover it
@@ -1479,11 +1504,17 @@ def rescore(card: dict, repo_root: str, manifest: dict) -> dict:
     else:
         paths = [os.path.join(repo_root, f["path"]) for f in card["submission"]["files"]]
         item_root = repo_root
+        path_overrides = None
         if not all(os.path.exists(p) for p in paths):
-            paths, item_root = _submission_paths_from_tar(card, repo_root)
+            paths, item_root, path_overrides = _submission_paths_from_tar(
+                card, repo_root, card_path=card_path)
         items, problems = load_submission_files(paths)
-        # rescore-from-tar: the extracted layout mirrors the repo layout, so
-        # per-item submission_file paths and sha256s reproduce exactly
+        if path_overrides:
+            # reproduce the committed submission paths verbatim; the extracted
+            # copies (tmp) are only read for content and sha256
+            for key, data in items.items():
+                if key in path_overrides:
+                    data["_submission_file_override"] = path_overrides[key]
         meta["repo_root"] = item_root
     return build_scorecard(fixtures, items, problems, meta)
 

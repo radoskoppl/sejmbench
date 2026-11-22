@@ -105,6 +105,10 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--selection", default=os.path.join(FIXTURES, "selection.json"))
     ap.add_argument("--workers", type=int, default=3)
+    ap.add_argument("--only-new", action="store_true",
+                    help="fetch only selection entries absent from the manifest, merge them in "
+                         "sorted order and leave every existing entry byte-identical (used for "
+                         "curated additions; without it the full set is re-fetched and rewritten)")
     args = ap.parse_args()
 
     with open(args.selection, encoding="utf-8") as fh:
@@ -113,10 +117,19 @@ def main() -> int:
     with open(manifest_path, encoding="utf-8") as fh:
         manifest = json.load(fh)
 
+    existing_keys = {(e["term"], e["sitting"], e["votingNumber"]) for e in manifest["fixtures"]}
+
     anchors, fresh = [], []
     for entry in selection["selected"]:
         key = (entry["term"], entry["sitting"], entry["votingNumber"])
-        (anchors if key in ANCHORS else fresh).append(entry)
+        if args.only_new:
+            if key in existing_keys:
+                continue
+            if key in ANCHORS:
+                continue  # anchors are handled by their own block below
+            fresh.append(entry)
+        else:
+            (anchors if key in ANCHORS else fresh).append(entry)
     if anchors:
         print(f"selection contains anchor keys {anchors} - anchors are handled separately",
               file=sys.stderr)
@@ -127,19 +140,22 @@ def main() -> int:
             records.append(record)
 
     # anchors: re-fetch for response_sha256; verify byte-equality of the parsed
-    # response against the committed file; never rewrite the file
-    for term, sitting, voting in sorted(ANCHORS):
-        record, d = fetch_one({"term": term, "sitting": sitting, "votingNumber": voting,
-                               "bucket": "anchor", "selection": "anchor", "type": "anchor"},
-                              write=False)
-        entry = next(e for e in manifest["fixtures"]
-                     if (e["term"], e["sitting"], e["votingNumber"]) == (term, sitting, voting))
-        with open(os.path.join(ROOT, entry["file"]), encoding="utf-8") as fh:
-            committed = json.load(fh)
-        if committed != d:
-            mismatches.append(f"anchor drift: {entry['file']} differs from the live API")
-        else:
-            entry["response_sha256"] = record["response_sha256"]
+    # response against the committed file; never rewrite the file.
+    # (--only-new leaves the anchor entries untouched; verify_provenance.py is
+    # the tool that re-verifies them against the live API.)
+    if not args.only_new:
+        for term, sitting, voting in sorted(ANCHORS):
+            record, d = fetch_one({"term": term, "sitting": sitting, "votingNumber": voting,
+                                   "bucket": "anchor", "selection": "anchor", "type": "anchor"},
+                                  write=False)
+            entry = next(e for e in manifest["fixtures"]
+                         if (e["term"], e["sitting"], e["votingNumber"]) == (term, sitting, voting))
+            with open(os.path.join(ROOT, entry["file"]), encoding="utf-8") as fh:
+                committed = json.load(fh)
+            if committed != d:
+                mismatches.append(f"anchor drift: {entry['file']} differs from the live API")
+            else:
+                entry["response_sha256"] = record["response_sha256"]
 
     if mismatches:
         for m in mismatches:
