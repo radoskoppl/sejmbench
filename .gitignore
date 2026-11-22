@@ -11,3 +11,6 @@ results/baseline-*-term10.scorecard.json
 
 # large model scorecards hosted on HF (patrykorwat/sejmbench-results; git carries the sha reference)
 results/basal-9b-full.scorecard.json
+
+# Lean build artifacts (docs/lean)
+docs/lean/.lake/
