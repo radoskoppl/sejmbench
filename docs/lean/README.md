@@ -57,11 +57,19 @@ between the two.
 ## Scope — read before citing
 
 * This is a spec artifact: it proves properties of the **specification**.
-  The Lean specification and the Python implementation are validated
-  *independently*: the pytest suite checks `seed_rule.py` against
-  hand-computed cases and invariants, but there is as yet no
-  machine-checked equivalence between the two implementations (no shared
-  test vectors, no differential testing). The vote-filter
+  The Lean–Python conformance bridge (above) now provides shared **Tier-1
+  golden vectors** and automated **differential testing** for the seed-rule
+  fields listed above. This is fixed-sample regression testing, **not** a
+  machine-checked proof of semantic equivalence between the implementations.
+  Extended metrics (`polarization`, `yes_share`, `margin_all`, per-track
+  statistics, `inni` breakdowns) remain outside Tier 1 until corresponding
+  Lean definitions and proofs are available. The counterfactual
+  transformation itself is not verified by testing
+  `cf_build.compute_ground_truth()` alone: its record-level correctness is
+  the responsibility of the formal development in issue #24 (L1).
+* The Lean specification and the Python implementation are
+  *independently* validated; the pytest suite checks `seed_rule.py` against
+  the golden vectors and invariants. The vote-filter
   definitions are pointwise equal to the per-club dict aggregation (each
   record belongs to exactly one club); the README of the formalization
   states this as a comment, and the threshold is pinned (`MIN_TRACK_RECORDS
