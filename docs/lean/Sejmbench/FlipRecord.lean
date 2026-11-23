@@ -8,7 +8,8 @@ converting exactly `k` selected positions' records to the losing kind.
 
 **Proved here (core Lean, compiles clean, axioms [propext, Classical.choice,
 Quot.sound] only):** `recordCount_flipFrom` (generalized over the offset —
-the key structural move), `recordCount_flip`, `isTrack_flip`,
+the key structural move), `recordCount_flip`, `flipFrom_length`,
+`isTrack_flip`,
 `isTrack_flipFrom`, `recordCount_cons`, **`EligibleFlip`** (direction-generic,
 parameterized by the original division's track predicate `P` and source kind
 `srcKind`; the `sel` branch carries `hp : P r.club` and `hsrc : srcKind
@@ -34,6 +35,16 @@ def flipFrom : Division → (Nat → Bool) → VoteKind → Nat → Division
   | [], _, _, _ => []
   | r :: rest, S, lose, off => (if S off then flipAt lose r else r) :: flipFrom rest S lose (off + 1)
 def flip (d : Division) (S : Nat → Bool) (lose : VoteKind) : Division := flipFrom d S lose 0
+/-- The flip touches exactly the records of the division: one entry per
+record, selected or kept. -/
+theorem flipFrom_length (d : Division)
+    (S : Nat → Bool)
+    (lose : VoteKind)
+    (off : Nat) :
+    (flipFrom d S lose off).length = d.length := by
+  induction d generalizing off with
+  | nil => simp [flipFrom]
+  | cons r rest ih => simp [flipFrom, ih]
 def selFrom (S : Nat → Bool) (off n : Nat) : Nat :=
   match n with
   | 0 => 0
