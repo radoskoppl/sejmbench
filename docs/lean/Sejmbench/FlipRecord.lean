@@ -14,7 +14,7 @@ replacing `isTrack_flipFrom_tail` per review §4), `recordCount_cons`,
 **`EligibleNo`** (division-indexed, track-qualified per review §2: `sel`
 carries `hkind : isYesKind r.kind` and `htrack : isTrack original r.club`,
 both evaluated against the ORIGINAL division), and
-**`nActive_flip_of_shifts`** (renamed from nActive_flip_of_eligible per
+**`nActive_of_seed_shifts`** (renamed from nActive_flip_of_eligible per
 review §1 — an algebraic lemma over explicit shifts, not a derivation from
 eligibility).
 
@@ -31,7 +31,7 @@ vectors, issue #23); the pair structure and metrics are L3
 (`CounterfactualV2`).
 -/
 open Sejmbench
-namespace XA1
+namespace Sejmbench
 def flipAt (lose : VoteKind) (r : Record) : Record := { club := r.club, kind := lose }
 def flipFrom : Division → (Nat → Bool) → VoteKind → Nat → Division
   | [], _, _, _ => []
@@ -89,8 +89,7 @@ Renamed from `nActive_flip_of_eligible` per review §1 — the hypotheses
 (`hshiftYes`, `hshiftNo`, `hab`) are exactly what the future
 `seed_totals_flip_of_eligible` must derive from the eligibility model. -/
 
-theorem nActive_of_seed_shifts (S : Nat → Bool) (lose : VoteKind) (d : Division)
-    (off : Nat)
+theorem nActive_of_seed_shifts (S : Nat → Bool) (d : Division) (off : Nat)
     (hshiftYes : seedYes (flipFrom d S VoteKind.no off) + selFrom S off (List.length d)
         = seedYes d)
     (hshiftNo : seedNo (flipFrom d S VoteKind.no off)
@@ -100,4 +99,20 @@ theorem nActive_of_seed_shifts (S : Nat → Bool) (lose : VoteKind) (d : Divisio
   unfold nActive
   omega
 
-end XA1
+
+/-- The flip preserves length. -/
+theorem flipFrom_length (d : Division) (S : Nat → Bool) (lose : VoteKind) (off : Nat) :
+    (flipFrom d S lose off).length = d.length := by
+  induction d generalizing off with
+  | nil => simp [flipFrom]
+  | cons r rest ih => simp [flipFrom, ih]
+
+-- TODO (next step, #24 L1): `seedAbstain_flip_of_eligible` and the seedYes/seedNo
+-- shift lemmas. The tail IH alone is insufficient — the abstain filter depends on
+-- tracks of the whole division. Route: `abstainCount_flipFrom` (fixed predicate P
+-- by induction, mirroring seedP_perm in Counterfactual.lean), then `seedAbstain`
+-- via `List.filter_congr` with `P := isTrack d` and `isTrack_flipFrom`. The
+-- `EligibleNo.sel` branch needs `hp : isTrack d r.club` (P0 from review §2),
+-- which the division-indexed inductive now carries.
+
+end Sejmbench
