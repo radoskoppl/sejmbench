@@ -1,35 +1,5 @@
 import Sejmbench.SeedRule
 open Sejmbench
-
-/-!
-# Record-level flip transformation (issue #24, L1)
-
-Takes formal responsibility for the record-level flip used by `cf_build.py`:
-converting exactly `k` selected positions' records to the losing kind.
-
-**Proved here (core Lean, compiles clean, axioms [propext, Classical.choice,
-Quot.sound] only):** `recordCount_flipFrom` (generalized over the offset —
-the key structural move), `recordCount_flip`, `isTrack_flip`,
-`isTrack_flipFrom`, `recordCount_cons`, **`EligibleFlip`** (direction-generic,
-parameterized by the original division's track predicate `P` and source kind
-`srcKind` — `sel` carries `hp : P r.club` and `hsrc : srcKind r.kind`),
-and **`nActive_of_seed_shifts`** (algebraic lemma over the explicit shifts).
-
-**Open (next steps per the round-4/5 reviews):** `seedYes`/`seedNo` shift
-lemmas derived from `EligibleFlip.sel` + `isTrack_flipFrom` (shift amount
-`k = selFrom S off d.length`), `seedAbstain_flip_of_eligible`,
-composition with `winner_no_of_shift`/`winner_yes_of_shift`, the
-`flipped_record_indices ↔ S` bridge, the NO→YES direction (specialize
-`EligibleFlip` with `srcKind := isNoKind`, target `VoteKind.yes`, and apply
-`winner_yes_of_shift` with its inclusive boundary), and
-`selectedIndices : List (Fin d.length) ↔ S`.
-
-Split of responsibility: the transformation's *effect* is proved here; the
-*GT recomputation* of the modified division is
-`cf_build.compute_ground_truth` (conformance-tested against the golden
-vectors, issue #23); the pair structure and metrics are L3
-(`CounterfactualV2`).
--/
 namespace Sejmbench
 def flipAt (lose : VoteKind) (r : Record) : Record := { club := r.club, kind := lose }
 def flipFrom : Division → (Nat → Bool) → VoteKind → Nat → Division
@@ -70,16 +40,26 @@ theorem isTrack_flipFrom (d : Division) (S : Nat → Bool) (lose : VoteKind)
     isTrack (flipFrom d S lose off) c = isTrack d c := by
   unfold isTrack
   rw [recordCount_flipFrom d S lose off c]
-inductive EligibleFlip (P : String → Bool) (S : Nat → Bool) (srcKind : VoteKind → Bool) (lose : VoteKind) :
-    Division → Nat → Prop
-  | nil (off : Nat) : EligibleFlip P S srcKind lose [] off
+
+/-- **Eligibility** for a flip toward `lose`: parameterized by the ORIGINAL
+division's track predicate `P` and the source kind. A position `off` is
+eligible when `S off = false` (kept), or the record at `off` has club with
+`P c0 = true` and `isYesKind` kind. The certificate indexes the actual
+division; `P` is instantiated with `isTrack d` at use time. -/
+inductive EligibleFlip (P : String → Bool) (S : Nat → Bool) (lose : VoteKind) : Division → Nat → Prop
+  | nil (d : Division) (off : Nat) : EligibleFlip P S lose d off
   | keep (r : Record) (rest : Division) (off : Nat)
-      (hs : ¬ S off) (hrest : EligibleFlip P S srcKind lose rest (off + 1)) :
-      EligibleFlip P S srcKind lose (r :: rest) off
+      (hs : ¬ S off) (hrest : EligibleFlip P S lose rest (off + 1)) :
+      EligibleFlip P S lose (r :: rest) off
   | sel (r : Record) (rest : Division) (off : Nat)
-      (hs : S off) (hp : P r.club) (hsrc : srcKind r.kind)
-      (hrest : EligibleFlip P S srcKind lose rest (off + 1)) :
-      EligibleFlip P S srcKind lose (r :: rest) off
+      (hs : S off) (hp : P r.club) (hsrc : isYesKind r.kind)
+      (hrest : EligibleFlip P S lose rest (off + 1)) :
+      EligibleFlip P S lose (r :: rest) off
+
+/-- **Algebraic lemma** over the explicit seed shifts: the decisive kinds
+trade `−k/+k` and abstains are untouched, so `n_active` is preserved.
+The hypotheses are what `seedYes/seedNo/seedAbstain_flip_of_eligible`
+must derive from `EligibleFlip`. -/
 theorem nActive_of_seed_shifts (S : Nat → Bool) (d : Division) (off : Nat)
     (hshiftYes : seedYes (flipFrom d S VoteKind.no off) + selFrom S off (List.length d)
         = seedYes d)
