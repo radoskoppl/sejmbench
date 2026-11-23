@@ -30,7 +30,7 @@ vectors, issue #23); the pair structure and metrics are L3
 (`CounterfactualV2`).
 -/
 open Sejmbench
-namespace WB2
+namespace Sejmbench
 def flipAt (lose : VoteKind) (r : Record) : Record := { club := r.club, kind := lose }
 def flipFrom : Division → (Nat → Bool) → VoteKind → Nat → Division
   | [], _, _, _ => []
@@ -61,6 +61,12 @@ theorem recordCount_flipFrom (d : Division) (S : Nat → Bool) (lose : VoteKind)
 theorem recordCount_flip (d : Division) (S : Nat → Bool) (lose : VoteKind) (c : String) :
     recordCount (flip d S lose) c = recordCount d c :=
   recordCount_flipFrom d S lose 0 c
+theorem flipFrom_length (d : Division) (S : Nat → Bool) (lose : VoteKind) (off : Nat) :
+    (flipFrom d S lose off).length = d.length := by
+  induction d generalizing off with
+  | nil => simp [flipFrom]
+  | cons r rest ih => simp [flipFrom, ih]
+
 theorem isTrack_flip (d : Division) (S : Nat → Bool) (lose : VoteKind) (c : String) :
     isTrack (flip d S lose) c = isTrack d c := by
   unfold isTrack
@@ -89,4 +95,4 @@ theorem nActive_of_seed_shifts (S : Nat → Bool) (d : Division) (off : Nat)
     nActive (flipFrom d S VoteKind.no off) = nActive d := by
   unfold nActive
   omega
-end WB2
+end Sejmbench
