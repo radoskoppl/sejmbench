@@ -12,16 +12,14 @@ the key structural move), `recordCount_flip`, `isTrack_flip`,
 `isTrack_flipFrom`, `recordCount_cons`, **`EligibleFlip`** (direction-generic,
 parameterized by the original division's track predicate `P` and source kind
 `srcKind`; the `sel` branch carries `hp : P r.club` and `hsrc : srcKind
-r.kind`), and **`nActive_of_seed_shifts`** (algebraic lemma over the explicit
-shifts).
+r.kind` — the two conditions the seed shifts need), and
+**`nActive_of_seed_shifts`** (algebraic lemma over the explicit shifts).
 
-**Open (next steps per the round-6 review):** `seedYes`/`seedNo` shift lemmas
-derived from `EligibleFlip.sel` + `isTrack_flipFrom` (shift amount
-`k = selFrom S off d.length`), `seedAbstain_flip_of_eligible` (route:
-`abstainCount_flipFrom` with fixed predicate P by induction, then seedAbstain
-via filter_congr), composition with `winner_no_of_shift`/
-`winner_yes_of_shift`, `selectedCount = selFrom`, and the
-`flipped_record_indices ↔ S` bridge.
+**Open (next milestone):** `seedYes`/`seedNo` shift lemmas derived from
+`EligibleFlip.sel` + `isTrack_flipFrom` (shift amount
+`k = selFrom S off d.length`), `seedAbstain_flip_of_eligible`, composition
+with `winner_no_of_shift`/`winner_yes_of_shift`, the
+`flipped_record_indices ↔ S` bridge, and the NO→YES specialization.
 
 Split of responsibility: the transformation's *effect* is proved here; the
 *GT recomputation* of the modified division is
@@ -61,12 +59,6 @@ theorem recordCount_flipFrom (d : Division) (S : Nat → Bool) (lose : VoteKind)
 theorem recordCount_flip (d : Division) (S : Nat → Bool) (lose : VoteKind) (c : String) :
     recordCount (flip d S lose) c = recordCount d c :=
   recordCount_flipFrom d S lose 0 c
-theorem flipFrom_length (d : Division) (S : Nat → Bool) (lose : VoteKind) (off : Nat) :
-    (flipFrom d S lose off).length = d.length := by
-  induction d generalizing off with
-  | nil => simp [flipFrom]
-  | cons r rest ih => simp [flipFrom, ih]
-
 theorem isTrack_flip (d : Division) (S : Nat → Bool) (lose : VoteKind) (c : String) :
     isTrack (flip d S lose) c = isTrack d c := by
   unfold isTrack
