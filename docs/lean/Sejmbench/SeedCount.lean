@@ -353,6 +353,39 @@ theorem winner_yes_of_eligible_flip
     hmajority h1 h2
   rw [hw]; exact hquota
 
+/-! ## Full equivalence versions (the wrappers at full strength)
+
+The base theorems are iff's; the wrappers above use only the → direction
+(under the quota hypothesis). These restatements keep the full
+equivalence, with the certificate supplying the shift hypotheses. -/
+
+/-- **YES → NO (iff):** `winner d' = no ↔ 2k > margin`, for any eligible
+flip; original ties excluded (`NO ≤ YES` suffices here, matching
+`winner_no_of_shift`). -/
+theorem winner_no_of_eligible_flip_iff
+    (S : Nat → Bool) (d : Division) (off : Nat)
+    (h : EligibleFlip (isTrack d) S isYesKind VoteKind.no d off)
+    (hmajority : seedNo d ≤ seedYes d) :
+    (winner (flipFrom d S VoteKind.no off) = Winner.no)
+      ↔ 2 * selFrom S off (List.length d) > seedYes d - seedNo d := by
+  have h1 := seedYes_dec_of_eligible S d off h
+  have h2 := seedNo_inc_of_eligible S d off h
+  exact winner_no_of_shift d (flipFrom d S VoteKind.no off)
+    (selFrom S off (List.length d)) (by omega) h1 h2
+
+/-- **NO → YES (iff):** `winner d' = yes ↔ 2k ≥ margin`, for any eligible
+flip. The boundary is INCLUSIVE. -/
+theorem winner_yes_of_eligible_flip_iff
+    (S : Nat → Bool) (d : Division) (off : Nat)
+    (h : EligibleFlip (isTrack d) S isNoKind VoteKind.yes d off)
+    (hmajority : seedYes d < seedNo d) :
+    (winner (flipFrom d S VoteKind.yes off) = Winner.yes)
+      ↔ 2 * selFrom S off (List.length d) ≥ seedNo d - seedYes d := by
+  have h1 := seedNo_dec_of_eligible S d off h
+  have h2 := seedYes_inc_of_eligible S d off h
+  exact winner_yes_of_shift d (flipFrom d S VoteKind.yes off)
+    (selFrom S off (List.length d)) hmajority h1 h2
+
 /-! ## Boundary asymmetry at `2k = margin` (the review's doc-test)
 
 The two directions behave DIFFERENTLY at the exact boundary — this is
