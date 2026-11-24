@@ -10,7 +10,11 @@ converting exactly `k` selected positions' records to the losing kind.
 Quot.sound] only):** `recordCount_flipFrom` (generalized over the offset —
 the key structural move), `recordCount_flip`, `flipFrom_length`,
 `isTrack_flip`,
-`isTrack_flipFrom`, `recordCount_cons`, **`EligibleFlip`** (direction-generic,
+`isTrack_flipFrom`, `recordCount_cons`, **`filterLen_flipFrom`** (issue #2:
+the `List.filter Q` invariance for any flip-preserved predicate `Q`; the
+club-only corollary `filterLen_club_flipFrom` is hypothesis-free, and
+`recordCount_flipFrom_of_fixed` re-derives `recordCount_flipFrom` as its
+`fun s => s == c` instance), **`EligibleFlip`** (direction-generic,
 parameterized by the original division's track predicate `P` and source kind
 `srcKind`; the `sel` branch carries `hp : P r.club` and `hsrc : srcKind
 r.kind` — the two conditions the seed shifts need), and
@@ -67,6 +71,53 @@ theorem recordCount_flipFrom (d : Division) (S : Nat → Bool) (lose : VoteKind)
     by_cases hsel : S off
     · simp [hsel, flipAt]
     · simp [hsel, recordCount]
+/-! ## Fixed-predicate counting (issue #2) -/
+
+/-- Cons step of the fixed-predicate filter length. -/
+theorem filterLen_cons (Q : Record → Bool) (a : Record) (l : Division) :
+    (List.filter Q (a :: l)).length = (List.filter Q l).length + (if Q a then 1 else 0) := by
+  by_cases h : Q a
+  · simp [h]
+  · simp [h]
+
+/-- **Fixed-predicate counting lemma** (issue #2). For any predicate `Q`
+preserved by the flip (`Q (flipAt lose r) = Q r` — the established scope:
+kind-based predicates are NOT preserved, they shift; that is issues #3/#4),
+the number of matching records is invariant under `flipFrom` at any offset.
+Induction on the list with the offset generalized: the tail IH is needed at
+`off + 1` before the cons lemma applies — the key structural move. -/
+theorem filterLen_flipFrom (Q : Record → Bool) (S : Nat → Bool) (lose : VoteKind)
+    (hQ : ∀ r, Q (flipAt lose r) = Q r) :
+    ∀ (d : Division) (off : Nat),
+      (List.filter Q (flipFrom d S lose off)).length = (List.filter Q d).length := by
+  intro d
+  induction d with
+  | nil => intro _; simp [flipFrom]
+  | cons r rest ih =>
+    intro off
+    show (List.filter Q ((if S off = true then flipAt lose r else r) :: flipFrom rest S lose (off + 1))).length
+       = (List.filter Q (r :: rest)).length
+    rw [filterLen_cons Q, filterLen_cons Q, ih (off + 1)]
+    by_cases hsel : S off
+    · simp [hsel, hQ]
+    · simp [hsel]
+
+/-- **Club-predicate specialization** (no hypotheses): the flip never
+touches clubs, so every club-only predicate `fun x => P x.club` is
+preserved. This is the shape `recordCount` and `isTrack` live in. -/
+theorem filterLen_club_flipFrom (P : String → Bool) (S : Nat → Bool) (lose : VoteKind)
+    (d : Division) (off : Nat) :
+    (List.filter (fun x => P x.club) (flipFrom d S lose off)).length
+      = (List.filter (fun x => P x.club) d).length :=
+  filterLen_flipFrom (fun x => P x.club) S lose (fun _r => rfl) d off
+
+/-- `recordCount_flipFrom` is the `P := fun s => s == c` instance of the
+general fixed-predicate lemma. -/
+theorem recordCount_flipFrom_of_fixed (d : Division) (S : Nat → Bool) (lose : VoteKind)
+    (off : Nat) (c : String) :
+    recordCount (flipFrom d S lose off) c = recordCount d c :=
+  filterLen_flipFrom (fun r => r.club == c) S lose (fun _r => rfl) d off
+
 theorem recordCount_flip (d : Division) (S : Nat → Bool) (lose : VoteKind) (c : String) :
     recordCount (flip d S lose) c = recordCount d c :=
   recordCount_flipFrom d S lose 0 c
