@@ -353,4 +353,43 @@ theorem winner_yes_of_eligible_flip
     hmajority h1 h2
   rw [hw]; exact hquota
 
+/-! ## Boundary asymmetry at `2k = margin` (the review's doc-test)
+
+The two directions behave DIFFERENTLY at the exact boundary — this is
+the mathematical content of "strict vs inclusive":
+
+* YES→NO at `2k = seedYes d − seedNo d`: **no reversal** — the flipped
+  division ties (`seedYes d' = seedNo d'`) and the frozen tie convention
+  resolves it to `yes`;
+* NO→YES at `2k = seedNo d − seedYes d`: **reversal happens** — the
+  winner becomes `yes` (the inclusive branch of `winner_yes_of_shift`). -/
+
+/-- YES→NO at the exact boundary: the flipped division is a tie. -/
+theorem seedTie_no_of_eligible_at_boundary (S : Nat → Bool) (d : Division) (off : Nat)
+    (h : EligibleFlip (isTrack d) S isYesKind VoteKind.no d off)
+    (hmajority : seedNo d ≤ seedYes d)
+    (hborder : 2 * selFrom S off (List.length d) = seedYes d - seedNo d) :
+    seedYes (flipFrom d S VoteKind.no off) = seedNo (flipFrom d S VoteKind.no off) := by
+  have h1 := seedYes_dec_of_eligible S d off h
+  have h2 := seedNo_inc_of_eligible S d off h
+  omega
+
+/-- YES→NO at the exact boundary: the winner does NOT reverse (stays `yes`
+by the tie convention). -/
+theorem winner_stays_yes_at_boundary (S : Nat → Bool) (d : Division) (off : Nat)
+    (h : EligibleFlip (isTrack d) S isYesKind VoteKind.no d off)
+    (hmajority : seedNo d ≤ seedYes d)
+    (hborder : 2 * selFrom S off (List.length d) = seedYes d - seedNo d) :
+    winner (flipFrom d S VoteKind.no off) = Winner.yes := by
+  have htie := seedTie_no_of_eligible_at_boundary S d off h hmajority hborder
+  exact winner_yes_of_ge (flipFrom d S VoteKind.no off) (by omega)
+
+/-- NO→YES at the exact boundary: the winner DOES reverse to `yes`. -/
+theorem winner_flips_yes_at_boundary (S : Nat → Bool) (d : Division) (off : Nat)
+    (h : EligibleFlip (isTrack d) S isNoKind VoteKind.yes d off)
+    (hmajority : seedYes d < seedNo d)
+    (hborder : 2 * selFrom S off (List.length d) = seedNo d - seedYes d) :
+    winner (flipFrom d S VoteKind.yes off) = Winner.yes :=
+  winner_yes_of_eligible_flip S d off h hmajority (by omega)
+
 end Sejmbench
