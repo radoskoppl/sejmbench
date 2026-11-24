@@ -1,3 +1,4 @@
+import Sejmbench.Counterfactual
 import Sejmbench.FlipRecord
 
 /-!
@@ -305,5 +306,51 @@ theorem nActive_flip_yes_of_eligible (S : Nat → Bool) (d : Division) (off : Na
   have hn := seedNo_dec_of_eligible S d off h
   have hab := seedAbstain_flip_yes_of_eligible S d off h
   omega
+
+/-! ## Winner composition (issue #24, L1 — the closing step)
+
+Composes the seed shifts with `winner_no_of_shift` /
+`winner_yes_of_shift` (Counterfactual.lean). The two directions keep
+their **asymmetric thresholds**: YES→NO flips exactly when
+`2·k > seedYes d − seedNo d` (strict), NO→YES when
+`2·k ≥ seedNo d − seedYes d` (inclusive — at the exact boundary the
+flipped division is a tie, resolved to the YES seed by
+`winner_yes_of_ge`). Original ties are excluded in both directions
+(`NO < YES` / `YES < NO`), matching the experiment contract of #24. -/
+
+/-- **YES → NO:** with an eligible flip of exactly `k = selFrom S off d.length`
+winning-side records, the winner flips to `no` exactly when `2·k > margin`.
+`NO < YES` excludes original ties (experiment contract). -/
+theorem winner_no_of_eligible_flip
+    (S : Nat → Bool) (d : Division) (off : Nat)
+    (h : EligibleFlip (isTrack d) S isYesKind VoteKind.no d off)
+    (hmajority : seedNo d < seedYes d)
+    (hquota : 2 * selFrom S off (List.length d) > seedYes d - seedNo d) :
+    winner (flipFrom d S VoteKind.no off) = Winner.no := by
+  have h1 := seedYes_dec_of_eligible S d off h
+  have h2 := seedNo_inc_of_eligible S d off h
+  have hw := winner_no_of_shift d (flipFrom d S VoteKind.no off)
+    (selFrom S off (List.length d))
+    (by omega) h1 h2
+  rw [hw]; exact hquota
+
+/-- **NO → YES:** with an eligible flip of exactly `k = selFrom S off d.length`
+losing-side records, the winner becomes `yes` exactly when
+`2·k ≥ margin` — the INCLUSIVE boundary. `YES < NO` excludes original
+ties. The quota `k = ⌊margin/2⌋ + 1` (`flip_quota_sufficient`) is safe for
+both directions, though one record above the NO→YES minimum on even
+margins. -/
+theorem winner_yes_of_eligible_flip
+    (S : Nat → Bool) (d : Division) (off : Nat)
+    (h : EligibleFlip (isTrack d) S isNoKind VoteKind.yes d off)
+    (hmajority : seedYes d < seedNo d)
+    (hquota : 2 * selFrom S off (List.length d) ≥ seedNo d - seedYes d) :
+    winner (flipFrom d S VoteKind.yes off) = Winner.yes := by
+  have h1 := seedNo_dec_of_eligible S d off h
+  have h2 := seedYes_inc_of_eligible S d off h
+  have hw := winner_yes_of_shift d (flipFrom d S VoteKind.yes off)
+    (selFrom S off (List.length d))
+    hmajority h1 h2
+  rw [hw]; exact hquota
 
 end Sejmbench
