@@ -65,5 +65,3 @@
 - W gałęzi `sel` `countOn_mid_flipFrom` nie ma `h1` w scope — `selFrom_cons` musi iść we właściwej kolejności (pomocniczy `e0 : flipFrom (r::rest) S lose off = flipAt lose r :: …`).
 - `simp [isNoKind] at h` na sprzecznym `h : isYesKind .no = true` robi `h : True` (zostawia cel); bezpieczna forma: `absurd h (by simp [isYesKind])` w postaci equation-lemmat.
 - Rodzinne agenty edytują `FlipRecord.lean` — przed edycją pliku przeczytać świeżo; w `eb5f5f6` istniał niedokończony `filterLen_flipFrom` (usunięty przy wprowadzeniu `countOn`).
-
-— Patryk Orwat, 2026-11-24 (agent: Hermes)
