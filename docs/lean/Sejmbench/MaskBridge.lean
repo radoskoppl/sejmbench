@@ -75,27 +75,52 @@ theorem flipAtIndices_eq_flipFrom (d : Division) (idxs : List Nat) (lose : VoteK
   intro j r
   simp [maskOf]
 
-/-- **Certificate from the index list:** if every index in `idxs` points at
-an eligible record of `d`, the derived mask satisfies `EligibleFlip` at
-offset 0 — the Python invariant `flipped_idx ⊆ eligible`. -/
+/-- **Certificate from the index list (mask form).** If the mask selects only
+records that satisfy the club/kind eligibility at `off + j`, the derived mask
+satisfies the `EligibleFlip` certificate. Offset-general so the induction
+generalizes over `off`. -/
+theorem eligibleFlip_maskOf (P : String → Bool) (srcKind : VoteKind → Bool)
+    (lose : VoteKind) :
+    ∀ (d : Division) (idxs : List Nat) (off : Nat),
+      (∀ j, j < d.length → maskOf idxs (off + j) = true →
+        P (d[j]!).club ∧ srcKind (d[j]!).kind) →
+      EligibleFlip P (maskOf idxs) srcKind lose d off := by
+  intro d
+  induction d with
+  | nil => intro idxs off _; exact EligibleFlip.nil off
+  | cons r rest ih =>
+      intro idxs off helig
+      by_cases hsel : maskOf idxs off = true
+      case pos =>
+        have hr := helig 0 (by simp) hsel
+        refine EligibleFlip.sel (lose := lose) r rest off hsel hr.1 hr.2 (ih idxs (off + 1) ?_)
+        intro j hj hmask
+        have hm : maskOf idxs (off + (j + 1)) = true := by
+          rw [Nat.add_assoc, Nat.add_comm 1 j] at hmask
+          exact hmask
+        have hlen : (r :: rest).length = rest.length + 1 := rfl
+        exact helig (j + 1) (by omega) hm
+      case neg =>
+        have hnot : ¬ (maskOf idxs off = true) := by
+          intro hc; exact hsel hc
+        refine EligibleFlip.keep (lose := lose) r rest off hnot (ih idxs (off + 1) ?_)
+        intro j hj hmask
+        have hm : maskOf idxs (off + (j + 1)) = true := by
+          rw [Nat.add_assoc, Nat.add_comm 1 j] at hmask
+          exact hmask
+        have hlen : (r :: rest).length = rest.length + 1 := rfl
+        exact helig (j + 1) (by omega) hm
+
+/-- **Certificate from the index list:** if every index in `idxs` points at an
+eligible record of `d`, the derived mask satisfies `EligibleFlip` at offset 0 —
+the Python invariant `flipped_idx ⊆ eligible`. -/
 theorem eligibleFlip_of_indices (P : String → Bool) (srcKind : VoteKind → Bool)
     (lose : VoteKind) (d : Division) (idxs : List Nat)
     (helig : ∀ i ∈ idxs, i < d.length → P (d[i]!).club ∧ srcKind (d[i]!).kind) :
     EligibleFlip P (maskOf idxs) srcKind lose d 0 := by
-  induction d generalizing idxs with
-  | nil => exact EligibleFlip.nil 0
-  | cons r rest ih =>
-      intro idxs off helig
-      by_cases hsel : maskOf idxs (0 + j) = true
-      case pos =>
-        have hr := helig 0 hsel (by simp)
-        have hmask2 : maskOf idxs (off + (j + 1)) = true := hmask
-        have hel := helig (j + 1) (by omega) hmask2
-        refine EligibleFlip.sel (lose := lose) r rest off hsel hr.1 hr.2 hel
-      case neg =>
-        have hnot : ¬ (maskOf idxs off = true) := by intro hc; exact hsel hc
-        have hmask2 : maskOf idxs (off + j) = true := hmask
-        have hel := helig (j + 1) (by omega) hmask2
-        exact EligibleFlip.keep (lose := lose) r rest (off+1) hnot hel
+  apply eligibleFlip_maskOf P srcKind lose d idxs 0
+  intro j _hj hmask
+  have hmem : j ∈ idxs := by simpa [maskOf] using hmask
+  exact helig j hmem (by omega)
 
 end Sejmbench
