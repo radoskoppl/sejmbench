@@ -46,9 +46,22 @@ structure FlipPair where
   /-- Each pointed record is a tracked club's winning-side vote. -/
   helig : ∀ i ∈ idxs,
     isTrack original original[i]!.club ∧ isYesKind original[i]!.kind
+  /-- The original comparison was decisive (experiment contract #24: the
+  generator skips `tie`/non-majority items). A tie would be resolved to
+  YES by convention, so `seedNo original < seedYes original` is the
+  majority condition for the YES→NO direction. -/
+  horiginalMajority : seedNo original < seedYes original
 
 /-- The original ground truth — derived, not stored. -/
 def FlipPair.originalGT (p : FlipPair) : Winner := winner p.original
+
+/-- Formal bridge to the experiment contract: the original method is
+`majority` (`method_majority_iff_not_tie` + the strict field). -/
+theorem FlipPair.method_majority (p : FlipPair) :
+    method p.original = Method.majority := by
+  have hne : seedYes p.original ≠ seedNo p.original :=
+    Nat.ne_of_gt p.horiginalMajority
+  exact (method_majority_iff_not_tie p.original).mpr hne
 
 /-- The perturbed ground truth — derived through the verified
 transformation, never an independent value. -/
@@ -57,9 +70,10 @@ def FlipPair.perturbedGT (p : FlipPair) : Winner := winner p.perturbed
 /-- **Reversal (YES→NO).** Under the experiment quota
 `2k > seedYes − seedNo` (with `k = |idxs|`), the two derived ground
 truths provably differ: the pair is a genuine reversal pair by
-construction. -/
+construction. The original majority is a field of the structure, not a
+hypothesis (review of 2992e77: a tie would satisfy the old `≤` form
+vacuously; the experiment contract excludes it). -/
 theorem FlipPair.reversal (p : FlipPair)
-    (hmajority : seedNo p.original ≤ seedYes p.original)
     (hquota : 2 * p.idxs.length > seedYes p.original - seedNo p.original) :
     p.originalGT ≠ p.perturbedGT := by
   have hcert : EligibleFlip (isTrack p.original) (maskOf p.idxs) isYesKind
@@ -70,11 +84,15 @@ theorem FlipPair.reversal (p : FlipPair)
     selFrom_maskOf_eq_length p.idxs p.original.length p.hnodup p.hrange
   have hw : winner (flipFrom p.original (maskOf p.idxs) VoteKind.no 0)
       = Winner.no := by
+    have hle : seedNo p.original ≤ seedYes p.original :=
+      Nat.le_of_lt p.horiginalMajority
     rw [winner_no_of_eligible_flip_iff (maskOf p.idxs) p.original 0 hcert
-      hmajority, hk]
+      hle, hk]
     exact hquota
   show winner p.original ≠ winner p.perturbed
-  rw [p.hperturbed, hw, winner_yes_of_ge p.original (by omega)]
+  have horigGT : winner p.original = Winner.yes :=
+    winner_yes_of_ge p.original (Nat.le_of_lt p.horiginalMajority)
+  rw [p.hperturbed, hw, horigGT]
   simp
 
 /-! ## NO → YES (the original winner is NO) -/
@@ -98,6 +116,18 @@ structure FlipPairRev where
   /-- Each pointed record is a tracked club's losing-side vote. -/
   helig : ∀ i ∈ idxs,
     isTrack original original[i]!.club ∧ isNoKind original[i]!.kind
+  /-- The original comparison was decisive — a strict NO majority
+  (experiment contract #24; mirrors `horiginalMajority` of `FlipPair`). -/
+  horiginalMajority : seedYes original < seedNo original
+
+/-- Formal bridge to the experiment contract: the original method is
+`majority`. -/
+theorem FlipPairRev.method_majority (p : FlipPairRev) :
+    method p.original = Method.majority := by
+  have hne : seedNo p.original ≠ seedYes p.original :=
+    Nat.ne_of_gt p.horiginalMajority
+  have hne2 : seedYes p.original ≠ seedNo p.original := fun h => hne h.symm
+  exact (method_majority_iff_not_tie p.original).mpr hne2
 
 /-- The original ground truth — derived, not stored. -/
 def FlipPairRev.originalGT (p : FlipPairRev) : Winner := winner p.original
@@ -109,9 +139,8 @@ def FlipPairRev.perturbedGT (p : FlipPairRev) : Winner := winner p.perturbed
 /-- **Reversal (NO→YES).** Under the experiment quota
 `2k ≥ seedNo − seedYes` (INCLUSIVE boundary — the frozen tie convention
 resolves the exact-boundary case to YES), the two derived ground truths
-provably differ. -/
+provably differ. The original majority is a field of the structure. -/
 theorem FlipPairRev.reversal (p : FlipPairRev)
-    (hmajority : seedYes p.original < seedNo p.original)
     (hquota : 2 * p.idxs.length ≥ seedNo p.original - seedYes p.original) :
     p.originalGT ≠ p.perturbedGT := by
   have hcert : EligibleFlip (isTrack p.original) (maskOf p.idxs) isNoKind
@@ -123,16 +152,89 @@ theorem FlipPairRev.reversal (p : FlipPairRev)
   have hw : winner (flipFrom p.original (maskOf p.idxs) VoteKind.yes 0)
       = Winner.yes := by
     rw [winner_yes_of_eligible_flip_iff (maskOf p.idxs) p.original 0 hcert
-      hmajority, hk]
+      p.horiginalMajority, hk]
     exact hquota
   show winner p.original ≠ winner p.perturbed
-  rw [p.hperturbed, hw]
-  have horig : winner p.original = Winner.no := by
-    unfold winner
-    have h1 : ¬ (seedYes p.original > seedNo p.original) := by omega
-    have h2 : seedNo p.original > seedYes p.original := by omega
-    simp [h1, h2]
-  rw [horig]
+  have horigGT : winner p.original = Winner.no :=
+    winner_no_of_gt p.original p.horiginalMajority
+  rw [p.hperturbed, hw, horigGT]
   simp
+
+/-! ## ModelResponsePair (L3 — next component, per review of 2992e77)
+
+The model's typed answer about a division. Five values: the two decisive
+answers, an explicit abstain, a refusal, and "unresolvable" (the input
+does not determine an answer). The ordering matters for the metrics: a
+refusal/unresolvable is NOT a wrong decisive answer — coverage counts
+decisive responses; responsiveness distinguishes them via `decisive`. -/
+
+/-- The typed model response. -/
+inductive ModelAnswer where
+  /-- The model says the motion passes. -/
+  | yes
+  /-- The model says the motion fails. -/
+  | no
+  /-- The model abstains (explicit, typed). -/
+  | abstain
+  /-- The model refuses to answer. -/
+  | refusal
+  /-- The input does not determine an answer. -/
+  | unresolvable
+
+/-- A `ModelAnswer` is decisive iff it commits to yes or no. -/
+def ModelAnswer.decisive : ModelAnswer → Bool
+  | .yes => true
+  | .no => true
+  | _ => false
+
+/-- The response pair: the model's answer about the original and the
+perturbed division of a flip experiment. Answers are free (the model is
+the object under test); the GTs remain derived from the pair. -/
+structure ModelResponsePair where
+  /-- The flip experiment (either direction). -/
+  pair : Sum FlipPair FlipPairRev
+  /-- The model's answer about the original division. -/
+  originalAnswer : ModelAnswer
+  /-- The model's answer about the perturbed division. -/
+  perturbedAnswer : ModelAnswer
+
+/-- The original GT of the pair (through the derived projections). -/
+def ModelResponsePair.originalGT (r : ModelResponsePair) : Winner :=
+  match r.pair with
+  | .inl p => p.originalGT
+  | .inr p => p.originalGT
+
+/-- The perturbed GT of the pair (through the derived projections). -/
+def ModelResponsePair.perturbedGT (r : ModelResponsePair) : Winner :=
+  match r.pair with
+  | .inl p => p.perturbedGT
+  | .inr p => p.perturbedGT
+
+/-- Is the model's answer about the original division correct? -/
+def ModelResponsePair.originalCorrect (r : ModelResponsePair) : Bool :=
+  match r.originalAnswer, r.originalGT with
+  | .yes, .yes => true
+  | .no, .no => true
+  | _, _ => false
+
+/-- Is the model's answer about the perturbed division correct? -/
+def ModelResponsePair.perturbedCorrect (r : ModelResponsePair) : Bool :=
+  match r.perturbedAnswer, r.perturbedGT with
+  | .yes, .yes => true
+  | .no, .no => true
+  | _, _ => false
+
+/-- **Strict flip responsiveness:** the model was correct on the original
+AND adapts to the perturbed GT (stays decisive-correct, or — per the
+metric's intent — at least does not keep the stale wrong answer). This
+definition is deliberately strict: correct before, correct after. -/
+def ModelResponsePair.strictlyResponsive (r : ModelResponsePair) : Bool :=
+  r.originalCorrect && r.perturbedCorrect
+
+/-- **Incidental correctness:** the model was wrong on the original but
+happens to be correct on the perturbed division. Reported separately —
+it must never be merged into responsiveness. -/
+def ModelResponsePair.incidentallyCorrect (r : ModelResponsePair) : Bool :=
+  !r.originalCorrect && r.perturbedCorrect
 
 end Sejmbench
