@@ -74,3 +74,31 @@ def test_count_agreement_mirror():
     votes = [{"club": f"C{i}", "vote": "YES"} for i in range(10)]
     for idxs in ([], [0], [9], [1, 4, 7], [0, 2, 4, 6, 8]):
         assert cf_build.mask_hits(votes, idxs) == len(idxs)
+
+
+def test_bool_index_rejected():
+    # isinstance(True, int) is True in Python — a bare bool must not pass
+    # as an index (hardening suggestion from the review of 9dbcee7/5e49124).
+    with pytest.raises(ValueError):
+        cf_build.apply_flip(VOTES, [True], "NO")
+    with pytest.raises(ValueError):
+        cf_build.apply_flip(VOTES, [False], "NO")
+
+
+def _all_subsets(n):
+    for mask in range(1 << n):
+        yield [i for i in range(n) if (mask >> i) & 1]
+
+
+@pytest.mark.parametrize("lose", ["NO", "YES"])
+@pytest.mark.parametrize("n", range(9))
+def test_exhaustive_subsets(n, lose):
+    # Every subset of indices for divisions of length 0..8, in both flip
+    # directions — the real updater vs the position-wise model (review of
+    # 9dbcee7/5e49124, hardening B).
+    votes = [{"club": "A" if i % 2 else "B", "vote": "YES" if lose == "NO" else "NO"}
+             for i in range(n)]
+    for idxs in _all_subsets(n):
+        out = cf_build.apply_flip(votes, idxs, lose)
+        assert _project(out) == _model_flip(votes, idxs, lose)
+        assert cf_build.mask_hits(out, idxs) == len(idxs)

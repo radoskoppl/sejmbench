@@ -63,7 +63,8 @@ def apply_flip(votes, indices, lose_vote):
     pointed records are the eligible ones the caller selected (hElig).
     """
     for i in indices:
-        if not (isinstance(i, int) and 0 <= i < len(votes)):
+        if not (isinstance(i, int) and not isinstance(i, bool)
+                and 0 <= i < len(votes)):
             raise ValueError(f"flip index out of range: {i!r}")
     if len(set(indices)) != len(indices):
         raise ValueError("flip indices not unique")
