@@ -54,6 +54,32 @@ def records_sha(votes) -> str:
         json.dumps(votes, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
 
 
+def apply_flip(votes, indices, lose_vote):
+    """Pure counterpart of the Lean flipAtIndices (Sejmbench/MaskBridge.lean):
+    a copy of `votes` with votes[i]["vote"] = lose_vote for each i in indices.
+
+    Contract (mirrors the Lean certificate's hypotheses, review of 7b5b496):
+    indices are in range (hRange) and unique (random.sample / Nodup); the
+    pointed records are the eligible ones the caller selected (hElig).
+    """
+    for i in indices:
+        if not (isinstance(i, int) and 0 <= i < len(votes)):
+            raise ValueError(f"flip index out of range: {i!r}")
+    if len(set(indices)) != len(indices):
+        raise ValueError("flip indices not unique")
+    result = [dict(v) for v in votes]
+    for i in indices:
+        result[i]["vote"] = lose_vote
+    return result
+
+
+def mask_hits(votes, indices):
+    """Python selFrom (maskOf indices) 0 len(votes) — the count the Lean
+    selFrom_maskOf_eq_length pins to len(indices) for unique in-range lists."""
+    idxs = set(indices)
+    return sum(1 for i in range(len(votes)) if i in idxs)
+
+
 def compute_ground_truth(division):
     """Ground-truth fields per the Lean SeedRule (PR #21): winner, tie, method,
     seed_margin — the exact fields cf_build stores as gt_original/gt_perturbed
@@ -173,8 +199,13 @@ def main():
             item_seed = stable_item_seed(SEED, item_id)
             pick_rng = random.Random(item_seed)
             flipped_idx = sorted(pick_rng.sample(eligible, k))
-            for i in flipped_idx:
-                votes[i]["vote"] = lose_vote
+            # Ties to the formal contract (MaskBridge, review of 7b5b496):
+            # len(flipped_idx) == k_flipped, and the mask derived from the
+            # list hits exactly len(flipped_idx) positions (count agreement).
+            assert len(flipped_idx) == k, f"quota mismatch: {item_id}"
+            assert mask_hits(votes, flipped_idx) == len(flipped_idx), \
+                f"index contract violated: {item_id}"
+            votes = apply_flip(votes, flipped_idx, lose_vote)
             entry["params"] = {"k_flipped": k, "from": win_vote, "to": lose_vote,
                                "flip_seed": item_seed,
                                "flipped_record_indices": flipped_idx}
