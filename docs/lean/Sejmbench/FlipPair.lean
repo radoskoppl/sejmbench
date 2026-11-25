@@ -160,6 +160,54 @@ theorem FlipPairRev.reversal (p : FlipPairRev)
   rw [p.hperturbed, hw, horigGT]
   simp
 
+/-! ## Confirmed reversal pairs (variant 2 of the quota-contract question)
+
+The review of 10d2c75 distinguishes two notions: a correctly constructed
+perturbation pair (a *candidate*) and a pair whose two derived GTs
+provably differ (a *confirmed reversal*). Variant 2 keeps both: the
+candidate structures above stay quota-free (so the pipeline can analyze
+sub-threshold perturbations), and `ReversalPair` wraps a candidate
+together with its reversal certificate. `ModelResponsePair` requires the
+confirmed form — the metrics layer can then take "GT changed" as an
+invariant of the input rather than a per-item hypothesis. -/
+
+/-- The original GT of a candidate (either direction). -/
+def sumOrigGT : Sum FlipPair FlipPairRev → Winner
+  | .inl p => p.originalGT
+  | .inr p => p.originalGT
+
+/-- The perturbed GT of a candidate (either direction). -/
+def sumPertGT : Sum FlipPair FlipPairRev → Winner
+  | .inl p => p.perturbedGT
+  | .inr p => p.perturbedGT
+
+/-- A confirmed reversal: a candidate pair plus its reversal certificate.
+The wrapper exists so that "the GTs differ" is an invariant of the object
+(the certificate is *proved* from the candidate's own fields via
+`reversal`, not stored as an axiom). -/
+structure ReversalPair where
+  /-- The candidate pair (FlipPair or FlipPairRev). -/
+  candidate : Sum FlipPair FlipPairRev
+  /-- The certificate that the pair's two GTs differ. -/
+  hrev : sumOrigGT candidate ≠ sumPertGT candidate
+
+/-- Build a confirmed reversal from a YES→NO candidate and its quota. -/
+def ReversalPair.ofFlipPair (p : FlipPair)
+    (hquota : 2 * p.idxs.length > seedYes p.original - seedNo p.original) :
+    ReversalPair :=
+  { candidate := .inl p, hrev := p.reversal hquota }
+
+/-- Build a confirmed reversal from a NO→YES candidate and its quota. -/
+def ReversalPair.ofFlipPairRev (p : FlipPairRev)
+    (hquota : 2 * p.idxs.length ≥ seedNo p.original - seedYes p.original) :
+    ReversalPair :=
+  { candidate := .inr p, hrev := p.reversal hquota }
+
+/-- The two derived GTs of a confirmed reversal provably differ — the
+invariant the metrics layer may rely on. -/
+theorem ReversalPair.gt_ne (r : ReversalPair) :
+    sumOrigGT r.candidate ≠ sumPertGT r.candidate := r.hrev
+
 /-! ## ModelResponsePair (L3 — next component, per review of 2992e77)
 
 The model's typed answer about a division. Five values: the two decisive
@@ -187,28 +235,27 @@ def ModelAnswer.decisive : ModelAnswer → Bool
   | .no => true
   | _ => false
 
-/-- The response pair: the model's answer about the original and the
-perturbed division of a flip experiment. Answers are free (the model is
-the object under test); the GTs remain derived from the pair. -/
+/-- The response pair: the model's answers about a **confirmed** reversal
+pair. The candidate is stored in the confirmed (`ReversalPair`) form, so
+"the two GTs differ" is an invariant of every `ModelResponsePair` — the
+metrics layer never re-proves it. For candidate pairs (sub-threshold
+perturbations), a separate structure can wrap `Sum FlipPair FlipPairRev`
+directly. -/
 structure ModelResponsePair where
-  /-- The flip experiment (either direction). -/
-  pair : Sum FlipPair FlipPairRev
+  /-- The confirmed flip experiment. -/
+  pair : ReversalPair
   /-- The model's answer about the original division. -/
   originalAnswer : ModelAnswer
   /-- The model's answer about the perturbed division. -/
   perturbedAnswer : ModelAnswer
 
-/-- The original GT of the pair (through the derived projections). -/
+/-- The original GT (through the confirmed pair). -/
 def ModelResponsePair.originalGT (r : ModelResponsePair) : Winner :=
-  match r.pair with
-  | .inl p => p.originalGT
-  | .inr p => p.originalGT
+  sumOrigGT r.pair.candidate
 
-/-- The perturbed GT of the pair (through the derived projections). -/
+/-- The perturbed GT (through the confirmed pair). -/
 def ModelResponsePair.perturbedGT (r : ModelResponsePair) : Winner :=
-  match r.pair with
-  | .inl p => p.perturbedGT
-  | .inr p => p.perturbedGT
+  sumPertGT r.pair.candidate
 
 /-- Is the model's answer about the original division correct? -/
 def ModelResponsePair.originalCorrect (r : ModelResponsePair) : Bool :=
@@ -225,9 +272,9 @@ def ModelResponsePair.perturbedCorrect (r : ModelResponsePair) : Bool :=
   | _, _ => false
 
 /-- **Strict flip responsiveness:** the model was correct on the original
-AND adapts to the perturbed GT (stays decisive-correct, or — per the
-metric's intent — at least does not keep the stale wrong answer). This
-definition is deliberately strict: correct before, correct after. -/
+AND correct on the perturbed division — both conditions of correctness
+must hold. (A model that keeps its stale answer after the GT moved is
+not responsive.) -/
 def ModelResponsePair.strictlyResponsive (r : ModelResponsePair) : Bool :=
   r.originalCorrect && r.perturbedCorrect
 
