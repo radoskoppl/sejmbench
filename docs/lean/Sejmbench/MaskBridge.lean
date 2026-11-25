@@ -111,16 +111,159 @@ theorem eligibleFlip_maskOf (P : String → Bool) (srcKind : VoteKind → Bool)
         have hlen : (r :: rest).length = rest.length + 1 := rfl
         exact helig (j + 1) (by omega) hm
 
-/-- **Certificate from the index list:** if every index in `idxs` points at an
-eligible record of `d`, the derived mask satisfies `EligibleFlip` at offset 0 —
-the Python invariant `flipped_idx ⊆ eligible`. -/
+/-- **Certificate from the index list:** every index in `idxs` is an in-range
+pointer to an eligible record of `d`, so the derived mask satisfies the
+`EligibleFlip` certificate at offset 0 — the Python invariant
+`flipped_idx ⊆ eligible`.
+
+The hypothesis is split (per review of 7b5b496): `hRange` forces every listed
+index to point at an existing record (otherwise `helig` was satisfiable
+vacuously by out-of-range indices, which the Python indexer would reject),
+and `hElig` states the eligibility of each pointed record. -/
 theorem eligibleFlip_of_indices (P : String → Bool) (srcKind : VoteKind → Bool)
     (lose : VoteKind) (d : Division) (idxs : List Nat)
-    (helig : ∀ i ∈ idxs, i < d.length → P (d[i]!).club ∧ srcKind (d[i]!).kind) :
+    (hRange : ∀ i ∈ idxs, i < d.length)
+    (hElig : ∀ i ∈ idxs, P (d[i]!).club ∧ srcKind (d[i]!).kind) :
     EligibleFlip P (maskOf idxs) srcKind lose d 0 := by
   apply eligibleFlip_maskOf P srcKind lose d idxs 0
   intro j _hj hmask
   have hmem : j ∈ idxs := by simpa [maskOf] using hmask
-  exact helig j hmem (by omega)
+  have _hr : j < d.length := hRange j hmem
+  exact hElig j hmem
+
+/-! ### Index-window count agreement (Nodup + range)
+
+Python's generator produces `flipped_idx = sorted(pick_rng.sample(eligible, k))`
+— indices in range and unique (`random.sample` samples without replacement).
+The formal counterpart: the mask derived from a Nodup, in-window index list
+selects exactly `idxs.length` positions, so the Python quota
+`k = len(flipped_record_indices)` equals the Lean certificate's
+`k = selFrom (maskOf idxs) 0 d.length`. -/
+
+/-- Unfolding lemma for the step of `selFrom`. -/
+theorem selFrom_succ (S : Nat → Bool) (off n : Nat) :
+    selFrom S off (n + 1) = (if S off then 1 else 0) + selFrom S (off + 1) n := rfl
+
+/-- Pointwise-equal masks on the window give equal counts. -/
+theorem selFrom_congr (S T : Nat → Bool) :
+    ∀ (off n : Nat), (∀ j, j < n → S (off + j) = T (off + j)) →
+      selFrom S off n = selFrom T off n := by
+  intro off n
+  induction n generalizing off with
+  | zero => intro _; rfl
+  | succ m ih =>
+      intro h
+      have hhead : S off = T off := h 0 (by omega)
+      have htail : ∀ j, j < m → S (off + 1 + j) = T (off + 1 + j) := by
+        intro j hj
+        have h1 := h (j + 1) (by omega)
+        have heq : off + 1 + j = off + (j + 1) := by omega
+        rw [heq]
+        exact h1
+      simp only [selFrom_succ, hhead, ih (off + 1) htail]
+
+/-- An element of `idxs.erase x` differs from `x` (with `idxs` Nodup). -/
+theorem ne_of_mem_erase (x : Nat) :
+    ∀ (idxs : List Nat), idxs.Nodup → ∀ i : Nat, i ∈ idxs.erase x → i ≠ x := by
+  intro idxs
+  induction idxs with
+  | nil => intro _ i h; simp at h
+  | cons y ys ih =>
+      intro hnd i h
+      by_cases hy : y = x
+      · subst hy
+        rw [List.erase_cons_head] at h
+        have h9 : ¬ (y ∈ ys) := (List.nodup_cons.mp hnd).1
+        exact fun heq => by
+          rw [heq] at h
+          exact h9 h
+      · rw [List.erase_cons_tail (by simp [hy] : ¬(y == x) = true)] at h
+        rcases List.mem_cons.mp h with rfl | h2
+        · exact hy
+        · exact ih (List.nodup_cons.mp hnd).2 i h2
+
+/-- **Count agreement (window form).** For a Nodup index list entirely inside
+the window `[off, off + n)`, the mask selects exactly `idxs.length` positions. -/
+theorem selFrom_maskOf_window (idxs : List Nat) :
+    ∀ (off n : Nat), idxs.Nodup →
+      (∀ i ∈ idxs, off ≤ i) → (∀ i ∈ idxs, i < off + n) →
+      selFrom (maskOf idxs) off n = idxs.length := by
+  intro off n
+  induction n generalizing idxs off with
+  | zero =>
+      intro hnd hLo hHi
+      cases idxs with
+      | nil => rfl
+      | cons a rest =>
+          exfalso
+          have h1 := hLo a (by simp)
+          have h2 := hHi a (by simp)
+          omega
+  | succ m ih =>
+      intro hnd hLo hHi
+      by_cases hpos : maskOf idxs off = true
+      · have hmem : off ∈ idxs := by simpa [maskOf] using hpos
+        have hcongr : ∀ j, j < m →
+            maskOf idxs (off + 1 + j) = maskOf (idxs.erase off) (off + 1 + j) := by
+          intro j hj
+          have hne : off + 1 + j ≠ off := by omega
+          have hmemE : (off + 1 + j) ∈ idxs.erase off ↔ (off + 1 + j) ∈ idxs :=
+            List.mem_erase_of_ne hne
+          unfold maskOf
+          simp only [hmemE]
+        have hnoderase : (idxs.erase off).Nodup := hnd.erase off
+        have hLo2 : ∀ i ∈ idxs.erase off, off + 1 ≤ i := by
+          intro i hi
+          have h1 := List.mem_of_mem_erase hi
+          have h2 := ne_of_mem_erase off idxs hnd i hi
+          have h3 := hLo i h1
+          omega
+        have hHi2 : ∀ i ∈ idxs.erase off, i < (off + 1) + m := by
+          intro i hi
+          have h1 := List.mem_of_mem_erase hi
+          have h2 := hHi i h1
+          omega
+        have hlen : (idxs.erase off).length = idxs.length - 1 :=
+          List.length_erase_of_mem hmem
+        have hlen0 : 0 < idxs.length := List.length_pos_of_mem hmem
+        have hstep : selFrom (maskOf idxs) off (m + 1)
+            = 1 + selFrom (maskOf (idxs.erase off)) (off + 1) m := by
+          rw [selFrom_succ, hpos]
+          show 1 + selFrom (maskOf idxs) (off + 1) m
+              = 1 + selFrom (maskOf (idxs.erase off)) (off + 1) m
+          rw [selFrom_congr _ _ (off + 1) m hcongr]
+        rw [hstep, ih (idxs.erase off) (off + 1) hnoderase hLo2 hHi2, hlen]
+        omega
+      · have hnotmem : ¬ (off ∈ idxs) := by simpa [maskOf] using hpos
+        have hne : ∀ i ∈ idxs, i ≠ off := by
+          intro i hi heq
+          subst heq
+          exact hnotmem hi
+        have hLo2 : ∀ i ∈ idxs, off + 1 ≤ i := by
+          intro i hi
+          have h3 := hLo i hi
+          have h4 := hne i hi
+          omega
+        have hHi2 : ∀ i ∈ idxs, i < (off + 1) + m := by
+          intro i hi
+          have h2 := hHi i hi
+          omega
+        have hfalse : maskOf idxs off = false := by
+          cases h : maskOf idxs off with
+          | true => exact absurd h hpos
+          | false => rfl
+        rw [selFrom_succ, hfalse]
+        show 0 + selFrom (maskOf idxs) (off + 1) m = idxs.length
+        rw [ih idxs (off + 1) hnd hLo2 hHi2]
+        omega
+
+/-- **Count agreement.** For a Nodup index list pointing inside `n`, the mask
+derived from the list selects exactly `idxs.length` positions of `[0, n)`:
+`k_Python = len(flipped_record_indices) = selFrom (maskOf idxs) 0 n = k_Lean`. -/
+theorem selFrom_maskOf_eq_length (idxs : List Nat) (n : Nat)
+    (hNodup : idxs.Nodup) (hRange : ∀ i ∈ idxs, i < n) :
+    selFrom (maskOf idxs) 0 n = idxs.length :=
+  selFrom_maskOf_window idxs 0 n hNodup (fun i _ => Nat.zero_le i)
+    (fun i hi => by have := hRange i hi; omega)
 
 end Sejmbench
