@@ -322,4 +322,87 @@ theorem ResponseSet.bothCorrectNum_le (rs : ResponseSet) :
     rs.bothCorrectNum ≤ rs.N :=
   countPairs_le rs (fun r => r.originalCorrect && r.perturbedCorrect)
 
+/-- Grouping four counts over a common denominator `D`: if the counts
+sum to `D`, the four `count · D³` fractions sum to `D · D²`. The
+arithmetic core of the Rate-level category identity. -/
+theorem four_rate_sum_aux (c a r u D : Nat) (h : c + a + r + u = D) :
+    c * (D * D * D) + a * (D * D * D) + r * (D * D * D) + u * (D * D * D)
+      = D * (D * D * D) := by
+  have h1 : (c + a + r + u) * (D * D * D)
+      = c * (D * D * D) + a * (D * D * D) + r * (D * D * D) + u * (D * D * D) := by
+    rw [Nat.add_mul, Nat.add_mul, Nat.add_mul]
+  have h2 : D * (D * D * D) = (c + a + r + u) * (D * D * D) :=
+    congrArg (fun x => x * (D * D * D)) h.symm
+  rw [h2, h1]
+
+/-- **The category identity at the `Rate` level**: the four category
+rates (coverage, abstain, refusal, unresolvable), put over the common
+denominator `D³` where `D = nAnswers`, satisfy the identity whose
+counter-level form is `disjoint_total`. This is the promised
+Rate-level counterpart of `disjoint_total` — it holds for every `rs`
+(vacuously in the empty case, where the rates are undefined anyway). -/
+theorem category_rates_sum_eq_one (rs : ResponseSet) :
+    rs.coverage.num * (rs.abstainRate.den * rs.refusalRate.den * rs.unresolvableRate.den)
+      + rs.abstainRate.num * (rs.coverage.den * rs.refusalRate.den * rs.unresolvableRate.den)
+      + rs.refusalRate.num * (rs.coverage.den * rs.abstainRate.den * rs.unresolvableRate.den)
+      + rs.unresolvableRate.num * (rs.coverage.den * rs.abstainRate.den * rs.refusalRate.den)
+      = rs.coverage.den * (rs.abstainRate.den * rs.refusalRate.den * rs.unresolvableRate.den) := by
+  have hDc : rs.coverage.den = rs.nAnswers := rfl
+  have hDa : rs.abstainRate.den = rs.nAnswers := rfl
+  have hDr : rs.refusalRate.den = rs.nAnswers := rfl
+  have hDu : rs.unresolvableRate.den = rs.nAnswers := rfl
+  have hNc : rs.coverage.num = rs.coverageNum := rfl
+  have hNa : rs.abstainRate.num = rs.abstainNum := rfl
+  have hNr : rs.refusalRate.num = rs.refusalNum := rfl
+  have hNu : rs.unresolvableRate.num = rs.unresolvableNum := rfl
+  rw [hDc, hDa, hDr, hDu, hNc, hNa, hNr, hNu]
+  exact four_rate_sum_aux _ _ _ _ _ (disjoint_total rs)
+
+/-- **Merging two rates**: given `a.num ≤ a.den` and `b.num ≤ b.den`,
+the pooled rate `(a.num * b.den + b.num * a.den) / (2 * a.den * b.den)`
+is again a genuine frequency. This is the arithmetic fact behind
+`balancedAccuracy`'s averaging step. -/
+theorem rateMerge_bound (a b : Rate) (ha : a.num ≤ a.den) (hb : b.num ≤ b.den) :
+    (Rate.mk (a.num * b.den + b.num * a.den) (2 * a.den * b.den)).num
+      ≤ (Rate.mk (a.num * b.den + b.num * a.den) (2 * a.den * b.den)).den := by
+  have h1 : a.num * b.den ≤ a.den * b.den := Nat.mul_le_mul_right b.den ha
+  have h2 : b.num * a.den ≤ b.den * a.den := Nat.mul_le_mul_right a.den hb
+  have h3 : b.den * a.den = a.den * b.den := Nat.mul_comm _ _
+  calc a.num * b.den + b.num * a.den
+      ≤ a.den * b.den + a.den * b.den := Nat.add_le_add h1 (by
+          calc b.num * a.den ≤ b.den * a.den := h2
+            _ = a.den * b.den := h3)
+    _ = 2 * a.den * b.den := by
+        rw [Nat.mul_assoc, Nat.two_mul]
+
+/-- Per-class bound in the exact shape `balancedAccuracy` needs: the
+class counter fits the class size. -/
+theorem classCount_le (l : List ModelResponsePair) :
+    (Rate.mk (countPairs l (fun r => r.originalCorrect && r.perturbedCorrect)) l.length).num
+      ≤ (Rate.mk (countPairs l (fun r => r.originalCorrect && r.perturbedCorrect)) l.length).den :=
+  countPairs_le l (fun r => r.originalCorrect && r.perturbedCorrect)
+
+/-- **The range of `balancedAccuracy`** (review round 3): whenever
+`balancedAccuracy rs = some r`, the pooled rate `r` satisfies
+`r.num ≤ r.den` — derived from the per-class bounds of the two filtered
+lists. -/
+theorem ResponseSet.balancedAccuracy_num_le_den (rs : ResponseSet) :
+    ∀ r : Rate, ResponseSet.balancedAccuracy rs = some r → r.num ≤ r.den := by
+  intro r hr
+  simp only [ResponseSet.balancedAccuracy] at hr
+  by_cases h1 : (rs.filter (fun r => match r.originalGT with | .yes => true | .no => false)).length = 0
+  · rw [ite_eq_left h1] at hr
+    simp at hr
+  · rw [ite_eq_right h1] at hr
+    by_cases h2 : (rs.filter (fun r => match r.originalGT with | .no => true | .yes => false)).length = 0
+    · rw [ite_eq_left h2] at hr
+      simp at hr
+    · rw [ite_eq_right h2] at hr
+      injection hr with hEq
+      subst hEq
+      exact rateMerge_bound
+        (Rate.mk (countPairs (rs.filter (fun r => match r.originalGT with | .yes => true | .no => false)) (fun r => r.originalCorrect && r.perturbedCorrect)) (rs.filter (fun r => match r.originalGT with | .yes => true | .no => false)).length)
+        (Rate.mk (countPairs (rs.filter (fun r => match r.originalGT with | .no => true | .yes => false)) (fun r => r.originalCorrect && r.perturbedCorrect)) (rs.filter (fun r => match r.originalGT with | .no => true | .yes => false)).length)
+        (classCount_le _) (classCount_le _)
+
 end Sejmbench
