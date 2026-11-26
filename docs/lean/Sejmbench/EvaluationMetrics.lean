@@ -19,7 +19,8 @@ c8b6222 (2026-11-25). Design decisions fixed here:
   denominator yields an explicit `none`, never a default number.
 * Incidental correctness stays a separate counter.
 * Accuracy is pair-level (both answers correct / N); balanced accuracy
-  is over the two GT classes and is `none` when a class has no pairs —
+  is the SAME both-correct criterion stratified by original GT class
+  (per-class pair accuracy), `none` when a class has no pairs —
   never defaulted.
 
 The denominators come from `List.length`, so every metric is a rational
@@ -220,10 +221,13 @@ def ResponseSet.unresolvableRate (rs : ResponseSet) : Rate :=
 def ResponseSet.accuracy (rs : ResponseSet) : Option Rate :=
   if rs.N = 0 then none else some { num := rs.bothCorrectNum, den := rs.N }
 
-/-- **Balanced accuracy**: the mean of per-class accuracies over the two
-GT classes (original-GT side). Classes with no pairs make the metric
-`none` — explicitly undefined, never defaulted (review item: "explicitly
-define behavior when one class is missing"). -/
+/-- **Balanced accuracy**: the balanced version of `accuracy` — the mean
+of per-class accuracies over the two GT classes (stratified by
+`originalGT`), where a pair counts as correct iff BOTH its answers are
+correct (the same criterion as `accuracy` / `bothCorrectNum`). Classes
+with no pairs make the metric `none` — explicitly undefined, never
+defaulted (review item: "explicitly define behavior when one class is
+missing"). -/
 def ResponseSet.balancedAccuracy (rs : ResponseSet) : Option Rate :=
   let yesPairs := rs.filter (fun r => match r.originalGT with
     | .yes => true | .no => false)
@@ -231,15 +235,91 @@ def ResponseSet.balancedAccuracy (rs : ResponseSet) : Option Rate :=
     | .no => true | .yes => false)
   let accYes : Option Rate :=
     if yesPairs.length = 0 then none
-    else some (Rate.mk (countPairs yesPairs (fun r => r.originalCorrect))
-      yesPairs.length)
+    else some (Rate.mk (countPairs yesPairs
+      (fun r => r.originalCorrect && r.perturbedCorrect)) yesPairs.length)
   let accNo : Option Rate :=
     if noPairs.length = 0 then none
-    else some (Rate.mk (countPairs noPairs (fun r => r.originalCorrect))
-      noPairs.length)
+    else some (Rate.mk (countPairs noPairs
+      (fun r => r.originalCorrect && r.perturbedCorrect)) noPairs.length)
   match accYes, accNo with
   | some a, some b => some (Rate.mk (a.num * b.den + b.num * a.den)
       (2 * a.den * b.den))
   | _, _ => none
+
+/-! ## Bounds: every numerator is bounded by its denominator -/
+
+/-- `countPairs` is monotone under pointwise implication of predicates. -/
+theorem countPairs_mono {f g : ModelResponsePair → Bool}
+    (h : ∀ r, f r = true → g r = true) (l : List ModelResponsePair) :
+    (l.filter f).length ≤ (l.filter g).length := by
+  induction l with
+  | nil => simp
+  | cons r rest ih =>
+      by_cases hf : f r = true
+      · have hg : g r = true := h r hf
+        rw [List.filter_cons_of_pos hf, List.filter_cons_of_pos hg,
+          List.length_cons, List.length_cons]
+        have h2 := ih
+        omega
+      · rw [List.filter_cons_of_neg hf]
+        by_cases hg : g r = true
+        · rw [List.filter_cons_of_pos hg, List.length_cons]
+          have h2 := ih
+          omega
+        · rw [List.filter_cons_of_neg hg]
+          exact ih
+
+/-- The pair count of any predicate is at most `N`. -/
+theorem countPairs_le (rs : ResponseSet) (f : ModelResponsePair → Bool) :
+    countPairs rs f ≤ rs.N :=
+  List.length_filter_le f rs
+
+/-- The answer-slot count of any predicate is at most `2N`. -/
+theorem countAnswers_le (rs : ResponseSet) (g : ModelAnswer → Bool) :
+    countAnswers rs g ≤ rs.nAnswers := by
+  unfold countAnswers ResponseSet.nAnswers
+  have h1 := List.length_filter_le (fun r => g r.originalAnswer) rs
+  have h2 := List.length_filter_le (fun r => g r.perturbedAnswer) rs
+  omega
+
+/-- Strict responsiveness implies correctness on the original — so the
+conditional responsiveness numerator is a true part of its denominator
+(review follow-up). -/
+theorem ResponseSet.strictNum_le_originalCorrectNum (rs : ResponseSet) :
+    rs.strictNum ≤ rs.originalCorrectNum := by
+  unfold ResponseSet.strictNum ResponseSet.originalCorrectNum
+  apply countPairs_mono
+  intro r h
+  simp only [ModelResponsePair.strictlyResponsive, Bool.and_eq_true] at h
+  exact h.1
+
+/-- Per-metric bounds: each numerator fits its denominator, so every
+`Rate` in this module is a genuine frequency. -/
+theorem ResponseSet.coverageNum_le (rs : ResponseSet) :
+    rs.coverageNum ≤ rs.nAnswers := countAnswers_le rs ModelAnswer.decisive
+
+theorem ResponseSet.abstainNum_le (rs : ResponseSet) :
+    rs.abstainNum ≤ rs.nAnswers := countAnswers_le rs ModelAnswer.isAbstain
+
+theorem ResponseSet.refusalNum_le (rs : ResponseSet) :
+    rs.refusalNum ≤ rs.nAnswers := countAnswers_le rs ModelAnswer.isRefusal
+
+theorem ResponseSet.unresolvableNum_le (rs : ResponseSet) :
+    rs.unresolvableNum ≤ rs.nAnswers :=
+  countAnswers_le rs ModelAnswer.isUnresolvable
+
+theorem ResponseSet.bothDecisiveNum_le (rs : ResponseSet) :
+    rs.bothDecisiveNum ≤ rs.N :=
+  countPairs_le rs (fun r => r.originalAnswer.decisive && r.perturbedAnswer.decisive)
+
+theorem ResponseSet.originalCorrectNum_le (rs : ResponseSet) :
+    rs.originalCorrectNum ≤ rs.N := countPairs_le rs ModelResponsePair.originalCorrect
+
+theorem ResponseSet.incidentalNum_le (rs : ResponseSet) :
+    rs.incidentalNum ≤ rs.N := countPairs_le rs ModelResponsePair.incidentallyCorrect
+
+theorem ResponseSet.bothCorrectNum_le (rs : ResponseSet) :
+    rs.bothCorrectNum ≤ rs.N :=
+  countPairs_le rs (fun r => r.originalCorrect && r.perturbedCorrect)
 
 end Sejmbench
