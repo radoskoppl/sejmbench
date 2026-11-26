@@ -18,10 +18,12 @@ c8b6222 (2026-11-25). Design decisions fixed here:
   correct on the original) and unconditional (over all pairs); a zero
   denominator yields an explicit `none`, never a default number.
 * Incidental correctness stays a separate counter.
-* Accuracy is pair-level (both answers correct / N); balanced accuracy
-  is the SAME both-correct criterion stratified by original GT class
-  (per-class pair accuracy), `none` when a class has no pairs —
-  never defaulted.
+* Accuracy is pair-level (both answers correct / N); the balanced view
+  of that same criterion is `balancedPairSuccess` (stratified by
+  original GT class, `none` when a class has no pairs — never
+  defaulted). The #22 contract view — quality of the answer about the
+  PERTURBED question — lives in `perturbedAccuracy` and
+  `balancedPerturbedAccuracy` (per-perturbed-class recall).
 
 The denominators come from `List.length`, so every metric is a rational
 number with a concrete denominator — no floating-point assumptions.
@@ -217,18 +219,31 @@ def ResponseSet.refusalRate (rs : ResponseSet) : Rate :=
 def ResponseSet.unresolvableRate (rs : ResponseSet) : Rate :=
   { num := rs.unresolvableNum, den := rs.nAnswers }
 
-/-- **Accuracy** (pair-level, both answers correct over N). -/
+/-- **Accuracy** (pair-level, both answers correct over N). NOTE:
+`strictUnconditional` coincides with this metric by construction — same
+counter (`strictNum` = `bothCorrectNum`'s predicate) and same
+denominator; they are one measure reported twice, a consequence of the
+adopted criterion, not two independent estimands. -/
 def ResponseSet.accuracy (rs : ResponseSet) : Option Rate :=
   if rs.N = 0 then none else some { num := rs.bothCorrectNum, den := rs.N }
 
-/-- **Balanced accuracy**: the balanced version of `accuracy` — the mean
-of per-class accuracies over the two GT classes (stratified by
-`originalGT`), where a pair counts as correct iff BOTH its answers are
-correct (the same criterion as `accuracy` / `bothCorrectNum`). Classes
-with no pairs make the metric `none` — explicitly undefined, never
-defaulted (review item: "explicitly define behavior when one class is
-missing"). -/
-def ResponseSet.balancedAccuracy (rs : ResponseSet) : Option Rate :=
+/-- **Perturbed accuracy** (the #22 contract's perturbed-GT accuracy,
+overall): the share of pairs in which the model's answer about the
+PERTURBED division is correct — over all `N` pairs. `none` on an empty
+set. -/
+def ResponseSet.perturbedAccuracy (rs : ResponseSet) : Option Rate :=
+  if rs.N = 0 then none
+  else some { num := countPairs rs ModelResponsePair.perturbedCorrect, den := rs.N }
+
+/-- **Balanced pair success** (formerly `balancedAccuracy`): the
+balanced version of `accuracy` — the mean of per-class accuracies over
+the two GT classes (stratified by `originalGT`), where a pair counts as
+correct iff BOTH its answers are correct (the same criterion as
+`accuracy` / `bothCorrectNum`). This measures balanced *joint pair
+success* by the original GT — NOT the classical per-perturbed-class
+recall; for that see `balancedPerturbedAccuracy`. Classes with no pairs
+make the metric `none` — explicitly undefined, never defaulted. -/
+def ResponseSet.balancedPairSuccess (rs : ResponseSet) : Option Rate :=
   let yesPairs := rs.filter (fun r => match r.originalGT with
     | .yes => true | .no => false)
   let noPairs := rs.filter (fun r => match r.originalGT with
@@ -242,6 +257,28 @@ def ResponseSet.balancedAccuracy (rs : ResponseSet) : Option Rate :=
     else some (Rate.mk (countPairs noPairs
       (fun r => r.originalCorrect && r.perturbedCorrect)) noPairs.length)
   match accYes, accNo with
+  | some a, some b => some (Rate.mk (a.num * b.den + b.num * a.den)
+      (2 * a.den * b.den))
+  | _, _ => none
+
+/-- **Balanced perturbed accuracy** (the #22 contract's balanced
+accuracy): the mean of per-class recall over the two `perturbedGT`
+classes, recall computed on `perturbedCorrect`. Classes with no pairs
+make the metric `none` — explicitly undefined, never defaulted. -/
+def ResponseSet.balancedPerturbedAccuracy (rs : ResponseSet) : Option Rate :=
+  let yesPairs := rs.filter (fun r => match r.perturbedGT with
+    | .yes => true | .no => false)
+  let noPairs := rs.filter (fun r => match r.perturbedGT with
+    | .no => true | .yes => false)
+  let recYes : Option Rate :=
+    if yesPairs.length = 0 then none
+    else some (Rate.mk (countPairs yesPairs
+      (fun r => r.perturbedCorrect)) yesPairs.length)
+  let recNo : Option Rate :=
+    if noPairs.length = 0 then none
+    else some (Rate.mk (countPairs noPairs
+      (fun r => r.perturbedCorrect)) noPairs.length)
+  match recYes, recNo with
   | some a, some b => some (Rate.mk (a.num * b.den + b.num * a.den)
       (2 * a.den * b.den))
   | _, _ => none
@@ -322,9 +359,10 @@ theorem ResponseSet.bothCorrectNum_le (rs : ResponseSet) :
     rs.bothCorrectNum ≤ rs.N :=
   countPairs_le rs (fun r => r.originalCorrect && r.perturbedCorrect)
 
-/-- Grouping four counts over a common denominator `D`: if the counts
-sum to `D`, the four `count · D³` fractions sum to `D · D²`. The
-arithmetic core of the Rate-level category identity. -/
+/-- Multiplying each of four counts summing to `D` by `D³` (the product
+of the other three denominators) makes the four fractions share the
+common denominator `D⁴ = D · D³`, and the numerators sum to `D · D³`.
+The arithmetic core of the Rate-level category identity. -/
 theorem four_rate_sum_aux (c a r u D : Nat) (h : c + a + r + u = D) :
     c * (D * D * D) + a * (D * D * D) + r * (D * D * D) + u * (D * D * D)
       = D * (D * D * D) := by
@@ -337,10 +375,12 @@ theorem four_rate_sum_aux (c a r u D : Nat) (h : c + a + r + u = D) :
 
 /-- **The category identity at the `Rate` level**: the four category
 rates (coverage, abstain, refusal, unresolvable), put over the common
-denominator `D³` where `D = nAnswers`, satisfy the identity whose
-counter-level form is `disjoint_total`. This is the promised
-Rate-level counterpart of `disjoint_total` — it holds for every `rs`
-(vacuously in the empty case, where the rates are undefined anyway). -/
+denominator `D⁴ = D · D³` (each term being `count · D³`, where
+`D = nAnswers`), satisfy the identity whose counter-level form is
+`disjoint_total`. This is an equality AFTER clearing denominators —
+for an empty set both sides are zero, which is NOT the statement that
+four undefined rates sum to 1. This is the promised Rate-level
+counterpart of `disjoint_total`. -/
 theorem category_rates_sum_eq_one (rs : ResponseSet) :
     rs.coverage.num * (rs.abstainRate.den * rs.refusalRate.den * rs.unresolvableRate.den)
       + rs.abstainRate.num * (rs.coverage.den * rs.refusalRate.den * rs.unresolvableRate.den)
@@ -375,21 +415,21 @@ theorem rateMerge_bound (a b : Rate) (ha : a.num ≤ a.den) (hb : b.num ≤ b.de
     _ = 2 * a.den * b.den := by
         rw [Nat.mul_assoc, Nat.two_mul]
 
-/-- Per-class bound in the exact shape `balancedAccuracy` needs: the
-class counter fits the class size. -/
-theorem classCount_le (l : List ModelResponsePair) :
-    (Rate.mk (countPairs l (fun r => r.originalCorrect && r.perturbedCorrect)) l.length).num
-      ≤ (Rate.mk (countPairs l (fun r => r.originalCorrect && r.perturbedCorrect)) l.length).den :=
-  countPairs_le l (fun r => r.originalCorrect && r.perturbedCorrect)
+/-- Per-class bound in the exact shape the balanced metrics need: the
+class counter fits the class size, for either filtered list. -/
+theorem classCount_le (l : List ModelResponsePair) (f : ModelResponsePair → Bool) :
+    (Rate.mk (countPairs l f) l.length).num
+      ≤ (Rate.mk (countPairs l f) l.length).den :=
+  countPairs_le l f
 
-/-- **The range of `balancedAccuracy`** (review round 3): whenever
-`balancedAccuracy rs = some r`, the pooled rate `r` satisfies
+/-- **The range of `balancedPairSuccess`**: whenever
+`balancedPairSuccess rs = some r`, the pooled rate `r` satisfies
 `r.num ≤ r.den` — derived from the per-class bounds of the two filtered
 lists. -/
-theorem ResponseSet.balancedAccuracy_num_le_den (rs : ResponseSet) :
-    ∀ r : Rate, ResponseSet.balancedAccuracy rs = some r → r.num ≤ r.den := by
+theorem ResponseSet.balancedPairSuccess_num_le_den (rs : ResponseSet) :
+    ∀ r : Rate, ResponseSet.balancedPairSuccess rs = some r → r.num ≤ r.den := by
   intro r hr
-  simp only [ResponseSet.balancedAccuracy] at hr
+  simp only [ResponseSet.balancedPairSuccess] at hr
   by_cases h1 : (rs.filter (fun r => match r.originalGT with | .yes => true | .no => false)).length = 0
   · rw [ite_eq_left h1] at hr
     simp at hr
@@ -403,6 +443,32 @@ theorem ResponseSet.balancedAccuracy_num_le_den (rs : ResponseSet) :
       exact rateMerge_bound
         (Rate.mk (countPairs (rs.filter (fun r => match r.originalGT with | .yes => true | .no => false)) (fun r => r.originalCorrect && r.perturbedCorrect)) (rs.filter (fun r => match r.originalGT with | .yes => true | .no => false)).length)
         (Rate.mk (countPairs (rs.filter (fun r => match r.originalGT with | .no => true | .yes => false)) (fun r => r.originalCorrect && r.perturbedCorrect)) (rs.filter (fun r => match r.originalGT with | .no => true | .yes => false)).length)
-        (classCount_le _) (classCount_le _)
+        (classCount_le _ _) (classCount_le _ _)
+
+/-- **The range of `balancedPerturbedAccuracy`**: same pooling argument,
+over the `perturbedGT` classes with the `perturbedCorrect` counter. -/
+theorem ResponseSet.balancedPerturbedAccuracy_num_le_den (rs : ResponseSet) :
+    ∀ r : Rate, ResponseSet.balancedPerturbedAccuracy rs = some r → r.num ≤ r.den := by
+  intro r hr
+  simp only [ResponseSet.balancedPerturbedAccuracy] at hr
+  by_cases h1 : (rs.filter (fun r => match r.perturbedGT with | .yes => true | .no => false)).length = 0
+  · rw [ite_eq_left h1] at hr
+    simp at hr
+  · rw [ite_eq_right h1] at hr
+    by_cases h2 : (rs.filter (fun r => match r.perturbedGT with | .no => true | .yes => false)).length = 0
+    · rw [ite_eq_left h2] at hr
+      simp at hr
+    · rw [ite_eq_right h2] at hr
+      injection hr with hEq
+      subst hEq
+      exact rateMerge_bound
+        (Rate.mk (countPairs (rs.filter (fun r => match r.perturbedGT with | .yes => true | .no => false)) (fun r => r.perturbedCorrect)) (rs.filter (fun r => match r.perturbedGT with | .yes => true | .no => false)).length)
+        (Rate.mk (countPairs (rs.filter (fun r => match r.perturbedGT with | .no => true | .yes => false)) (fun r => r.perturbedCorrect)) (rs.filter (fun r => match r.perturbedGT with | .no => true | .yes => false)).length)
+        (classCount_le _ _) (classCount_le _ _)
+
+/-- The perturbed-correct counter is a true part of `N`. -/
+theorem ResponseSet.perturbedCorrectCount_le (rs : ResponseSet) :
+    countPairs rs ModelResponsePair.perturbedCorrect ≤ rs.N :=
+  countPairs_le rs ModelResponsePair.perturbedCorrect
 
 end Sejmbench
