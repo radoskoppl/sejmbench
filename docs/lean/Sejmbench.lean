@@ -1,4 +1,5 @@
 import Sejmbench.Counterfactual
+import Sejmbench.Pool
 import Sejmbench.EvaluationMetrics
 import Sejmbench.FlipPair
 import Sejmbench.FlipRecord
