@@ -946,6 +946,14 @@ theorem stickyNum_eq_responseSet (pool : List PoolItem) :
       = ResponseSet.stickyNum (PoolItem.toResponseSet pool) :=
   (countPairs_map ModelResponsePair.isSticky pool).symm
 
+/-- **Bridge (originalCorrect)**. -/
+theorem originalCorrectNum_eq_responseSet (pool : List PoolItem) :
+    (pool.filter (fun p => p.pair.originalCorrect)).length
+      = ResponseSet.originalCorrectNum (PoolItem.toResponseSet pool) := by
+  have h := countPairs_map ModelResponsePair.originalCorrect pool
+  simp only [ResponseSet.originalCorrectNum] at h ⊢
+  exact h.symm
+
 /-- **Bridge (strict)**. -/
 theorem strictNum_eq_responseSet (pool : List PoolItem) :
     (pool.filter (fun p => p.pair.strictlyResponsive)).length
@@ -1489,6 +1497,165 @@ theorem cellPairCount_add (Q : PoolItem → Bool) (pool : List PoolItem) :
     (fun p => (sameBand_trichotomy p.band).2.2.2)
     (List.filter Q (gtItems pool Winner.no))
   rw [h1, h2, h3, h4, h5, h6]
+  omega
+
+
+/-! ## Named-predicate instantiations of `cellPairCount_add` -/
+
+/-- **Additivity of the bothCorrect counter** (accuracy numerator). -/
+theorem bothCorrectNum_add (pool : List PoolItem) :
+    (List.filter (fun (p : PoolItem) => p.pair.strictlyResponsive)
+        (cellItems pool Winner.no MarginBand.narrow)).length
+      + (List.filter (fun p => p.pair.strictlyResponsive)
+          (cellItems pool Winner.no MarginBand.close)).length
+      + (List.filter (fun p => p.pair.strictlyResponsive)
+          (cellItems pool Winner.no MarginBand.wide)).length
+      + (List.filter (fun p => p.pair.strictlyResponsive)
+          (cellItems pool Winner.yes MarginBand.narrow)).length
+      + (List.filter (fun p => p.pair.strictlyResponsive)
+          (cellItems pool Winner.yes MarginBand.close)).length
+      + (List.filter (fun p => p.pair.strictlyResponsive)
+          (cellItems pool Winner.yes MarginBand.wide)).length
+      = ResponseSet.strictNum (PoolItem.toResponseSet pool) := by
+  have h := cellPairCount_add (fun (p : PoolItem) => p.pair.strictlyResponsive) pool
+  rw [strictNum_eq_responseSet pool] at h
+  simp only [ResponseSet.strictNum, countPairs] at h ⊢
+  exact h
+
+/-- **Additivity of the originalCorrect counter** (the conditional
+denominator). -/
+theorem originalCorrectNum_add (pool : List PoolItem) :
+    (List.filter (fun (p : PoolItem) => p.pair.originalCorrect)
+        (cellItems pool Winner.no MarginBand.narrow)).length
+      + (List.filter (fun p => p.pair.originalCorrect)
+          (cellItems pool Winner.no MarginBand.close)).length
+      + (List.filter (fun p => p.pair.originalCorrect)
+          (cellItems pool Winner.no MarginBand.wide)).length
+      + (List.filter (fun p => p.pair.originalCorrect)
+          (cellItems pool Winner.yes MarginBand.narrow)).length
+      + (List.filter (fun p => p.pair.originalCorrect)
+          (cellItems pool Winner.yes MarginBand.close)).length
+      + (List.filter (fun p => p.pair.originalCorrect)
+          (cellItems pool Winner.yes MarginBand.wide)).length
+      = ResponseSet.originalCorrectNum (PoolItem.toResponseSet pool) := by
+  have h := cellPairCount_add (fun (p : PoolItem) => p.pair.originalCorrect) pool
+  rw [originalCorrectNum_eq_responseSet pool] at h
+  simp only [ResponseSet.originalCorrectNum, countPairs]
+  exact h
+
+/-- **Additivity of the incidental counter.** -/
+theorem incidentalNum_add (pool : List PoolItem) :
+    (List.filter (fun (p : PoolItem) => p.pair.incidentallyCorrect)
+        (cellItems pool Winner.no MarginBand.narrow)).length
+      + (List.filter (fun p => p.pair.incidentallyCorrect)
+          (cellItems pool Winner.no MarginBand.close)).length
+      + (List.filter (fun p => p.pair.incidentallyCorrect)
+          (cellItems pool Winner.no MarginBand.wide)).length
+      + (List.filter (fun p => p.pair.incidentallyCorrect)
+          (cellItems pool Winner.yes MarginBand.narrow)).length
+      + (List.filter (fun p => p.pair.incidentallyCorrect)
+          (cellItems pool Winner.yes MarginBand.close)).length
+      + (List.filter (fun p => p.pair.incidentallyCorrect)
+          (cellItems pool Winner.yes MarginBand.wide)).length
+      = ResponseSet.incidentalNum (PoolItem.toResponseSet pool) := by
+  exact (cellPairCount_add (fun (p : PoolItem) => p.pair.incidentallyCorrect) pool).trans
+    (incidentalNum_eq_responseSet pool)
+
+/-- **Additivity of the sticky counter.** -/
+theorem stickyNum_add (pool : List PoolItem) :
+    (List.filter (fun p => ModelResponsePair.isSticky p.pair)
+        (cellItems pool Winner.no MarginBand.narrow)).length
+      + (List.filter (fun p => ModelResponsePair.isSticky p.pair)
+          (cellItems pool Winner.no MarginBand.close)).length
+      + (List.filter (fun p => ModelResponsePair.isSticky p.pair)
+          (cellItems pool Winner.no MarginBand.wide)).length
+      + (List.filter (fun p => ModelResponsePair.isSticky p.pair)
+          (cellItems pool Winner.yes MarginBand.narrow)).length
+      + (List.filter (fun p => ModelResponsePair.isSticky p.pair)
+          (cellItems pool Winner.yes MarginBand.close)).length
+      + (List.filter (fun p => ModelResponsePair.isSticky p.pair)
+          (cellItems pool Winner.yes MarginBand.wide)).length
+      = (List.filter (fun p => ModelResponsePair.isSticky p.pair) pool).length :=
+  cellPairCount_add (fun p => ModelResponsePair.isSticky p.pair) pool
+
+/-- **Additivity of the perturbedCorrect counter** (perturbedAccuracy
+numerator). -/
+theorem perturbedCorrectNum_add (pool : List PoolItem) :
+    (List.filter (fun (p : PoolItem) => p.pair.perturbedCorrect)
+        (cellItems pool Winner.no MarginBand.narrow)).length
+      + (List.filter (fun p => p.pair.perturbedCorrect)
+          (cellItems pool Winner.no MarginBand.close)).length
+      + (List.filter (fun p => p.pair.perturbedCorrect)
+          (cellItems pool Winner.no MarginBand.wide)).length
+      + (List.filter (fun p => p.pair.perturbedCorrect)
+          (cellItems pool Winner.yes MarginBand.narrow)).length
+      + (List.filter (fun p => p.pair.perturbedCorrect)
+          (cellItems pool Winner.yes MarginBand.close)).length
+      + (List.filter (fun p => p.pair.perturbedCorrect)
+          (cellItems pool Winner.yes MarginBand.wide)).length
+      = (List.filter (fun (p : PoolItem) => p.pair.perturbedCorrect) pool).length :=
+  cellPairCount_add (fun (p : PoolItem) => p.pair.perturbedCorrect) pool
+
+/-- **Additivity of `N`** — the always-true predicate. -/
+theorem cellN_add (pool : List PoolItem) :
+    (cellItems pool Winner.no MarginBand.narrow).length
+      + (cellItems pool Winner.no MarginBand.close).length
+      + (cellItems pool Winner.no MarginBand.wide).length
+      + (cellItems pool Winner.yes MarginBand.narrow).length
+      + (cellItems pool Winner.yes MarginBand.close).length
+      + (cellItems pool Winner.yes MarginBand.wide).length
+      = pool.length :=
+  cellItems_sum pool
+
+/-! ## 2N-scale additivity (answer slots, per experiment stage) -/
+
+/-- **Additivity (2N scale, original-answer side)**: any original-answer
+predicate counter splits additively over the six cells. -/
+theorem cellOrigCount_add (g : ModelAnswer → Bool) (pool : List PoolItem) :
+    (List.filter (fun p => g p.pair.originalAnswer)
+        (cellItems pool Winner.no MarginBand.narrow)).length
+      + (List.filter (fun p => g p.pair.originalAnswer)
+          (cellItems pool Winner.no MarginBand.close)).length
+      + (List.filter (fun p => g p.pair.originalAnswer)
+          (cellItems pool Winner.no MarginBand.wide)).length
+      + (List.filter (fun p => g p.pair.originalAnswer)
+          (cellItems pool Winner.yes MarginBand.narrow)).length
+      + (List.filter (fun p => g p.pair.originalAnswer)
+          (cellItems pool Winner.yes MarginBand.close)).length
+      + (List.filter (fun p => g p.pair.originalAnswer)
+          (cellItems pool Winner.yes MarginBand.wide)).length
+      = (pool.filter (fun p => g p.pair.originalAnswer)).length :=
+  cellPairCount_add (fun p => g p.pair.originalAnswer) pool
+
+/-- **Additivity (2N scale, perturbed-answer side)**. -/
+theorem cellPertCount_add (g : ModelAnswer → Bool) (pool : List PoolItem) :
+    (List.filter (fun p => g p.pair.perturbedAnswer)
+        (cellItems pool Winner.no MarginBand.narrow)).length
+      + (List.filter (fun p => g p.pair.perturbedAnswer)
+          (cellItems pool Winner.no MarginBand.close)).length
+      + (List.filter (fun p => g p.pair.perturbedAnswer)
+          (cellItems pool Winner.no MarginBand.wide)).length
+      + (List.filter (fun p => g p.pair.perturbedAnswer)
+          (cellItems pool Winner.yes MarginBand.narrow)).length
+      + (List.filter (fun p => g p.pair.perturbedAnswer)
+          (cellItems pool Winner.yes MarginBand.close)).length
+      + (List.filter (fun p => g p.pair.perturbedAnswer)
+          (cellItems pool Winner.yes MarginBand.wide)).length
+      = (pool.filter (fun p => g p.pair.perturbedAnswer)).length :=
+  cellPairCount_add (fun p => g p.pair.perturbedAnswer) pool
+
+/-- **The full 2N additivity**: the sum of the six cells' answer-slot
+totals equals the pool's answer-slot total (both stages). -/
+theorem cellAnswerCount_add (pool : List PoolItem) :
+    cellAnswerCount pool Winner.no MarginBand.narrow
+      + cellAnswerCount pool Winner.no MarginBand.close
+      + cellAnswerCount pool Winner.no MarginBand.wide
+      + cellAnswerCount pool Winner.yes MarginBand.narrow
+      + cellAnswerCount pool Winner.yes MarginBand.close
+      + cellAnswerCount pool Winner.yes MarginBand.wide
+      = 2 * pool.length := by
+  unfold cellAnswerCount
+  have h := cellItems_sum pool
   omega
 
 end Sejmbench
