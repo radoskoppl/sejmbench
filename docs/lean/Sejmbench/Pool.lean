@@ -1153,4 +1153,144 @@ theorem cellAnswerCount_eq (pool : List PoolItem) (w : Winner) (b : MarginBand) 
   unfold cellAnswerCount
   omega
 
+
+/-! ## Per-cell metrics (over the cell image) -/
+
+/-- The response-set image of a cell. -/
+def cellImage (pool : List PoolItem) (w : Winner) (b : MarginBand) : ResponseSet :=
+  PoolItem.toResponseSet (cellItems pool w b)
+
+/-- **Per-cell accuracy** (both answers correct / cell pairs). -/
+def cellAccuracy (pool : List PoolItem) (w : Winner) (b : MarginBand) : Option Rate :=
+  ResponseSet.accuracy (cellImage pool w b)
+
+/-- **Per-cell perturbed accuracy.** -/
+def cellPerturbedAccuracy (pool : List PoolItem) (w : Winner) (b : MarginBand) : Option Rate :=
+  ResponseSet.perturbedAccuracy (cellImage pool w b)
+
+/-- **Per-cell coverage** (decisive / 2N). -/
+def cellCoverage (pool : List PoolItem) (w : Winner) (b : MarginBand) : Rate :=
+  ResponseSet.coverage (cellImage pool w b)
+
+/-- **Per-cell invalid-response rates** (each / 2N). -/
+def cellAbstainRate (pool : List PoolItem) (w : Winner) (b : MarginBand) : Rate :=
+  ResponseSet.abstainRate (cellImage pool w b)
+
+def cellRefusalRate (pool : List PoolItem) (w : Winner) (b : MarginBand) : Rate :=
+  ResponseSet.refusalRate (cellImage pool w b)
+
+def cellUnresolvableRate (pool : List PoolItem) (w : Winner) (b : MarginBand) : Rate :=
+  ResponseSet.unresolvableRate (cellImage pool w b)
+
+/-- **Per-cell conditional responsiveness** (denominator: originalCorrect
+within the cell). -/
+def cellStrictConditional (pool : List PoolItem) (w : Winner) (b : MarginBand) : Option Rate :=
+  ResponseSet.strictConditional (cellImage pool w b)
+
+/-- **Per-cell unconditional responsiveness.** -/
+def cellStrictUnconditional (pool : List PoolItem) (w : Winner) (b : MarginBand) : Option Rate :=
+  ResponseSet.strictUnconditional (cellImage pool w b)
+
+/-- **Per-cell incidental rate.** -/
+def cellIncidental (pool : List PoolItem) (w : Winner) (b : MarginBand) : Option Rate :=
+  ResponseSet.incidental (cellImage pool w b)
+
+/-- **Per-cell sticky counter.** -/
+def cellStickyNum (pool : List PoolItem) (w : Winner) (b : MarginBand) : Nat :=
+  countPairs (cellImage pool w b) ModelResponsePair.isSticky
+
+/-! ### Range theorems for the per-cell metrics -/
+
+/-- Per-cell coverage is a genuine frequency. -/
+theorem cellCoverage_num_le_den (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    (cellCoverage pool w b).num ≤ (cellCoverage pool w b).den :=
+  countAnswers_le (cellImage pool w b) ModelAnswer.decisive
+
+/-- Per-cell abstain rate is a genuine frequency. -/
+theorem cellAbstainRate_num_le_den (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    (cellAbstainRate pool w b).num ≤ (cellAbstainRate pool w b).den :=
+  countAnswers_le (cellImage pool w b) ModelAnswer.isAbstain
+
+/-- Per-cell refusal rate is a genuine frequency. -/
+theorem cellRefusalRate_num_le_den (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    (cellRefusalRate pool w b).num ≤ (cellRefusalRate pool w b).den :=
+  countAnswers_le (cellImage pool w b) ModelAnswer.isRefusal
+
+/-- Per-cell unresolvable rate is a genuine frequency. -/
+theorem cellUnresolvableRate_num_le_den (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    (cellUnresolvableRate pool w b).num ≤ (cellUnresolvableRate pool w b).den :=
+  countAnswers_le (cellImage pool w b) ModelAnswer.isUnresolvable
+
+/-- **Per-cell accuracy is a genuine frequency.** -/
+theorem cellAccuracy_num_le_den (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    ∀ r : Rate, cellAccuracy pool w b = some r → r.num ≤ r.den := by
+  intro r hr
+  simp only [cellAccuracy, ResponseSet.accuracy] at hr
+  by_cases hN : (cellImage pool w b).N = 0
+  · rw [ite_eq_left hN] at hr
+    simp at hr
+  · rw [ite_eq_right hN] at hr
+    injection hr with hEq
+    subst hEq
+    exact ResponseSet.bothCorrectNum_le (cellImage pool w b)
+
+/-- **Per-cell perturbed accuracy is a genuine frequency.** -/
+theorem cellPerturbedAccuracy_num_le_den (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    ∀ r : Rate, cellPerturbedAccuracy pool w b = some r → r.num ≤ r.den := by
+  intro r hr
+  simp only [cellPerturbedAccuracy, ResponseSet.perturbedAccuracy] at hr
+  by_cases hN : (cellImage pool w b).N = 0
+  · rw [ite_eq_left hN] at hr
+    simp at hr
+  · rw [ite_eq_right hN] at hr
+    injection hr with hEq
+    subst hEq
+    exact ResponseSet.perturbedCorrectCount_le (cellImage pool w b)
+
+/-- **Per-cell conditional responsiveness is a genuine frequency**
+(its denominator is the cell's originalCorrect count, not the cell's
+pair count). -/
+theorem cellStrictConditional_num_le_den (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    ∀ r : Rate, cellStrictConditional pool w b = some r → r.num ≤ r.den := by
+  intro r hr
+  simp only [cellStrictConditional, ResponseSet.strictConditional] at hr
+  by_cases hN : (cellImage pool w b).originalCorrectNum = 0
+  · rw [ite_eq_left hN] at hr
+    simp at hr
+  · rw [ite_eq_right hN] at hr
+    injection hr with hEq
+    subst hEq
+    exact ResponseSet.strictNum_le_originalCorrectNum (cellImage pool w b)
+
+/-- **Per-cell unconditional responsiveness is a genuine frequency.** -/
+theorem cellStrictUnconditional_num_le_den (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    ∀ r : Rate, cellStrictUnconditional pool w b = some r → r.num ≤ r.den := by
+  intro r hr
+  simp only [cellStrictUnconditional, ResponseSet.strictUnconditional] at hr
+  by_cases hN : (cellImage pool w b).N = 0
+  · rw [ite_eq_left hN] at hr
+    simp at hr
+  · rw [ite_eq_right hN] at hr
+    injection hr with hEq
+    subst hEq
+    have h1 : (cellImage pool w b).strictNum ≤ (cellImage pool w b).originalCorrectNum :=
+      ResponseSet.strictNum_le_originalCorrectNum (cellImage pool w b)
+    have h2 : (cellImage pool w b).originalCorrectNum ≤ (cellImage pool w b).N :=
+      ResponseSet.originalCorrectNum_le (cellImage pool w b)
+    show (cellImage pool w b).strictNum ≤ (cellImage pool w b).N
+    omega
+
+/-- **Per-cell incidental rate is a genuine frequency.** -/
+theorem cellIncidental_num_le_den (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    ∀ r : Rate, cellIncidental pool w b = some r → r.num ≤ r.den := by
+  intro r hr
+  simp only [cellIncidental, ResponseSet.incidental] at hr
+  by_cases hN : (cellImage pool w b).N = 0
+  · rw [ite_eq_left hN] at hr
+    simp at hr
+  · rw [ite_eq_right hN] at hr
+    injection hr with hEq
+    subst hEq
+    exact ResponseSet.incidentalNum_le (cellImage pool w b)
+
 end Sejmbench
