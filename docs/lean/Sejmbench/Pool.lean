@@ -1040,4 +1040,117 @@ theorem incidentalNum_dir_decomp (pool : List PoolItem) :
   rw [h2, h3]
   exact (incidentalNum_cells pool).symm
 
+
+/-! ## Cells as item lists (the 6 achievable cells) -/
+
+/-- The direction corresponding to a perturbed GT (the inverse map of
+`direction_of_originalGT`). -/
+def directionOf (w : Winner) : Direction :=
+  match w with
+  | .no => Direction.yesToNo
+  | .yes => Direction.noToYes
+
+/-- Direction is determined by the perturbed GT (the inverse of
+`direction_of_originalGT` under the two-value `Winner`). -/
+theorem direction_eq_directionOf (r : ModelResponsePair) :
+    r.direction = directionOf r.perturbedGT := by
+  cases hd : r.direction with
+  | yesToNo =>
+      have hp : r.perturbedGT = Winner.no := (perturbedGT_of_direction r).1 hd
+      rw [hp, directionOf]
+  | noToYes =>
+      have hp : r.perturbedGT = Winner.yes := (perturbedGT_of_direction r).2 hd
+      rw [hp, directionOf]
+
+/-- The item list of the achievable cell `(perturbedGT = w, band = b)`.
+The (redundant) direction layer is kept so that the list length is
+definitionally `cellCount pool w (directionOf w) b`. -/
+def cellItems (pool : List PoolItem) (w : Winner) (b : MarginBand) : List PoolItem :=
+  (((pool.filter (fun p => sameGT p.pair.perturbedGT w)).filter
+      (fun p => sameDir p.pair.direction (directionOf w))).filter
+      (fun p => sameBand p.band b))
+
+/-- The cell item list length IS the cell count. -/
+theorem cellItems_length (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    (cellItems pool w b).length = cellCount pool w (directionOf w) b := rfl
+
+/-- Pair-level counter of a cell (the `N` scale). -/
+def cellPairCount (pool : List PoolItem) (w : Winner) (b : MarginBand) : Nat :=
+  (cellItems pool w b).length
+
+/-- Answer-slot counter of a cell (the `2N` scale). -/
+def cellAnswerCount (pool : List PoolItem) (w : Winner) (b : MarginBand) : Nat :=
+  2 * (cellItems pool w b).length
+
+/-- Original-answer counter within a cell. -/
+def cellOrigCount (pool : List PoolItem) (w : Winner) (b : MarginBand) (a : ModelAnswer) : Nat :=
+  ((cellItems pool w b).filter (poolOrig a)).length
+
+/-- Perturbed-answer counter within a cell. -/
+def cellPertCount (pool : List PoolItem) (w : Winner) (b : MarginBand) (a : ModelAnswer) : Nat :=
+  ((cellItems pool w b).filter (poolPert a)).length
+
+/-! ## Per-cell summation -/
+
+/-- **The six achievable cells exhaust the pool** (item-list form). -/
+theorem cellItems_sum (pool : List PoolItem) :
+    (cellItems pool Winner.no MarginBand.narrow).length
+      + (cellItems pool Winner.no MarginBand.close).length
+      + (cellItems pool Winner.no MarginBand.wide).length
+      + (cellItems pool Winner.yes MarginBand.narrow).length
+      + (cellItems pool Winner.yes MarginBand.close).length
+      + (cellItems pool Winner.yes MarginBand.wide).length
+      = pool.length := by
+  rw [cellItems_length, cellItems_length, cellItems_length,
+      cellItems_length, cellItems_length, cellItems_length]
+  exact cellCount6_sum pool
+
+/-- **The answer-slot counters of the six cells sum to `2N`.** -/
+theorem cellAnswerCount_sum (pool : List PoolItem) :
+    cellAnswerCount pool Winner.no MarginBand.narrow
+      + cellAnswerCount pool Winner.no MarginBand.close
+      + cellAnswerCount pool Winner.no MarginBand.wide
+      + cellAnswerCount pool Winner.yes MarginBand.narrow
+      + cellAnswerCount pool Winner.yes MarginBand.close
+      + cellAnswerCount pool Winner.yes MarginBand.wide
+      = 2 * pool.length := by
+  unfold cellAnswerCount
+  have h := cellItems_sum pool
+  omega
+
+/-! ## Per-cell answer accounting (original / perturbed, 5-way each) -/
+
+/-- Within a cell, the five original answers exhaust the cell. -/
+theorem cellOrig_fiveWay (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    cellOrigCount pool w b .yes + cellOrigCount pool w b .no
+      + cellOrigCount pool w b .abstain + cellOrigCount pool w b .refusal
+      + cellOrigCount pool w b .unresolvable
+      = (cellItems pool w b).length :=
+  fiveWay_pool_orig (cellItems pool w b)
+
+/-- Within a cell, the five perturbed answers exhaust the cell. -/
+theorem cellPert_fiveWay (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    cellPertCount pool w b .yes + cellPertCount pool w b .no
+      + cellPertCount pool w b .abstain + cellPertCount pool w b .refusal
+      + cellPertCount pool w b .unresolvable
+      = (cellItems pool w b).length :=
+  fiveWay_pool_pert (cellItems pool w b)
+
+/-- **The `2N` accounting of a cell**: the original-answer and
+perturbed-answer counts (each summing to the cell size over its five
+values) together account for both answer slots of every item in the
+cell. The two scales are kept separate — the combined view is the
+4-way contingency's per-cell row. -/
+theorem cellAnswerCount_eq (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    cellAnswerCount pool w b
+      = (cellOrigCount pool w b .yes + cellOrigCount pool w b .no
+          + cellOrigCount pool w b .abstain + cellOrigCount pool w b .refusal
+          + cellOrigCount pool w b .unresolvable)
+        + (cellPertCount pool w b .yes + cellPertCount pool w b .no
+          + cellPertCount pool w b .abstain + cellPertCount pool w b .refusal
+          + cellPertCount pool w b .unresolvable) := by
+  rw [cellOrig_fiveWay, cellPert_fiveWay]
+  unfold cellAnswerCount
+  omega
+
 end Sejmbench
