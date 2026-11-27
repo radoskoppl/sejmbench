@@ -12,7 +12,7 @@ review of `49401d2` (round 4, judge-approved):
   describes how hard the original result was to overturn (narrow ≤ 5,
   close 6–50, wide ≥ 51), computed from `margin` of the original
   division. The perturbed margin is a diagnostic quantity
-  (`perturbedMargin`), NOT a partition dimension.
+    (`perturbedMargin`), NOT a partition dimension.
 * **Cell key** = `(perturbedGT, direction, originalMarginBand)` — the
   class used for balancing and the leakage gate is the perturbed GT;
   direction and the original-margin band are the two remaining
@@ -138,17 +138,17 @@ def PoolItem.inCell (p : PoolItem) (w : Winner) (d : Direction) (b : MarginBand)
 /-- Count of pool items in the given cell (nested-filter form, matching
 the partition lemmas). -/
 def cellCount (pool : List PoolItem) (w : Winner) (d : Direction) (b : MarginBand) : Nat :=
-  (((pool.filter (fun p => sameGT p.pair.perturbedGT w)).filter
+    (((pool.filter (fun p => sameGT p.pair.perturbedGT w)).filter
       (fun p => sameDir p.pair.direction d)).filter
       (fun p => sameBand p.band b)).length
 
 /-- Count of pool items with the given perturbed GT. -/
 def gtCount (pool : List PoolItem) (w : Winner) : Nat :=
-  (pool.filter (fun p => sameGT p.pair.perturbedGT w)).length
+    (pool.filter (fun p => sameGT p.pair.perturbedGT w)).length
 
 /-- Count of pool items in the `(perturbedGT = w, direction = d)` slice. -/
 def gdCount (pool : List PoolItem) (w : Winner) (d : Direction) : Nat :=
-  ((pool.filter (fun p => sameGT p.pair.perturbedGT w)).filter
+    ((pool.filter (fun p => sameGT p.pair.perturbedGT w)).filter
       (fun p => sameDir p.pair.direction d)).length
 
 /-! ## Pointwise partitions -/
@@ -166,7 +166,8 @@ theorem filter_complement {α : Type} (f : α → Bool) (l : List α) :
         have h2 : (List.filter (fun x => !(f x)) (a :: rest)).length
             = (List.filter (fun x => !(f x)) rest).length := by
           rw [List.filter_cons_of_neg (p := fun x => !(f x)) (by simp [h])]
-        rw [h1, h2, List.length_cons]
+        rw [h1, h2, ]
+        simp only [List.length_cons]
         omega
       · have h3 : (List.filter f (a :: rest)).length
             = (List.filter f rest).length := by
@@ -175,7 +176,8 @@ theorem filter_complement {α : Type} (f : α → Bool) (l : List α) :
         have h5 : (List.filter (fun x => !(f x)) (a :: rest)).length
             = (List.filter (fun x => !(f x)) rest).length + 1 := by
           rw [List.filter_cons_of_pos (p := fun x => !(f x)) h4, List.length_cons]
-        rw [h3, h5, List.length_cons]
+        rw [h3, h5, ]
+        simp only [List.length_cons]
         omega
 
 /-- Three pointwise-disjoint, exhaustive predicates split any list. -/
@@ -207,7 +209,8 @@ theorem filter_split3 {α : Type} (f g h : α → Bool)
         have e3 : (List.filter h (a :: rest)).length
             = (List.filter h rest).length := by
           rw [List.filter_cons_of_neg (p := h) (by simp [hha])]
-        rw [e1, e2, e3, List.length_cons]
+        rw [e1, e2, e3, ]
+        simp only [List.length_cons]
         omega
       · by_cases h2 : g a = true
         · have hna3 : (!(g a && h a)) = true := hd3 a
@@ -227,7 +230,8 @@ theorem filter_split3 {α : Type} (f g h : α → Bool)
           have e3 : (List.filter h (a :: rest)).length
               = (List.filter h rest).length := by
             rw [List.filter_cons_of_neg (p := h) (by simp [hha])]
-          rw [e1, e2, e3, List.length_cons]
+          rw [e1, e2, e3, ]
+          simp only [List.length_cons]
           omega
         · have hexp : (f a || g a || h a) = true := hex a
           have h3 : h a = true := by
@@ -243,7 +247,8 @@ theorem filter_split3 {α : Type} (f g h : α → Bool)
           have e3 : (List.filter h (a :: rest)).length
               = (List.filter h rest).length + 1 := by
             rw [List.filter_cons_of_pos h3, List.length_cons]
-          rw [e1, e2, e3, List.length_cons]
+          rw [e1, e2, e3, ]
+          simp only [List.length_cons]
           omega
 
 /-- The two GT predicates are pointwise complementary. -/
@@ -449,11 +454,11 @@ theorem answerCellCount_sum (pool : List PoolItem) :
 
 /-- Number of pool items carrying a given `itemId`. -/
 def itemIdCount (pool : List PoolItem) (i : Nat) : Nat :=
-  (pool.filter (fun p => decide (p.itemId = i))).length
+    (pool.filter (fun p => decide (p.itemId = i))).length
 
 /-- Well-formed pool: item identifiers are pairwise distinct. -/
 def poolWellFormed (pool : List PoolItem) : Prop :=
-  (pool.map (·.itemId)).Nodup
+    (pool.map (·.itemId)).Nodup
 
 /-- **Uniqueness as a counting bound**: in a well-formed pool, at most
 one item carries any given identifier. -/
@@ -513,12 +518,12 @@ def poolLeakageGate (pool : List PoolItem) : Bool :=
 
 /-- Count of items with perturbed GT `w` within original-margin band `b`. -/
 def gtBandCount (pool : List PoolItem) (w : Winner) (b : MarginBand) : Nat :=
-  ((pool.filter (fun p => sameBand p.band b)).filter
+    ((pool.filter (fun p => sameBand p.band b)).filter
       (fun p => sameGT p.pair.perturbedGT w)).length
 
 /-- Count of items in original-margin band `b`. -/
 def bandCount (pool : List PoolItem) (b : MarginBand) : Nat :=
-  (pool.filter (fun p => sameBand p.band b)).length
+    (pool.filter (fun p => sameBand p.band b)).length
 
 /-- Within a band, the two perturbed-GT classes split the band count. -/
 theorem gtBandCount_split (pool : List PoolItem) (b : MarginBand) :
@@ -579,5 +584,333 @@ theorem cellCount6_sum (pool : List PoolItem) :
   have hz5 := (cellCount_zero pool MarginBand.wide).1
   have hz6 := (cellCount_zero pool MarginBand.wide).2
   omega
+
+
+open ModelAnswer
+
+/-! ## The #22 four-way contingency table
+
+The mandatory 4-way contingency: original GT × perturbed GT × original
+answer × perturbed answer. Because the pair is a confirmed reversal,
+`(originalGT, perturbedGT)` is encoded by `direction` (bijection proved
+in `direction_of_originalGT` / `perturbedGT_of_direction`), so the
+table has 2 × 5 × 5 = 50 cells indexed by
+`(direction, originalAnswer, perturbedAnswer)`. -/
+
+/-- Answer predicate at the pool-item level: original answer is `c`. -/
+def poolOrig (c : ModelAnswer) (p : PoolItem) : Bool :=
+  sameAnswer p.pair.originalAnswer c
+
+/-- Answer predicate at the pool-item level: perturbed answer is `c`. -/
+def poolPert (c : ModelAnswer) (p : PoolItem) : Bool :=
+  sameAnswer p.pair.perturbedAnswer c
+
+/-- Count of pool items with direction `d`. -/
+def directionCount (pool : List PoolItem) (d : Direction) : Nat :=
+  (pool.filter (fun p => sameDir p.pair.direction d)).length
+
+/-- Count of items in direction `d` whose original answer is `a`. -/
+def origAnswerCount (pool : List PoolItem) (d : Direction) (a : ModelAnswer) : Nat :=
+  ((pool.filter (fun p => sameDir p.pair.direction d)).filter (poolOrig a)).length
+
+/-- Count of items in the `(d, a, b)` contingency cell. -/
+def contingencyCount (pool : List PoolItem) (d : Direction) (a b : ModelAnswer) : Nat :=
+  (((pool.filter (fun p => sameDir p.pair.direction d)).filter (poolOrig a)).filter
+      (poolPert b)).length
+
+/-- If `!(a && b) = true` and `a = true`, then `b = false`. -/
+theorem and_false_of_left {a b : Bool} (h : (!(a && b)) = true) (ha : a = true) :
+    b = false := by
+  cases hb : b with
+  | false => rfl
+  | true => rw [ha, hb] at h; simp at h
+
+/-- If `!(a && b) = true` and `b = true`, then `a = false`. -/
+theorem and_false_of_right {a b : Bool} (h : (!(a && b)) = true) (hb : b = true) :
+    a = false := by
+  cases ha : a with
+  | false => rfl
+  | true => rw [ha, hb] at h; simp at h
+
+/-- Five pointwise-disjoint, exhaustive predicates split any list. -/
+theorem filter_split5 {α : Type} (f g h k j : α → Bool)
+    (hex : ∀ x, (f x || g x || h x || k x || j x) = true)
+    (hd1 : ∀ x, (!(f x && g x)) = true) (hd2 : ∀ x, (!(f x && h x)) = true)
+    (hd3 : ∀ x, (!(f x && k x)) = true) (hd4 : ∀ x, (!(f x && j x)) = true)
+    (hd5 : ∀ x, (!(g x && h x)) = true) (hd6 : ∀ x, (!(g x && k x)) = true)
+    (hd7 : ∀ x, (!(g x && j x)) = true) (hd8 : ∀ x, (!(h x && k x)) = true)
+    (hd9 : ∀ x, (!(h x && j x)) = true) (hd10 : ∀ x, (!(k x && j x)) = true)
+    (l : List α) :
+    (l.filter f).length + (l.filter g).length + (l.filter h).length
+      + (l.filter k).length + (l.filter j).length = l.length := by
+  induction l with
+  | nil => simp
+  | cons a rest ih =>
+      by_cases h1 : f a = true
+      · have hgn : ¬(g a = true) := by simp [and_false_of_left (hd1 a) h1]
+        have hhn : ¬(h a = true) := by simp [and_false_of_left (hd2 a) h1]
+        have hkn : ¬(k a = true) := by simp [and_false_of_left (hd3 a) h1]
+        have hjn : ¬(j a = true) := by simp [and_false_of_left (hd4 a) h1]
+        rw [List.filter_cons_of_pos h1,
+            List.filter_cons_of_neg (p := g) hgn,
+            List.filter_cons_of_neg (p := h) hhn,
+            List.filter_cons_of_neg (p := k) hkn,
+            List.filter_cons_of_neg (p := j) hjn]
+        simp only [List.length_cons]
+        omega
+      · by_cases h2 : g a = true
+        · have hfn : ¬(f a = true) := by simp [and_false_of_right (hd1 a) h2]
+          have hhn : ¬(h a = true) := by simp [and_false_of_left (hd5 a) h2]
+          have hkn : ¬(k a = true) := by simp [and_false_of_left (hd6 a) h2]
+          have hjn : ¬(j a = true) := by simp [and_false_of_left (hd7 a) h2]
+          rw [List.filter_cons_of_neg h1,
+              List.filter_cons_of_pos h2,
+              List.filter_cons_of_neg (p := h) hhn,
+              List.filter_cons_of_neg (p := k) hkn,
+              List.filter_cons_of_neg (p := j) hjn]
+          simp only [List.length_cons]
+          omega
+        · by_cases h3 : h a = true
+          · have hfn : ¬(f a = true) := by simp [and_false_of_right (hd2 a) h3]
+            have hgn : ¬(g a = true) := by simp [and_false_of_right (hd5 a) h3]
+            have hkn : ¬(k a = true) := by simp [and_false_of_left (hd8 a) h3]
+            have hjn : ¬(j a = true) := by simp [and_false_of_left (hd9 a) h3]
+            rw [List.filter_cons_of_neg h1,
+                List.filter_cons_of_neg h2,
+                List.filter_cons_of_pos h3,
+                List.filter_cons_of_neg (p := k) hkn,
+                List.filter_cons_of_neg (p := j) hjn]
+            simp only [List.length_cons]
+            omega
+          · by_cases h4 : k a = true
+            · have hgn : ¬(g a = true) := by simp [and_false_of_right (hd6 a) h4]
+              have hhn : ¬(h a = true) := by simp [and_false_of_right (hd8 a) h4]
+              have hjn : ¬(j a = true) := by simp [and_false_of_left (hd10 a) h4]
+              rw [List.filter_cons_of_neg h1,
+                  List.filter_cons_of_neg h2,
+                  List.filter_cons_of_neg h3,
+                  List.filter_cons_of_pos h4,
+                  List.filter_cons_of_neg (p := j) hjn]
+              simp only [List.length_cons]
+              omega
+            · have e1 : f a = false := (Bool.not_eq_true (f a)).mp h1
+              have e2 : g a = false := (Bool.not_eq_true (g a)).mp h2
+              have e3 : h a = false := (Bool.not_eq_true (h a)).mp h3
+              have e4 : k a = false := (Bool.not_eq_true (k a)).mp h4
+              have hjt : j a = true := by
+                cases hj : j a with
+                | true => rfl
+                | false =>
+                  have h := hex a
+                  rw [e1, e2, e3, e4, hj] at h
+                  simp at h
+              rw [List.filter_cons_of_neg h1,
+                  List.filter_cons_of_neg h2,
+                  List.filter_cons_of_neg h3,
+                  List.filter_cons_of_neg h4,
+                  List.filter_cons_of_pos hjt]
+              simp only [List.length_cons]
+              omega
+
+/-- The eleven pointwise facts for the `poolOrig` family. -/
+theorem poolOrig_facts (x : PoolItem) :
+    (poolOrig .yes x || poolOrig .no x || poolOrig .abstain x || poolOrig .refusal x || poolOrig .unresolvable x) = true
+      ∧ (!(poolOrig .yes x && poolOrig .no x)) = true
+      ∧ (!(poolOrig .yes x && poolOrig .abstain x)) = true
+      ∧ (!(poolOrig .yes x && poolOrig .refusal x)) = true
+      ∧ (!(poolOrig .yes x && poolOrig .unresolvable x)) = true
+      ∧ (!(poolOrig .no x && poolOrig .abstain x)) = true
+      ∧ (!(poolOrig .no x && poolOrig .refusal x)) = true
+      ∧ (!(poolOrig .no x && poolOrig .unresolvable x)) = true
+      ∧ (!(poolOrig .abstain x && poolOrig .refusal x)) = true
+      ∧ (!(poolOrig .abstain x && poolOrig .unresolvable x)) = true
+      ∧ (!(poolOrig .refusal x && poolOrig .unresolvable x)) = true
+    := by
+  cases h : x.pair.originalAnswer with
+  | yes => simp [poolOrig, sameAnswer, h]
+  | no => simp [poolOrig, sameAnswer, h]
+  | abstain => simp [poolOrig, sameAnswer, h]
+  | refusal => simp [poolOrig, sameAnswer, h]
+  | unresolvable => simp [poolOrig, sameAnswer, h]
+
+/-- The eleven pointwise facts for the `poolPert` family. -/
+theorem poolPert_facts (x : PoolItem) :
+    (poolPert .yes x || poolPert .no x || poolPert .abstain x || poolPert .refusal x || poolPert .unresolvable x) = true
+      ∧ (!(poolPert .yes x && poolPert .no x)) = true
+      ∧ (!(poolPert .yes x && poolPert .abstain x)) = true
+      ∧ (!(poolPert .yes x && poolPert .refusal x)) = true
+      ∧ (!(poolPert .yes x && poolPert .unresolvable x)) = true
+      ∧ (!(poolPert .no x && poolPert .abstain x)) = true
+      ∧ (!(poolPert .no x && poolPert .refusal x)) = true
+      ∧ (!(poolPert .no x && poolPert .unresolvable x)) = true
+      ∧ (!(poolPert .abstain x && poolPert .refusal x)) = true
+      ∧ (!(poolPert .abstain x && poolPert .unresolvable x)) = true
+      ∧ (!(poolPert .refusal x && poolPert .unresolvable x)) = true
+    := by
+  cases h : x.pair.perturbedAnswer with
+  | yes => simp [poolPert, sameAnswer, h]
+  | no => simp [poolPert, sameAnswer, h]
+  | abstain => simp [poolPert, sameAnswer, h]
+  | refusal => simp [poolPert, sameAnswer, h]
+  | unresolvable => simp [poolPert, sameAnswer, h]
+
+/-- Filter predicates commute. -/
+theorem filter_filter_comm {α : Type} (P Q : α → Bool) (l : List α) :
+    (l.filter Q).filter P = (l.filter P).filter Q := by
+  rw [List.filter_filter, List.filter_filter]
+  refine List.filter_congr (fun x _ => ?_)
+  simp [Bool.and_comm]
+
+/-- **The five poolOrig rows partition the pool.** -/
+theorem fiveWay_pool_orig (pool : List PoolItem) :
+    (pool.filter (poolOrig .yes)).length + (pool.filter (poolOrig .no)).length + (pool.filter (poolOrig .abstain)).length + (pool.filter (poolOrig .refusal)).length + (pool.filter (poolOrig .unresolvable)).length = pool.length := by
+  refine filter_split5 (poolOrig .yes) (poolOrig .no) (poolOrig .abstain) (poolOrig .refusal) (poolOrig .unresolvable)
+    (hex := fun x => (poolOrig_facts x).1)
+    (hd1 := fun x => (poolOrig_facts x).2.1)
+    (hd2 := fun x => (poolOrig_facts x).2.2.1)
+    (hd3 := fun x => (poolOrig_facts x).2.2.2.1)
+    (hd4 := fun x => (poolOrig_facts x).2.2.2.2.1)
+    (hd5 := fun x => (poolOrig_facts x).2.2.2.2.2.1)
+    (hd6 := fun x => (poolOrig_facts x).2.2.2.2.2.2.1)
+    (hd7 := fun x => (poolOrig_facts x).2.2.2.2.2.2.2.1)
+    (hd8 := fun x => (poolOrig_facts x).2.2.2.2.2.2.2.2.1)
+    (hd9 := fun x => (poolOrig_facts x).2.2.2.2.2.2.2.2.2.1)
+    (hd10 := fun x => (poolOrig_facts x).2.2.2.2.2.2.2.2.2.2)
+        pool
+
+
+/-- **The five poolPert rows partition the pool.** -/
+theorem fiveWay_pool_pert (pool : List PoolItem) :
+    (pool.filter (poolPert .yes)).length + (pool.filter (poolPert .no)).length + (pool.filter (poolPert .abstain)).length + (pool.filter (poolPert .refusal)).length + (pool.filter (poolPert .unresolvable)).length = pool.length := by
+  refine filter_split5 (poolPert .yes) (poolPert .no) (poolPert .abstain) (poolPert .refusal) (poolPert .unresolvable)
+    (hex := fun x => (poolPert_facts x).1)
+    (hd1 := fun x => (poolPert_facts x).2.1)
+    (hd2 := fun x => (poolPert_facts x).2.2.1)
+    (hd3 := fun x => (poolPert_facts x).2.2.2.1)
+    (hd4 := fun x => (poolPert_facts x).2.2.2.2.1)
+    (hd5 := fun x => (poolPert_facts x).2.2.2.2.2.1)
+    (hd6 := fun x => (poolPert_facts x).2.2.2.2.2.2.1)
+    (hd7 := fun x => (poolPert_facts x).2.2.2.2.2.2.2.1)
+    (hd8 := fun x => (poolPert_facts x).2.2.2.2.2.2.2.2.1)
+    (hd9 := fun x => (poolPert_facts x).2.2.2.2.2.2.2.2.2.1)
+    (hd10 := fun x => (poolPert_facts x).2.2.2.2.2.2.2.2.2.2)
+        pool
+
+
+/-- **Row sum of the contingency table**: for fixed direction and
+original answer, the five perturbed-answer cells exhaust the slice. -/
+theorem contingency_row_sum (pool : List PoolItem) (d : Direction) (a : ModelAnswer) :
+    contingencyCount pool d a .yes + contingencyCount pool d a .no
+      + contingencyCount pool d a .abstain + contingencyCount pool d a .refusal
+      + contingencyCount pool d a .unresolvable
+      = origAnswerCount pool d a := by
+  refine filter_split5 (poolPert .yes) (poolPert .no) (poolPert .abstain)
+    (poolPert .refusal) (poolPert .unresolvable) ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_
+    ((pool.filter (fun p => sameDir p.pair.direction d)).filter (poolOrig a))
+  all_goals
+    intro x
+    cases h : x.pair.perturbedAnswer with
+    | yes => simp [poolPert, sameAnswer, h]
+    | no => simp [poolPert, sameAnswer, h]
+    | abstain => simp [poolPert, sameAnswer, h]
+    | refusal => simp [poolPert, sameAnswer, h]
+    | unresolvable => simp [poolPert, sameAnswer, h]
+
+/-- **Slice sum**: for fixed direction, the five original-answer rows
+exhaust the direction count. -/
+theorem contingency_slice_sum (pool : List PoolItem) (d : Direction) :
+    origAnswerCount pool d .yes + origAnswerCount pool d .no
+      + origAnswerCount pool d .abstain + origAnswerCount pool d .refusal
+      + origAnswerCount pool d .unresolvable
+      = directionCount pool d := by
+  refine filter_split5 (poolOrig .yes) (poolOrig .no) (poolOrig .abstain)
+    (poolOrig .refusal) (poolOrig .unresolvable) ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_
+    (pool.filter (fun p => sameDir p.pair.direction d))
+  all_goals
+    intro x
+    cases h : x.pair.originalAnswer with
+    | yes => simp [poolOrig, sameAnswer, h]
+    | no => simp [poolOrig, sameAnswer, h]
+    | abstain => simp [poolOrig, sameAnswer, h]
+    | refusal => simp [poolOrig, sameAnswer, h]
+    | unresolvable => simp [poolOrig, sameAnswer, h]
+
+/-- **Total**: the two direction slices exhaust the pool. -/
+theorem contingency_total_sum (pool : List PoolItem) :
+    directionCount pool Direction.yesToNo + directionCount pool Direction.noToYes
+      = pool.length := by
+  unfold directionCount
+  have h := filter_complement
+    (fun p : PoolItem => sameDir p.pair.direction Direction.yesToNo) pool
+  have hEq : (pool.filter (fun x => !(sameDir x.pair.direction Direction.yesToNo)))
+      = pool.filter (fun p => sameDir p.pair.direction Direction.noToYes) := by
+    refine List.filter_congr (fun x _ => ?_)
+    exact sameDir_no_compl x.pair.direction
+  rw [hEq] at h
+  omega
+
+/-! ## Counters as directional decompositions (aggregation layer) -/
+
+/-- Is the pair in the sticky mode: correct on the original, then the
+SAME answer repeated after the perturbation? -/
+def ModelResponsePair.isSticky (r : ModelResponsePair) : Bool :=
+  r.originalCorrect && sameAnswer r.perturbedAnswer r.originalAnswer
+
+/-- **Directional decomposition of the sticky count.** -/
+theorem stickyNum_cells (pool : List PoolItem) :
+    (List.filter (fun p => sameDir p.pair.direction Direction.yesToNo)
+        (List.filter (fun p => ModelResponsePair.isSticky p.pair) pool)).length
+      + (List.filter (fun p => sameDir p.pair.direction Direction.noToYes)
+          (List.filter (fun p => ModelResponsePair.isSticky p.pair) pool)).length
+      = (List.filter (fun p => ModelResponsePair.isSticky p.pair) pool).length := by
+  have h := filter_complement
+    (fun p : PoolItem => sameDir p.pair.direction Direction.yesToNo)
+    (List.filter (fun p => ModelResponsePair.isSticky p.pair) pool)
+  have hEq : (List.filter (fun p => ModelResponsePair.isSticky p.pair) pool).filter
+        (fun x => !(sameDir x.pair.direction Direction.yesToNo))
+      = List.filter (fun p => sameDir p.pair.direction Direction.noToYes)
+          (List.filter (fun p => ModelResponsePair.isSticky p.pair) pool) := by
+    refine List.filter_congr (fun x _ => ?_)
+    simp [sameDir_no_compl x.pair.direction]
+  rw [hEq] at h
+  exact h
+
+/-- **Directional decomposition of the strict count.** -/
+theorem strictNum_cells (pool : List PoolItem) :
+    (List.filter (fun p => sameDir p.pair.direction Direction.yesToNo)
+        (List.filter (fun p => p.pair.strictlyResponsive) pool)).length
+      + (List.filter (fun p => sameDir p.pair.direction Direction.noToYes)
+          (List.filter (fun p => p.pair.strictlyResponsive) pool)).length
+      = (List.filter (fun p => p.pair.strictlyResponsive) pool).length := by
+  have h := filter_complement
+    (fun p : PoolItem => sameDir p.pair.direction Direction.yesToNo)
+    (List.filter (fun p => p.pair.strictlyResponsive) pool)
+  have hEq : (List.filter (fun p => p.pair.strictlyResponsive) pool).filter
+        (fun x => !(sameDir x.pair.direction Direction.yesToNo))
+      = List.filter (fun p => sameDir p.pair.direction Direction.noToYes)
+          (List.filter (fun p => p.pair.strictlyResponsive) pool) := by
+    refine List.filter_congr (fun x _ => ?_)
+    simp [sameDir_no_compl x.pair.direction]
+  rw [hEq] at h
+  exact h
+
+/-- **Directional decomposition of the incidental count.** -/
+theorem incidentalNum_cells (pool : List PoolItem) :
+    (List.filter (fun p => sameDir p.pair.direction Direction.yesToNo)
+        (List.filter (fun p => p.pair.incidentallyCorrect) pool)).length
+      + (List.filter (fun p => sameDir p.pair.direction Direction.noToYes)
+          (List.filter (fun p => p.pair.incidentallyCorrect) pool)).length
+      = (List.filter (fun p => p.pair.incidentallyCorrect) pool).length := by
+  have h := filter_complement
+    (fun p : PoolItem => sameDir p.pair.direction Direction.yesToNo)
+    (List.filter (fun p => p.pair.incidentallyCorrect) pool)
+  have hEq : (List.filter (fun p => p.pair.incidentallyCorrect) pool).filter
+        (fun x => !(sameDir x.pair.direction Direction.yesToNo))
+      = List.filter (fun p => sameDir p.pair.direction Direction.noToYes)
+          (List.filter (fun p => p.pair.incidentallyCorrect) pool) := by
+    refine List.filter_congr (fun x _ => ?_)
+    simp [sameDir_no_compl x.pair.direction]
+  rw [hEq] at h
+  exact h
 
 end Sejmbench
