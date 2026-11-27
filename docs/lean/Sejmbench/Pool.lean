@@ -1658,4 +1658,159 @@ theorem cellAnswerCount_add (pool : List PoolItem) :
   have h := cellItems_sum pool
   omega
 
+/-! ## Aggregation: pool-level rates as Σnᵢ/Σdᵢ of raw per-cell counters
+
+Per the review's aggregation principle: pool-level metrics aggregate on
+RAW counters and denominators (Σnᵢ/Σdᵢ), never on `Option Rate` values —
+zero-denominator cells keep their information and no `none`-as-zero
+coercion exists anywhere in this substrate. -/
+
+/-- Counter-level bridge: the both-correct counter and the strict
+counter are the same measure (on confirmed-reversal pairs
+`strictlyResponsive` is definitionally `originalCorrect && perturbedCorrect`). -/
+theorem bothCorrectNum_eq_strictNum (rs : ResponseSet) :
+    ResponseSet.bothCorrectNum rs = ResponseSet.strictNum rs := by
+  unfold ResponseSet.bothCorrectNum ResponseSet.strictNum countPairs
+    ModelResponsePair.strictlyResponsive
+  congr 1
+
+/-- **Raw per-cell accuracy numerator** (both answers correct over the
+cell image) — no `Option` wrapper; aggregation never coerces `none`. -/
+def cellBothCorrectNum (pool : List PoolItem) (w : Winner) (b : MarginBand) : Nat :=
+  ResponseSet.bothCorrectNum (cellImage pool w b)
+
+/-- The per-cell accuracy numerator in the filter form consumed by
+`cellPairCount_add` (via the counter-level bridge). -/
+theorem cellBothCorrectNum_filter (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    cellBothCorrectNum pool w b
+      = (List.filter (fun p : PoolItem => p.pair.strictlyResponsive)
+          (cellItems pool w b)).length := by
+  unfold cellBothCorrectNum cellImage
+  rw [bothCorrectNum_eq_strictNum]
+  exact countPairs_map ModelResponsePair.strictlyResponsive (cellItems pool w b)
+
+/-- Σ of the six cells' pair counts — the raw accuracy denominator
+(`N` scale). -/
+def cellSumN (pool : List PoolItem) : Nat :=
+  (cellItems pool Winner.no MarginBand.narrow).length
+    + (cellItems pool Winner.no MarginBand.close).length
+    + (cellItems pool Winner.no MarginBand.wide).length
+    + (cellItems pool Winner.yes MarginBand.narrow).length
+    + (cellItems pool Winner.yes MarginBand.close).length
+    + (cellItems pool Winner.yes MarginBand.wide).length
+
+/-- Σ of the six cells' raw accuracy numerators. -/
+def cellSumBothCorrect (pool : List PoolItem) : Nat :=
+  cellBothCorrectNum pool Winner.no MarginBand.narrow
+    + cellBothCorrectNum pool Winner.no MarginBand.close
+    + cellBothCorrectNum pool Winner.no MarginBand.wide
+    + cellBothCorrectNum pool Winner.yes MarginBand.narrow
+    + cellBothCorrectNum pool Winner.yes MarginBand.close
+    + cellBothCorrectNum pool Winner.yes MarginBand.wide
+
+theorem cellSumN_add (pool : List PoolItem) :
+    cellSumN pool = pool.length :=
+  cellN_add pool
+
+theorem cellSumBothCorrect_add (pool : List PoolItem) :
+    cellSumBothCorrect pool = ResponseSet.strictNum (PoolItem.toResponseSet pool) := by
+  unfold cellSumBothCorrect
+  rw [cellBothCorrectNum_filter, cellBothCorrectNum_filter, cellBothCorrectNum_filter,
+      cellBothCorrectNum_filter, cellBothCorrectNum_filter, cellBothCorrectNum_filter]
+  exact (cellPairCount_add (fun p : PoolItem => p.pair.strictlyResponsive) pool).trans
+    (strictNum_eq_responseSet pool)
+
+/-- **The Σnᵢ/Σdᵢ aggregate of the per-cell accuracy counters**, built
+on raw counters. `none` iff the pool is empty — the same undefinedness
+as the pool-level metric, no coercion. -/
+def accuracyAgg (pool : List PoolItem) : Option Rate :=
+  if cellSumN pool = 0 then none
+  else some { num := cellSumBothCorrect pool, den := cellSumN pool }
+
+/-- **Aggregation (accuracy)**: the pool-level accuracy IS the Σnᵢ/Σdᵢ
+fraction of the raw per-cell counters. -/
+theorem accuracy_agg (pool : List PoolItem) :
+    ResponseSet.accuracy (PoolItem.toResponseSet pool) = accuracyAgg pool := by
+  unfold ResponseSet.accuracy accuracyAgg
+  rw [bothCorrectNum_eq_strictNum, cellSumBothCorrect_add, cellSumN_add]
+  have hN : (PoolItem.toResponseSet pool).N = pool.length := by
+    simp [ResponseSet.N, PoolItem.toResponseSet]
+  rw [hN]
+
+/-- `countAnswers` of a pool's image = the two original-side and
+perturbed-side filter counts (the map form consumed by
+`cellOrigCount_add` / `cellPertCount_add`). -/
+theorem countAnswers_map (g : ModelAnswer → Bool) (pool : List PoolItem) :
+    countAnswers (PoolItem.toResponseSet pool) g
+      = (pool.filter (fun p : PoolItem => g p.pair.originalAnswer)).length
+        + (pool.filter (fun p : PoolItem => g p.pair.perturbedAnswer)).length := by
+  unfold countAnswers PoolItem.toResponseSet
+  rw [filter_map_pair, List.length_map, filter_map_pair, List.length_map]
+
+/-- **Raw per-cell coverage numerator** (decisive answer slots in the
+cell image) — no `Option` wrapper. -/
+def cellCoverageNum (pool : List PoolItem) (w : Winner) (b : MarginBand) : Nat :=
+  ResponseSet.coverageNum (cellImage pool w b)
+
+/-- The per-cell coverage numerator in the two-side filter form. -/
+theorem cellCoverageNum_filter (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    cellCoverageNum pool w b
+      = ((cellItems pool w b).filter
+          (fun p : PoolItem => ModelAnswer.decisive p.pair.originalAnswer)).length
+        + ((cellItems pool w b).filter
+          (fun p : PoolItem => ModelAnswer.decisive p.pair.perturbedAnswer)).length :=
+  countAnswers_map ModelAnswer.decisive (cellItems pool w b)
+
+/-- Σ of the six cells' raw coverage numerators. -/
+def cellSumCoverage (pool : List PoolItem) : Nat :=
+  cellCoverageNum pool Winner.no MarginBand.narrow
+    + cellCoverageNum pool Winner.no MarginBand.close
+    + cellCoverageNum pool Winner.no MarginBand.wide
+    + cellCoverageNum pool Winner.yes MarginBand.narrow
+    + cellCoverageNum pool Winner.yes MarginBand.close
+    + cellCoverageNum pool Winner.yes MarginBand.wide
+
+/-- Σ of the six cells' answer-slot counts — the raw coverage
+denominator (the `2N` scale). -/
+def cellSumAnswer (pool : List PoolItem) : Nat :=
+  cellAnswerCount pool Winner.no MarginBand.narrow
+    + cellAnswerCount pool Winner.no MarginBand.close
+    + cellAnswerCount pool Winner.no MarginBand.wide
+    + cellAnswerCount pool Winner.yes MarginBand.narrow
+    + cellAnswerCount pool Winner.yes MarginBand.close
+    + cellAnswerCount pool Winner.yes MarginBand.wide
+
+theorem cellSumAnswer_add (pool : List PoolItem) :
+    cellSumAnswer pool = 2 * pool.length :=
+  cellAnswerCount_add pool
+
+theorem cellSumCoverage_add (pool : List PoolItem) :
+    cellSumCoverage pool = ResponseSet.coverageNum (PoolItem.toResponseSet pool) := by
+  unfold cellSumCoverage
+  rw [cellCoverageNum_filter, cellCoverageNum_filter, cellCoverageNum_filter,
+      cellCoverageNum_filter, cellCoverageNum_filter, cellCoverageNum_filter]
+  have hrhs : ResponseSet.coverageNum (PoolItem.toResponseSet pool)
+      = (pool.filter (fun p : PoolItem => ModelAnswer.decisive p.pair.originalAnswer)).length
+        + (pool.filter (fun p : PoolItem => ModelAnswer.decisive p.pair.perturbedAnswer)).length :=
+    countAnswers_map ModelAnswer.decisive pool
+  rw [hrhs]
+  have ho := cellOrigCount_add ModelAnswer.decisive pool
+  have hp := cellPertCount_add ModelAnswer.decisive pool
+  omega
+
+/-- **The Σnᵢ/Σdᵢ aggregate of the per-cell coverage counters** (raw). -/
+def coverageAgg (pool : List PoolItem) : Rate :=
+  { num := cellSumCoverage pool, den := cellSumAnswer pool }
+
+/-- **Aggregation (coverage)**: the pool-level coverage IS the Σnᵢ/Σdᵢ
+fraction of the raw per-cell counters (denominator the `2N` scale,
+via `cellAnswerCount_add`). -/
+theorem coverage_agg (pool : List PoolItem) :
+    ResponseSet.coverage (PoolItem.toResponseSet pool) = coverageAgg pool := by
+  unfold ResponseSet.coverage coverageAgg
+  rw [cellSumCoverage_add, cellSumAnswer_add]
+  have h2 : (PoolItem.toResponseSet pool).nAnswers = 2 * pool.length := by
+    simp [ResponseSet.nAnswers, PoolItem.toResponseSet]
+  rw [h2]
+
 end Sejmbench
