@@ -913,4 +913,131 @@ theorem incidentalNum_cells (pool : List PoolItem) :
   rw [hEq] at h
   exact h
 
+
+/-! ## The bridge: PoolItem → ResponseSet -/
+
+/-- The response-set image of a pool: the pairs, forgetting itemIds. -/
+def PoolItem.toResponseSet (pool : List PoolItem) : ResponseSet :=
+  pool.map PoolItem.pair
+
+/-- The direction slice of a pool. -/
+def dirSlice (d : Direction) (pool : List PoolItem) : List PoolItem :=
+  pool.filter (fun p => sameDir p.pair.direction d)
+
+/-- Filtering after mapping to pairs = mapping the filtered pool. -/
+theorem filter_map_pair (Q : ModelResponsePair → Bool) (pool : List PoolItem) :
+    ((pool.map PoolItem.pair).filter Q) = (pool.filter (fun p => Q p.pair)).map PoolItem.pair := by
+  induction pool with
+  | nil => simp
+  | cons p rest ih =>
+    by_cases h : Q p.pair = true
+    · simp [h, ih]
+    · simp [h, ih]
+
+/-- Pair-counter of the image = filter count of the pool. -/
+theorem countPairs_map (Q : ModelResponsePair → Bool) (pool : List PoolItem) :
+    countPairs (PoolItem.toResponseSet pool) Q = (pool.filter (fun p => Q p.pair)).length := by
+  unfold countPairs PoolItem.toResponseSet
+  rw [filter_map_pair, List.length_map]
+
+/-- **Bridge (sticky)**: the pool's sticky filter count is the sticky
+counter of the response-set image. -/
+theorem stickyNum_eq_responseSet (pool : List PoolItem) :
+    (pool.filter (fun p => ModelResponsePair.isSticky p.pair)).length
+      = ResponseSet.stickyNum (PoolItem.toResponseSet pool) :=
+  (countPairs_map ModelResponsePair.isSticky pool).symm
+
+/-- **Bridge (strict)**. -/
+theorem strictNum_eq_responseSet (pool : List PoolItem) :
+    (pool.filter (fun p => p.pair.strictlyResponsive)).length
+      = ResponseSet.strictNum (PoolItem.toResponseSet pool) :=
+  (countPairs_map ModelResponsePair.strictlyResponsive pool).symm
+
+/-- **Bridge (incidental)**. -/
+theorem incidentalNum_eq_responseSet (pool : List PoolItem) :
+    (pool.filter (fun p => p.pair.incidentallyCorrect)).length
+      = ResponseSet.incidentalNum (PoolItem.toResponseSet pool) :=
+  (countPairs_map ModelResponsePair.incidentallyCorrect pool).symm
+
+/-- **Directional decomposition of the sticky counter at the
+ResponseSet level** — via `stickyNum_cells` and the bridge. -/
+theorem stickyNum_dir_decomp (pool : List PoolItem) :
+    ResponseSet.stickyNum (PoolItem.toResponseSet pool)
+      = ResponseSet.stickyNum (PoolItem.toResponseSet (dirSlice Direction.yesToNo pool))
+        + ResponseSet.stickyNum (PoolItem.toResponseSet (dirSlice Direction.noToYes pool)) := by
+  have h1 : ResponseSet.stickyNum (PoolItem.toResponseSet pool)
+      = (pool.filter (fun p => ModelResponsePair.isSticky p.pair)).length :=
+    (stickyNum_eq_responseSet pool).symm
+  rw [h1]
+  rw [← stickyNum_eq_responseSet (dirSlice Direction.yesToNo pool),
+      ← stickyNum_eq_responseSet (dirSlice Direction.noToYes pool)]
+  have h2 : ((dirSlice Direction.yesToNo pool).filter
+        (fun p => ModelResponsePair.isSticky p.pair)).length
+      = (List.filter (fun p => sameDir p.pair.direction Direction.yesToNo)
+          (List.filter (fun p => ModelResponsePair.isSticky p.pair) pool)).length := by
+    unfold dirSlice
+    rw [filter_filter_comm]
+  have h3 : ((dirSlice Direction.noToYes pool).filter
+        (fun p => ModelResponsePair.isSticky p.pair)).length
+      = (List.filter (fun p => sameDir p.pair.direction Direction.noToYes)
+          (List.filter (fun p => ModelResponsePair.isSticky p.pair) pool)).length := by
+    unfold dirSlice
+    rw [filter_filter_comm]
+  rw [h2, h3]
+  exact (stickyNum_cells pool).symm
+
+/-- **Directional decomposition of the strict counter at the
+ResponseSet level.** -/
+theorem strictNum_dir_decomp (pool : List PoolItem) :
+    ResponseSet.strictNum (PoolItem.toResponseSet pool)
+      = ResponseSet.strictNum (PoolItem.toResponseSet (dirSlice Direction.yesToNo pool))
+        + ResponseSet.strictNum (PoolItem.toResponseSet (dirSlice Direction.noToYes pool)) := by
+  have h1 : ResponseSet.strictNum (PoolItem.toResponseSet pool)
+      = (pool.filter (fun p => p.pair.strictlyResponsive)).length :=
+    (strictNum_eq_responseSet pool).symm
+  rw [h1]
+  rw [← strictNum_eq_responseSet (dirSlice Direction.yesToNo pool),
+      ← strictNum_eq_responseSet (dirSlice Direction.noToYes pool)]
+  have h2 : ((dirSlice Direction.yesToNo pool).filter
+        (fun p => p.pair.strictlyResponsive)).length
+      = (List.filter (fun p => sameDir p.pair.direction Direction.yesToNo)
+          (List.filter (fun p => p.pair.strictlyResponsive) pool)).length := by
+    unfold dirSlice
+    rw [filter_filter_comm]
+  have h3 : ((dirSlice Direction.noToYes pool).filter
+        (fun p => p.pair.strictlyResponsive)).length
+      = (List.filter (fun p => sameDir p.pair.direction Direction.noToYes)
+          (List.filter (fun p => p.pair.strictlyResponsive) pool)).length := by
+    unfold dirSlice
+    rw [filter_filter_comm]
+  rw [h2, h3]
+  exact (strictNum_cells pool).symm
+
+/-- **Directional decomposition of the incidental counter at the
+ResponseSet level.** -/
+theorem incidentalNum_dir_decomp (pool : List PoolItem) :
+    ResponseSet.incidentalNum (PoolItem.toResponseSet pool)
+      = ResponseSet.incidentalNum (PoolItem.toResponseSet (dirSlice Direction.yesToNo pool))
+        + ResponseSet.incidentalNum (PoolItem.toResponseSet (dirSlice Direction.noToYes pool)) := by
+  have h1 : ResponseSet.incidentalNum (PoolItem.toResponseSet pool)
+      = (pool.filter (fun p => p.pair.incidentallyCorrect)).length :=
+    (incidentalNum_eq_responseSet pool).symm
+  rw [h1]
+  rw [← incidentalNum_eq_responseSet (dirSlice Direction.yesToNo pool),
+      ← incidentalNum_eq_responseSet (dirSlice Direction.noToYes pool)]
+  have h2 : ((dirSlice Direction.yesToNo pool).filter
+        (fun p => p.pair.incidentallyCorrect)).length
+      = (List.filter (fun p => sameDir p.pair.direction Direction.yesToNo)
+          (List.filter (fun p => p.pair.incidentallyCorrect) pool)).length := by
+    unfold dirSlice
+    rw [filter_filter_comm]
+  have h3 : ((dirSlice Direction.noToYes pool).filter
+        (fun p => p.pair.incidentallyCorrect)).length
+      = (List.filter (fun p => sameDir p.pair.direction Direction.noToYes)
+          (List.filter (fun p => p.pair.incidentallyCorrect) pool)).length := by
+    unfold dirSlice
+    rw [filter_filter_comm]
+  rw [h2, h3]
+  exact (incidentalNum_cells pool).symm
+
 end Sejmbench
