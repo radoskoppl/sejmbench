@@ -940,8 +940,7 @@ theorem countPairs_map (Q : ModelResponsePair → Bool) (pool : List PoolItem) :
   unfold countPairs PoolItem.toResponseSet
   rw [filter_map_pair, List.length_map]
 
-/-- **Bridge (sticky)**: the pool's sticky filter count is the sticky
-counter of the response-set image. -/
+/-- **Bridge (sticky)**. -/
 theorem stickyNum_eq_responseSet (pool : List PoolItem) :
     (pool.filter (fun p => ModelResponsePair.isSticky p.pair)).length
       = ResponseSet.stickyNum (PoolItem.toResponseSet pool) :=
@@ -960,7 +959,7 @@ theorem incidentalNum_eq_responseSet (pool : List PoolItem) :
   (countPairs_map ModelResponsePair.incidentallyCorrect pool).symm
 
 /-- **Directional decomposition of the sticky counter at the
-ResponseSet level** — via `stickyNum_cells` and the bridge. -/
+ResponseSet level.** -/
 theorem stickyNum_dir_decomp (pool : List PoolItem) :
     ResponseSet.stickyNum (PoolItem.toResponseSet pool)
       = ResponseSet.stickyNum (PoolItem.toResponseSet (dirSlice Direction.yesToNo pool))
@@ -1040,7 +1039,6 @@ theorem incidentalNum_dir_decomp (pool : List PoolItem) :
   rw [h2, h3]
   exact (incidentalNum_cells pool).symm
 
-
 /-! ## Cells as item lists (the 6 achievable cells) -/
 
 /-- The direction corresponding to a perturbed GT (the inverse map of
@@ -1090,8 +1088,6 @@ def cellOrigCount (pool : List PoolItem) (w : Winner) (b : MarginBand) (a : Mode
 def cellPertCount (pool : List PoolItem) (w : Winner) (b : MarginBand) (a : ModelAnswer) : Nat :=
   ((cellItems pool w b).filter (poolPert a)).length
 
-/-! ## Per-cell summation -/
-
 /-- **The six achievable cells exhaust the pool** (item-list form). -/
 theorem cellItems_sum (pool : List PoolItem) :
     (cellItems pool Winner.no MarginBand.narrow).length
@@ -1117,8 +1113,6 @@ theorem cellAnswerCount_sum (pool : List PoolItem) :
   unfold cellAnswerCount
   have h := cellItems_sum pool
   omega
-
-/-! ## Per-cell answer accounting (original / perturbed, 5-way each) -/
 
 /-- Within a cell, the five original answers exhaust the cell. -/
 theorem cellOrig_fiveWay (pool : List PoolItem) (w : Winner) (b : MarginBand) :
@@ -1152,7 +1146,6 @@ theorem cellAnswerCount_eq (pool : List PoolItem) (w : Winner) (b : MarginBand) 
   rw [cellOrig_fiveWay, cellPert_fiveWay]
   unfold cellAnswerCount
   omega
-
 
 /-! ## Per-cell metrics (over the cell image) -/
 
@@ -1292,5 +1285,210 @@ theorem cellIncidental_num_le_den (pool : List PoolItem) (w : Winner) (b : Margi
     injection hr with hEq
     subst hEq
     exact ResponseSet.incidentalNum_le (cellImage pool w b)
+
+/-! ## The accuracy ≡ unconditional-strict bridge -/
+
+/-- **`cellAccuracy` and `cellStrictUnconditional` are the same
+measure**: on confirmed-reversal pairs, `strictlyResponsive` is
+definitionally `originalCorrect && perturbedCorrect` — the accuracy
+counter. Both are `none` exactly when the cell is empty. Prevents
+reporting one number as two independent estimands. -/
+theorem cellAccuracy_eq_cellStrictUnconditional (pool : List PoolItem)
+    (w : Winner) (b : MarginBand) :
+    cellAccuracy pool w b = cellStrictUnconditional pool w b := by
+  have h : ResponseSet.bothCorrectNum (cellImage pool w b)
+      = ResponseSet.strictNum (cellImage pool w b) := by
+    unfold ResponseSet.bothCorrectNum ResponseSet.strictNum countPairs
+      ModelResponsePair.strictlyResponsive
+    congr 1
+  simp only [cellAccuracy, cellStrictUnconditional, ResponseSet.accuracy,
+    ResponseSet.strictUnconditional, h]
+
+/-! ## Additivity across the six achievable cells -/
+
+/-- The perturbed-GT slice of a pool as an item list. -/
+def gtItems (pool : List PoolItem) (w : Winner) : List PoolItem :=
+  pool.filter (fun p => sameGT p.pair.perturbedGT w)
+
+/-- On a perturbed-GT slice, the `directionOf w` direction predicate
+is trivially true (proved from `direction_eq_directionOf`). -/
+theorem dir_true_on_slice (pool : List PoolItem) (w : Winner) :
+    ∀ p ∈ pool.filter (fun q : PoolItem => sameGT q.pair.perturbedGT w),
+      sameDir p.pair.direction (directionOf w) = true := by
+  intro p hp
+  rcases List.mem_filter.mp hp with ⟨_, hgt⟩
+  have hd : p.pair.direction = directionOf p.pair.perturbedGT :=
+    direction_eq_directionOf p.pair
+  rw [hd]
+  cases hw : w with
+  | yes =>
+      rw [hw] at hgt
+      have hsub : p.pair.perturbedGT = Winner.yes := by
+        cases hp2 : p.pair.perturbedGT with
+        | yes => rfl
+        | no => simp [sameGT, hp2] at hgt
+      rw [hsub]
+      simp [directionOf, sameDir]
+  | no =>
+      rw [hw] at hgt
+      have hsub : p.pair.perturbedGT = Winner.no := by
+        cases hp2 : p.pair.perturbedGT with
+        | yes => simp [sameGT, hp2] at hgt
+        | no => rfl
+      rw [hsub]
+      simp [directionOf, sameDir]
+
+/-- The dir filter is vacuous on the Q-filtered perturbed-GT slice
+(gtItems unfolded form). -/
+theorem filter_dir_vacuous (pool : List PoolItem) (w : Winner) (Q : PoolItem → Bool) :
+    (List.filter Q (pool.filter (fun p : PoolItem => sameGT p.pair.perturbedGT w))).filter
+        (fun p => sameDir p.pair.direction (directionOf w))
+      = List.filter Q (pool.filter (fun p : PoolItem => sameGT p.pair.perturbedGT w)) := by
+  refine List.filter_eq_self.mpr (fun x hx => ?_)
+  rcases List.mem_filter.mp hx with ⟨hx1, _⟩
+  rcases List.mem_filter.mp hx1 with ⟨hxpool, hxgt⟩
+  exact dir_true_on_slice pool w x (List.mem_filter.mpr ⟨hxpool, hxgt⟩)
+
+/-- Any pool predicate's count splits over the two perturbed-GT
+classes. The pointwise core of every additivity theorem below. -/
+theorem count_split_gt (Q : PoolItem → Bool) (pool : List PoolItem) :
+    (List.filter Q (gtItems pool Winner.yes)).length
+      + (List.filter Q (gtItems pool Winner.no)).length
+      = (pool.filter Q).length := by
+  have h := filter_complement
+    (fun p : PoolItem => sameGT p.pair.perturbedGT Winner.yes)
+    (pool.filter Q)
+  have hEq : (pool.filter Q).filter
+        (fun x => !(sameGT x.pair.perturbedGT Winner.yes))
+      = (pool.filter Q).filter (fun p => sameGT p.pair.perturbedGT Winner.no) := by
+    refine List.filter_congr (fun x _ => ?_)
+    exact sameGT_no_compl x.pair.perturbedGT
+  rw [hEq] at h
+  simp only [gtItems]
+  rw [filter_filter_comm Q (fun p : PoolItem => sameGT p.pair.perturbedGT Winner.yes) pool,
+      filter_filter_comm Q (fun p : PoolItem => sameGT p.pair.perturbedGT Winner.no) pool]
+  exact h
+
+/-- The dir filter is vacuous on the Q-filtered perturbed-GT slice
+(list level, dir-outer form). -/
+theorem filter_dir_vacuous_list (pool : List PoolItem) (w : Winner) (Q : PoolItem → Bool) :
+    (List.filter (fun p => sameDir p.pair.direction (directionOf w))
+        (List.filter Q (pool.filter (fun p : PoolItem => sameGT p.pair.perturbedGT w))))
+      = (List.filter Q (pool.filter (fun p : PoolItem => sameGT p.pair.perturbedGT w))) := by
+  refine List.filter_eq_self.mpr (fun x hx => ?_)
+  rcases List.mem_filter.mp hx with ⟨h1, _⟩
+  rcases List.mem_filter.mp h1 with ⟨h0, hgt⟩
+  exact dir_true_on_slice pool w x (List.mem_filter.mpr ⟨h0, hgt⟩)
+
+/-- The dir filter is vacuous on the Q-filtered perturbed-GT slice
+(dir-outer form). -/
+theorem filter_dir_vacuous_outer (pool : List PoolItem) (w : Winner) (Q : PoolItem → Bool) :
+    (List.filter (fun p => sameDir p.pair.direction (directionOf w))
+        (List.filter Q (pool.filter (fun p : PoolItem => sameGT p.pair.perturbedGT w)))).length
+      = (List.filter Q (pool.filter (fun p : PoolItem => sameGT p.pair.perturbedGT w))).length := by
+  congr 1
+  exact List.filter_eq_self.mpr (fun x hx => by
+    rcases List.mem_filter.mp hx with ⟨h1, _⟩
+    rcases List.mem_filter.mp h1 with ⟨h0, hgt⟩
+    exact dir_true_on_slice pool w x (List.mem_filter.mpr ⟨h0, hgt⟩))
+
+/-- **Additivity (N scale)**: any pair-level predicate counter over the
+pool is the sum of its six per-cell counters (the band slices of each
+perturbed-GT class). -/
+theorem cellPairCount_add (Q : PoolItem → Bool) (pool : List PoolItem) :
+    (List.filter Q (cellItems pool Winner.no MarginBand.narrow)).length
+      + (List.filter Q (cellItems pool Winner.no MarginBand.close)).length
+      + (List.filter Q (cellItems pool Winner.no MarginBand.wide)).length
+      + (List.filter Q (cellItems pool Winner.yes MarginBand.narrow)).length
+      + (List.filter Q (cellItems pool Winner.yes MarginBand.close)).length
+      + (List.filter Q (cellItems pool Winner.yes MarginBand.wide)).length
+      = (pool.filter Q).length := by
+  have hy := filter_split3
+    (fun p : PoolItem => sameBand p.band MarginBand.narrow)
+    (fun p : PoolItem => sameBand p.band MarginBand.close)
+    (fun p : PoolItem => sameBand p.band MarginBand.wide)
+    (fun p => (sameBand_trichotomy p.band).1)
+    (fun p => (sameBand_trichotomy p.band).2.1)
+    (fun p => (sameBand_trichotomy p.band).2.2.1)
+    (fun p => (sameBand_trichotomy p.band).2.2.2)
+    (gtItems pool Winner.yes)
+  have hno := filter_split3
+    (fun p : PoolItem => sameBand p.band MarginBand.narrow)
+    (fun p : PoolItem => sameBand p.band MarginBand.close)
+    (fun p : PoolItem => sameBand p.band MarginBand.wide)
+    (fun p => (sameBand_trichotomy p.band).1)
+    (fun p => (sameBand_trichotomy p.band).2.1)
+    (fun p => (sameBand_trichotomy p.band).2.2.1)
+    (fun p => (sameBand_trichotomy p.band).2.2.2)
+    (gtItems pool Winner.no)
+  have hsum := count_split_gt Q pool
+  have h1 : (List.filter Q (cellItems pool Winner.no MarginBand.narrow)).length
+      = (List.filter (fun p : PoolItem => sameBand p.band MarginBand.narrow)
+          (List.filter Q (gtItems pool Winner.no))).length := by
+    unfold cellItems
+    rw [filter_filter_comm Q (fun p : PoolItem => sameBand p.band MarginBand.narrow),
+        filter_filter_comm Q (fun p : PoolItem => sameDir p.pair.direction (directionOf Winner.no)),
+        filter_dir_vacuous_list pool Winner.no Q]
+    rfl
+  have h2 : (List.filter Q (cellItems pool Winner.no MarginBand.close)).length
+      = (List.filter (fun p : PoolItem => sameBand p.band MarginBand.close)
+          (List.filter Q (gtItems pool Winner.no))).length := by
+    unfold cellItems
+    rw [filter_filter_comm Q (fun p : PoolItem => sameBand p.band MarginBand.close),
+        filter_filter_comm Q (fun p : PoolItem => sameDir p.pair.direction (directionOf Winner.no)),
+        filter_dir_vacuous_list pool Winner.no Q]
+    rfl
+  have h3 : (List.filter Q (cellItems pool Winner.no MarginBand.wide)).length
+      = (List.filter (fun p : PoolItem => sameBand p.band MarginBand.wide)
+          (List.filter Q (gtItems pool Winner.no))).length := by
+    unfold cellItems
+    rw [filter_filter_comm Q (fun p : PoolItem => sameBand p.band MarginBand.wide),
+        filter_filter_comm Q (fun p : PoolItem => sameDir p.pair.direction (directionOf Winner.no)),
+        filter_dir_vacuous_list pool Winner.no Q]
+    rfl
+  have h4 : (List.filter Q (cellItems pool Winner.yes MarginBand.narrow)).length
+      = (List.filter (fun p : PoolItem => sameBand p.band MarginBand.narrow)
+          (List.filter Q (gtItems pool Winner.yes))).length := by
+    unfold cellItems
+    rw [filter_filter_comm Q (fun p : PoolItem => sameBand p.band MarginBand.narrow),
+        filter_filter_comm Q (fun p : PoolItem => sameDir p.pair.direction (directionOf Winner.yes)),
+        filter_dir_vacuous_list pool Winner.yes Q]
+    rfl
+  have h5 : (List.filter Q (cellItems pool Winner.yes MarginBand.close)).length
+      = (List.filter (fun p : PoolItem => sameBand p.band MarginBand.close)
+          (List.filter Q (gtItems pool Winner.yes))).length := by
+    unfold cellItems
+    rw [filter_filter_comm Q (fun p : PoolItem => sameBand p.band MarginBand.close),
+        filter_filter_comm Q (fun p : PoolItem => sameDir p.pair.direction (directionOf Winner.yes)),
+        filter_dir_vacuous_list pool Winner.yes Q]
+    rfl
+  have h6 : (List.filter Q (cellItems pool Winner.yes MarginBand.wide)).length
+      = (List.filter (fun p : PoolItem => sameBand p.band MarginBand.wide)
+          (List.filter Q (gtItems pool Winner.yes))).length := by
+    unfold cellItems
+    rw [filter_filter_comm Q (fun p : PoolItem => sameBand p.band MarginBand.wide),
+        filter_filter_comm Q (fun p : PoolItem => sameDir p.pair.direction (directionOf Winner.yes)),
+        filter_dir_vacuous_list pool Winner.yes Q]
+    rfl
+  have qy := filter_split3
+    (fun p : PoolItem => sameBand p.band MarginBand.narrow)
+    (fun p : PoolItem => sameBand p.band MarginBand.close)
+    (fun p : PoolItem => sameBand p.band MarginBand.wide)
+    (fun p => (sameBand_trichotomy p.band).1)
+    (fun p => (sameBand_trichotomy p.band).2.1)
+    (fun p => (sameBand_trichotomy p.band).2.2.1)
+    (fun p => (sameBand_trichotomy p.band).2.2.2)
+    (List.filter Q (gtItems pool Winner.yes))
+  have qno := filter_split3
+    (fun p : PoolItem => sameBand p.band MarginBand.narrow)
+    (fun p : PoolItem => sameBand p.band MarginBand.close)
+    (fun p : PoolItem => sameBand p.band MarginBand.wide)
+    (fun p => (sameBand_trichotomy p.band).1)
+    (fun p => (sameBand_trichotomy p.band).2.1)
+    (fun p => (sameBand_trichotomy p.band).2.2.1)
+    (fun p => (sameBand_trichotomy p.band).2.2.2)
+    (List.filter Q (gtItems pool Winner.no))
+  rw [h1, h2, h3, h4, h5, h6]
+  omega
 
 end Sejmbench
