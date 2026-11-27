@@ -278,9 +278,14 @@ not responsive.) -/
 def ModelResponsePair.strictlyResponsive (r : ModelResponsePair) : Bool :=
   r.originalCorrect && r.perturbedCorrect
 
-/-- **Incidental correctness:** the model was wrong on the original but
-happens to be correct on the perturbed division. Reported separately —
-it must never be merged into responsiveness. -/
+/-- **Incidental correctness:** the model's original answer was NOT
+correct while the perturbed answer is correct. NOTE the precise
+reading: "not correct" includes the non-decisive original answers
+(abstain / refusal / unresolvable all have `originalCorrect = false`),
+not only a wrong decisive answer — the 4-way contingency of #22 keeps
+the full resolution, and `ResponseSet.stickyNum` separates the
+repeat-the-old-answer mode. Reported separately — it must never be
+merged into responsiveness. -/
 def ModelResponsePair.incidentallyCorrect (r : ModelResponsePair) : Bool :=
   !r.originalCorrect && r.perturbedCorrect
 

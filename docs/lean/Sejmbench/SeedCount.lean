@@ -23,9 +23,10 @@ constant — yielding, by specialization:
 * NO → YES: `seedNo_dec_of_eligible`, `seedYes_inc_of_eligible`,
   `seedAbstain_flip_yes_of_eligible`, `nActive_flip_yes_of_eligible`.
 
-**Open (next milestone):** composition with
-`winner_no_of_shift`/`winner_yes_of_shift`, the `flipped_record_indices ↔ S`
-bridge, and the L3 pair structure.
+**Status:** the composition with `winner_no_of_shift` /
+`winner_yes_of_shift` and the `flipped_record_indices ↔ S` bridge are
+proven (`Counterfactual.lean`, `MaskBridge.lean`); the L3 pair layer
+lives in `FlipPair.lean` / `EvaluationMetrics.lean` / `Pool.lean`.
 -/
 
 namespace Sejmbench

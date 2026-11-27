@@ -359,6 +359,33 @@ theorem ResponseSet.bothCorrectNum_le (rs : ResponseSet) :
     rs.bothCorrectNum ≤ rs.N :=
   countPairs_le rs (fun r => r.originalCorrect && r.perturbedCorrect)
 
+/-- Pointwise answer equality (the five constructor pairs). -/
+def ModelAnswer.sameAnswer (a b : ModelAnswer) : Bool :=
+  match a, b with
+  | .yes, .yes => true | .no, .no => true | .abstain, .abstain => true
+  | .refusal, .refusal => true | .unresolvable, .unresolvable => true
+  | _, _ => false
+
+/-- **Stickiness numerator** (a key counterfactual failure mode): the
+model was correct on the original and then REPEATED the very same
+answer after the perturbation — ignoring the input change rather than
+moving to abstain/refusal. A separate counter from `incidentalNum`
+(wrong/non-decisive on original, correct after) and from the
+non-decisive perturbed answers; all three failure modes were previously
+folded into the same region of the contingency table. -/
+def ResponseSet.stickyNum (rs : ResponseSet) : Nat :=
+  countPairs rs (fun r => r.originalCorrect
+    && ModelAnswer.sameAnswer r.perturbedAnswer r.originalAnswer)
+
+/-- Stickiness is a part of original-correctness. -/
+theorem ResponseSet.stickyNum_le_originalCorrectNum (rs : ResponseSet) :
+    rs.stickyNum ≤ rs.originalCorrectNum := by
+  unfold ResponseSet.stickyNum ResponseSet.originalCorrectNum
+  apply countPairs_mono
+  intro r h
+  simp only [Bool.and_eq_true] at h
+  exact h.1
+
 /-- Multiplying each of four counts summing to `D` by `D³` (the product
 of the other three denominators) makes the four fractions share the
 common denominator `D⁴ = D · D³`, and the numerators sum to `D · D³`.
@@ -400,8 +427,9 @@ theorem category_rates_sum_eq_one (rs : ResponseSet) :
 
 /-- **Merging two rates**: given `a.num ≤ a.den` and `b.num ≤ b.den`,
 the pooled rate `(a.num * b.den + b.num * a.den) / (2 * a.den * b.den)`
-is again a genuine frequency. This is the arithmetic fact behind
-`balancedAccuracy`'s averaging step. -/
+is again a genuine frequency. This is the arithmetic fact behind the
+averaging step of `balancedPairSuccess` and
+`balancedPerturbedAccuracy`. -/
 theorem rateMerge_bound (a b : Rate) (ha : a.num ≤ a.den) (hb : b.num ≤ b.den) :
     (Rate.mk (a.num * b.den + b.num * a.den) (2 * a.den * b.den)).num
       ≤ (Rate.mk (a.num * b.den + b.num * a.den) (2 * a.den * b.den)).den := by

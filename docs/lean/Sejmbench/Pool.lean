@@ -316,9 +316,92 @@ theorem gt_cell_sum (pool : List PoolItem) :
   rw [hEq] at h
   omega
 
+/-- Direction is a function of the original GT. -/
+theorem direction_of_originalGT (r : ModelResponsePair) :
+    r.originalGT = match r.direction with
+      | Direction.yesToNo => Winner.yes
+      | Direction.noToYes => Winner.no := by
+  cases hr : r.originalGT with
+  | yes => simp [ModelResponsePair.direction, hr]
+  | no => simp [ModelResponsePair.direction, hr]
+
+/-- The perturbed GT is determined by the direction: the confirmed
+reversal guarantees the two GTs differ (`ReversalPair.hrev`), and a
+`Winner` has exactly two values. -/
+theorem perturbedGT_of_direction (r : ModelResponsePair) :
+    (r.direction = Direction.yesToNo → r.perturbedGT = Winner.no)
+      ∧ (r.direction = Direction.noToYes → r.perturbedGT = Winner.yes) := by
+  constructor
+  · intro hd
+    cases hr : r.originalGT with
+    | yes =>
+        have hne : sumOrigGT r.pair.candidate ≠ sumPertGT r.pair.candidate := r.pair.hrev
+        have ho : sumOrigGT r.pair.candidate = Winner.yes := hr
+        rw [ho] at hne
+        cases hp : r.perturbedGT with
+        | no => rfl
+        | yes => exact absurd hp.symm hne
+    | no =>
+        have hdir : r.direction = Direction.noToYes := by
+          simp [ModelResponsePair.direction, hr]
+        rw [hdir] at hd
+        exact absurd hd (by simp)
+  · intro hd
+    cases hr : r.originalGT with
+    | no =>
+        have hne : sumOrigGT r.pair.candidate ≠ sumPertGT r.pair.candidate := r.pair.hrev
+        have ho : sumOrigGT r.pair.candidate = Winner.no := hr
+        rw [ho] at hne
+        cases hp : r.perturbedGT with
+        | yes => rfl
+        | no => exact absurd hp.symm hne
+    | yes =>
+        have hdir : r.direction = Direction.yesToNo := by
+          simp [ModelResponsePair.direction, hr]
+        rw [hdir] at hd
+        exact absurd hd (by simp)
+
+/-- **Structurally empty cells**: direction and the perturbed GT are in
+bijection on `ModelResponsePair` (both derived from the confirmed
+reversal, whose GTs differ), so the 6 cells pairing `yes` with
+`yesToNo` or `no` with `noToYes` are empty for EVERY pool. -/
+theorem cellCount_zero (pool : List PoolItem) (b : MarginBand) :
+    cellCount pool Winner.yes Direction.yesToNo b = 0
+      ∧ cellCount pool Winner.no Direction.noToYes b = 0 := by
+  constructor
+  · unfold cellCount
+    rw [List.length_eq_zero_iff, List.filter_eq_nil_iff]
+    intro p hp
+    rcases List.mem_filter.mp hp with ⟨h1, h2⟩
+    rcases List.mem_filter.mp h1 with ⟨_, hgt⟩
+    cases hd : p.pair.direction with
+    | yesToNo =>
+        apply absurd hgt
+        intro hc
+        have hpn : p.pair.perturbedGT = Winner.no :=
+          ((perturbedGT_of_direction p.pair).1 hd)
+        rw [hpn] at hc
+        simp [sameGT] at hc
+    | noToYes => simp [sameDir, hd] at h2
+  · unfold cellCount
+    rw [List.length_eq_zero_iff, List.filter_eq_nil_iff]
+    intro p hp
+    rcases List.mem_filter.mp hp with ⟨h1, h2⟩
+    rcases List.mem_filter.mp h1 with ⟨_, hgt⟩
+    cases hd : p.pair.direction with
+    | noToYes =>
+        apply absurd hgt
+        intro hc
+        have hpn : p.pair.perturbedGT = Winner.yes :=
+          ((perturbedGT_of_direction p.pair).2 hd)
+        rw [hpn] at hc
+        simp [sameGT] at hc
+    | yesToNo => simp [sameDir, hd] at h2
+
 /-- **The 12-cell partition is exhaustive**: the twelve cell counts sum
 to the pool size. Composition of `gt_cell_sum` × `dir_cell_sum` ×
-`band_cell_sum`. -/
+`band_cell_sum`. (Six of the twelve are structurally empty — see
+`cellCount_zero` — but the identity holds regardless.) -/
 theorem cellCount_sum (pool : List PoolItem) :
     cellCount pool Winner.yes Direction.yesToNo MarginBand.narrow
       + cellCount pool Winner.yes Direction.yesToNo MarginBand.close
@@ -428,10 +511,73 @@ def poolLeakageGate (pool : List PoolItem) : Bool :=
 
 /-! ## Minimum cell occupancy (independent of the gate) -/
 
-/-- Every cell of the partition holds at least `minS` items. A separate
-condition from the leakage gate: the gate can accept a degenerate pool
-that the minimum-cell condition rejects. -/
+/-- Count of items with perturbed GT `w` within original-margin band `b`. -/
+def gtBandCount (pool : List PoolItem) (w : Winner) (b : MarginBand) : Nat :=
+  ((pool.filter (fun p => sameBand p.band b)).filter
+      (fun p => sameGT p.pair.perturbedGT w)).length
+
+/-- Count of items in original-margin band `b`. -/
+def bandCount (pool : List PoolItem) (b : MarginBand) : Nat :=
+  (pool.filter (fun p => sameBand p.band b)).length
+
+/-- Within a band, the two perturbed-GT classes split the band count. -/
+theorem gtBandCount_split (pool : List PoolItem) (b : MarginBand) :
+    gtBandCount pool Winner.yes b + gtBandCount pool Winner.no b
+      = bandCount pool b := by
+  unfold gtBandCount bandCount
+  have h := filter_complement
+    (fun p : PoolItem => sameGT p.pair.perturbedGT Winner.yes)
+    (pool.filter (fun p => sameBand p.band b))
+  have hEq : (pool.filter (fun p => sameBand p.band b)).filter
+        (fun x => !(sameGT x.pair.perturbedGT Winner.yes))
+      = (pool.filter (fun p => sameBand p.band b)).filter
+        (fun p => sameGT p.pair.perturbedGT Winner.no) := by
+    refine List.filter_congr (fun x _ => ?_)
+    exact sameGT_no_compl x.pair.perturbedGT
+  rw [hEq] at h
+  omega
+
+/-- Per-band leakage check: within each original-margin band, the
+perturbed-GT distribution must also satisfy the gate. Diagnostic
+refinement of `poolLeakageGate`, which controls only the global
+balance (a pool of `narrow → YES` + `wide → NO` passes the global
+check while leaking through band composition). -/
+def bandLeakageGate (pool : List PoolItem) : Bool :=
+  leakageGate (gtBandCount pool Winner.yes MarginBand.narrow)
+      (gtBandCount pool Winner.no MarginBand.narrow)
+    && leakageGate (gtBandCount pool Winner.yes MarginBand.close)
+      (gtBandCount pool Winner.no MarginBand.close)
+    && leakageGate (gtBandCount pool Winner.yes MarginBand.wide)
+      (gtBandCount pool Winner.no MarginBand.wide)
+
+/-- **Minimum cell occupancy over the achievable cells.** Direction and
+the perturbed GT are in bijection on `ModelResponsePair`
+(`perturbedGT_of_direction`), so only the 6 cells
+`(w, directionOf w, b)` can be non-empty; quantifying over all 12
+would make the predicate unsatisfiable for `minS ≥ 1`. -/
 def minCellSize (pool : List PoolItem) (minS : Nat) : Prop :=
-  ∀ (w : Winner) (d : Direction) (b : MarginBand), minS ≤ cellCount pool w d b
+  ∀ (w : Winner) (b : MarginBand),
+    minS ≤ cellCount pool w
+      (match w with | .no => Direction.yesToNo | .yes => Direction.noToYes) b
+
+/-- **The 6-cell partition is exhaustive**: the six achievable cell
+counts sum to the pool size. From the 12-cell identity and the
+structural zeros of `cellCount_zero`. -/
+theorem cellCount6_sum (pool : List PoolItem) :
+    cellCount pool Winner.no Direction.yesToNo MarginBand.narrow
+      + cellCount pool Winner.no Direction.yesToNo MarginBand.close
+      + cellCount pool Winner.no Direction.yesToNo MarginBand.wide
+      + cellCount pool Winner.yes Direction.noToYes MarginBand.narrow
+      + cellCount pool Winner.yes Direction.noToYes MarginBand.close
+      + cellCount pool Winner.yes Direction.noToYes MarginBand.wide
+      = pool.length := by
+  have h12 := cellCount_sum pool
+  have hz1 := (cellCount_zero pool MarginBand.narrow).1
+  have hz2 := (cellCount_zero pool MarginBand.narrow).2
+  have hz3 := (cellCount_zero pool MarginBand.close).1
+  have hz4 := (cellCount_zero pool MarginBand.close).2
+  have hz5 := (cellCount_zero pool MarginBand.wide).1
+  have hz6 := (cellCount_zero pool MarginBand.wide).2
+  omega
 
 end Sejmbench

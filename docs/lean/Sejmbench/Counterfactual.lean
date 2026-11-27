@@ -235,4 +235,18 @@ theorem flip_quota_sufficient (m k : Nat) (hk : k = m / 2 + 1) : 2 * k > m := by
   have hlt : m % 2 < 2 := Nat.mod_lt m (by omega)
   omega
 
+/-- **Quota feasibility** (YES→NO): whenever the original is a strict
+YES majority, the counterfactual quota `⌊margin/2⌋ + 1` is available —
+there are enough winning-side records to flip. The existence mirror of
+`flip_quota_sufficient`. -/
+theorem flip_quota_feasible_yes (d : Division) (h : seedNo d < seedYes d) :
+    (seedYes d - seedNo d) / 2 + 1 ≤ seedYes d := by
+  omega
+
+/-- **Quota feasibility** (NO→YES): whenever the original is a strict
+NO majority, the quota is available on the losing side. -/
+theorem flip_quota_feasible_no (d : Division) (h : seedYes d < seedNo d) :
+    (seedNo d - seedYes d) / 2 + 1 ≤ seedNo d := by
+  omega
+
 end Sejmbench

@@ -43,7 +43,7 @@ types and their ground-truth effect are machine-checked:
 |---|---|
 | `gt_unchanged_by_reorder` | **reorder** (P2): permuting vote records leaves winner, tie flag, method, margin and `n_active` unchanged — the ground truth is a function of the record multiset |
 | `recordCount_relabel` / `isTrack_relabel` | **pseudonymize** (P3): the relabeled division's club partition is the original's transported through the bijection — track membership corresponds label-for-label, so the seed totals computed from the relabeled records are the original's (the composite folding is the pipeline's per-item assertion) |
-| `flip_shift_cons` | **flip** (P1): converting a winning-side YES record of a tracked club to NO moves the totals by exactly `(−1, +1)` — kind changes never move track membership (`isTrack_flip_kind`) |
+| `recordCount_flipFrom` / `isTrack_flipFrom` | **flip** (P1): the per-record flip moves club totals exactly by the shift amount `k = selFrom S off d.length` — kind changes never move track membership |
 | `winner_no_of_shift` | after such a shift by `k`, the winner is `no` exactly when `2·k > seedYes − seedNo` (original winner `yes`) |
 | `winner_yes_of_shift` | mirror: the winner flips to `yes` exactly when `2·k ≥ seedNo − seedYes` — the boundary is inclusive because the exact-boundary case is a TIE and the frozen tie convention resolves it to the `YES` seed |
 | `flip_quota_sufficient` | the spike's quota `k = ⌊margin/2⌋ + 1` meets the strict inequality |

@@ -20,11 +20,12 @@ parameterized by the original division's track predicate `P` and source kind
 r.kind` — the two conditions the seed shifts need), and
 **`nActive_of_seed_shifts`** (algebraic lemma over the explicit shifts).
 
-**Open (next milestone):** `seedYes`/`seedNo` shift lemmas derived from
-`EligibleFlip.sel` + `isTrack_flipFrom` (shift amount
-`k = selFrom S off d.length`), `seedAbstain_flip_of_eligible`, composition
-with `winner_no_of_shift`/`winner_yes_of_shift`, the
-`flipped_record_indices ↔ S` bridge, and the NO→YES specialization.
+**Status:** the shift lemmas `winner_no_of_shift` / `winner_yes_of_shift`
+composition and the index-mask bridge (`MaskBridge.lean`) are proven in
+`Counterfactual.lean` / `MaskBridge.lean`; `seedYes`/`seedNo` shifts
+derived from `EligibleFlip.sel` + `isTrack_flipFrom`, the
+`flipped_record_indices ↔ S` bridge, and the NO→YES specialization
+remain open (tracked in #24).
 
 Split of responsibility: the transformation's *effect* is proved here; the
 *GT recomputation* of the modified division is
