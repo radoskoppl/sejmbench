@@ -358,4 +358,137 @@ theorem nActive_flipFrom_of_cert (d : Division) (S : Nat → Bool) (off : Nat)
   nActive_of_seed_shifts S d off (seed_shifts_of_cert d S off hcert).1
     (seed_shifts_of_cert d S off hcert).2.1 (seed_shifts_of_cert d S off hcert).2.2
 
+/-! ### The opposite direction: NO→YES (`lose := VoteKind.yes`)
+
+The same workhorses specialize: the loss kind `yes` fails `isNoKind`/
+`isAbstainKind` (down-shifts) and satisfies `isYesKind` (up-shift). -/
+
+theorem isYesKind_false_of_isNoKind {k : VoteKind} (h : isNoKind k = true) :
+    isYesKind k = false := by
+  cases k with
+  | yes => simp [isNoKind] at h
+  | no => rfl
+  | abstain => rfl
+  | absent => rfl
+  | noVote => rfl
+
+theorem isAbstainKind_false_of_isNoKind {k : VoteKind} (h : isNoKind k = true) :
+    isAbstainKind k = false := by
+  cases k with
+  | yes => rfl
+  | no => rfl
+  | abstain => simp [isNoKind] at h
+  | absent => rfl
+  | noVote => rfl
+
+/-- **seedNo shift (NO→YES)**: flipping records to `yes` moves the NO seed
+total down by exactly the selected tracked NO records. -/
+theorem seedNo_flipToYes_shift (d : Division) (S : Nat → Bool) (off : Nat) :
+    seedNo (flipFrom d S VoteKind.yes off) + selCount S d isNoKind d off = seedNo d := by
+  unfold seedNo
+  rw [seedFilter_congr_flipFrom]
+  exact tally_flipFrom_shift d d S VoteKind.yes isNoKind off rfl
+
+/-- **seedAbstain shift (NO→YES)**: the ABSTAIN total loses exactly the
+selected tracked ABSTAIN records (none, under the NO→YES certificate). -/
+theorem seedAbstain_flipToYes_shift (d : Division) (S : Nat → Bool) (off : Nat) :
+    seedAbstain (flipFrom d S VoteKind.yes off) + selCount S d isAbstainKind d off
+      = seedAbstain d := by
+  unfold seedAbstain
+  rw [seedFilter_congr_flipFrom]
+  exact tally_flipFrom_shift d d S VoteKind.yes isAbstainKind off rfl
+
+/-- **seedYes shift (NO→YES)**: flipping to `yes` moves the YES seed total up
+by the selected tracked records minus the selected tracked YES records. -/
+theorem seedYes_flipToYes_gain (d : Division) (S : Nat → Bool) (off : Nat) :
+    seedYes (flipFrom d S VoteKind.yes off) + selCount S d isYesKind d off
+      = seedYes d + selCount S d (fun _ => true) d off := by
+  unfold seedYes
+  rw [seedFilter_congr_flipFrom]
+  exact tally_flipFrom_gain d d S VoteKind.yes isYesKind off rfl
+
+/-- Under the NO→YES certificate, the selected tracked NO records are exactly
+the selected positions. -/
+theorem selCount_no_of_cert_no2yes (d : Division) (S : Nat → Bool) (n : Division) (off : Nat)
+    (hcert : EligibleFlip (isTrack d) S isNoKind VoteKind.yes n off) :
+    selCount S d isNoKind n off = selFrom S off (List.length n) := by
+  induction hcert with
+  | nil off => simp [selCount, selFrom]
+  | keep r rest off hs hrest ih => simp [selCount, selFrom, hs, ih]
+  | sel r rest off hs hp hsrc hrest ih =>
+      simp [selCount, selFrom, hs, hp, hsrc, ih]
+
+/-- Under the NO→YES certificate, every selected record is a track of the
+original division — the selected tracked count is the plain selected count. -/
+theorem selCount_all_of_cert_no2yes (d : Division) (S : Nat → Bool) (n : Division) (off : Nat)
+    (hcert : EligibleFlip (isTrack d) S isNoKind VoteKind.yes n off) :
+    selCount S d (fun _ => true) n off = selFrom S off (List.length n) := by
+  induction hcert with
+  | nil off => simp [selCount, selFrom]
+  | keep r rest off hs hrest ih => simp [selCount, selFrom, hs, ih]
+  | sel r rest off hs hp hsrc hrest ih =>
+      simp [selCount, selFrom, hs, hp, ih]
+
+/-- Under the NO→YES certificate, no selected record is a YES record. -/
+theorem selCount_yes_of_cert_no2yes (d : Division) (S : Nat → Bool) (n : Division) (off : Nat)
+    (hcert : EligibleFlip (isTrack d) S isNoKind VoteKind.yes n off) :
+    selCount S d isYesKind n off = 0 := by
+  induction hcert with
+  | nil off => simp [selCount]
+  | keep r rest off hs hrest ih => simp [selCount, hs, ih]
+  | sel r rest off hs hp hsrc hrest ih =>
+      have hyk : isYesKind r.kind = false := isYesKind_false_of_isNoKind hsrc
+      simp [selCount, hs, hp, hyk, ih]
+
+/-- Under the NO→YES certificate, no selected record is an ABSTAIN record. -/
+theorem selCount_abstain_of_cert_no2yes (d : Division) (S : Nat → Bool) (n : Division)
+    (off : Nat) (hcert : EligibleFlip (isTrack d) S isNoKind VoteKind.yes n off) :
+    selCount S d isAbstainKind n off = 0 := by
+  induction hcert with
+  | nil off => simp [selCount]
+  | keep r rest off hs hrest ih => simp [selCount, hs, ih]
+  | sel r rest off hs hp hsrc hrest ih =>
+      have hyk : isAbstainKind r.kind = false := isAbstainKind_false_of_isNoKind hsrc
+      simp [selCount, hs, hp, hyk, ih]
+
+/-- The NO→YES seed-shift shape: mirrored hypothesis contract that the
+certificate must discharge for `nActive` to be invariant. -/
+theorem nActive_of_seed_shifts_no2yes (S : Nat → Bool) (d : Division) (off : Nat)
+    (hshiftNo : seedNo (flipFrom d S VoteKind.yes off) + selFrom S off (List.length d)
+        = seedNo d)
+    (hshiftYes : seedYes (flipFrom d S VoteKind.yes off)
+        = seedYes d + selFrom S off (List.length d))
+    (hab : seedAbstain (flipFrom d S VoteKind.yes off) = seedAbstain d) :
+    nActive (flipFrom d S VoteKind.yes off) = nActive d := by
+  unfold nActive
+  omega
+
+/-- **P0 capstone (NO→YES)**: converting exactly the selected positions (each
+a track of `d` voting NO) to YES moves the seed totals by
+`k = selFrom S off d.length`: `seedNo d' + k = seedNo d`,
+`seedYes d' = seedYes d + k`, `seedAbstain d' = seedAbstain d`. Exactly the
+hypothesis shape `nActive_of_seed_shifts_no2yes` consumes. -/
+theorem seed_shifts_of_cert_no2yes (d : Division) (S : Nat → Bool) (off : Nat)
+    (hcert : EligibleFlip (isTrack d) S isNoKind VoteKind.yes d off) :
+    seedNo (flipFrom d S VoteKind.yes off) + selFrom S off (List.length d) = seedNo d
+      ∧ seedYes (flipFrom d S VoteKind.yes off)
+          = seedYes d + selFrom S off (List.length d)
+      ∧ seedAbstain (flipFrom d S VoteKind.yes off) = seedAbstain d := by
+  have h1 := seedNo_flipToYes_shift d S off
+  have h2 := seedYes_flipToYes_gain d S off
+  have h3 := seedAbstain_flipToYes_shift d S off
+  have hn := selCount_no_of_cert_no2yes d S d off hcert
+  have hy0 := selCount_yes_of_cert_no2yes d S d off hcert
+  have hall := selCount_all_of_cert_no2yes d S d off hcert
+  have hab0 := selCount_abstain_of_cert_no2yes d S d off hcert
+  exact ⟨by omega, by omega, by omega⟩
+
+/-- **nActive is invariant** under the certified NO→YES flip
+(`nActive_of_seed_shifts_no2yes` instantiated by the derived shifts). -/
+theorem nActive_flipFrom_of_cert_no2yes (d : Division) (S : Nat → Bool) (off : Nat)
+    (hcert : EligibleFlip (isTrack d) S isNoKind VoteKind.yes d off) :
+    nActive (flipFrom d S VoteKind.yes off) = nActive d :=
+  nActive_of_seed_shifts_no2yes S d off (seed_shifts_of_cert_no2yes d S off hcert).1
+    (seed_shifts_of_cert_no2yes d S off hcert).2.1 (seed_shifts_of_cert_no2yes d S off hcert).2.2
+
 end Sejmbench
