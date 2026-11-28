@@ -12,7 +12,11 @@ in-place votes[i]["vote"] = lose_vote) with the formal flipFrom:
   flipFrom d (maskOf idxs) lose 0 (transformation agreement);
 * eligibleFlip_of_indices - if every listed index points at an eligible
   record, the derived mask satisfies the EligibleFlip certificate
-  (Python invariant flipped_idx subseteq eligible).
+  (Python invariant flipped_idx subseteq eligible);
+* selectedFrom - the INVERSE direction: the canonical index list of any
+  mask over a window; its length IS selFrom (selectedCount = selFrom),
+  it is Nodup and in-window, the back-derived mask agrees with S on the
+  window, and the flip over the canonical list equals flipFrom.
 -/
 
 namespace Sejmbench
@@ -265,5 +269,185 @@ theorem selFrom_maskOf_eq_length (idxs : List Nat) (n : Nat)
     selFrom (maskOf idxs) 0 n = idxs.length :=
   selFrom_maskOf_window idxs 0 n hNodup (fun i _ => Nat.zero_le i)
     (fun i hi => by have := hRange i hi; omega)
+
+/-! ### The canonical index list of a mask (mask → list direction)
+
+`maskOf` turns a Python index list into a mask; `selectedFrom` is the
+INVERSE: the canonical, increasing index list of the positions of the
+window `[off, off + n)` where the mask is true. This is the
+`selectedIndices` / `List (Fin d.length)` bridge: every element is
+provably in-window (`selectedFrom_bound` — i.e. a valid `Fin` index at
+offset 0), the list is Nodup, and its length IS the mask's count
+`selFrom S off n` — the `selectedCount = selFrom` tie, now for ANY mask
+(the list → mask direction is `selFrom_maskOf_eq_length`). The flip over
+the canonical list agrees with `flipFrom` (`flipFrom_eq_flipAtIndices`),
+and the count is invariant under the list → mask → list round trip. -/
+
+/-- A range-restricted `mapIdx` congruence: the functions are compared
+only on the indices `mapIdx` actually queries. -/
+theorem mapIdx_congr_range {α : Type} (f g : Nat → α → α) (l : List α)
+    (h : ∀ i x, i < l.length → f i x = g i x) : List.mapIdx f l = List.mapIdx g l := by
+  induction l generalizing f g with
+  | nil => rfl
+  | cons x xs ih =>
+      simp only [List.mapIdx_cons]
+      congr 1
+      · exact h 0 x (by simp)
+      · exact ih (fun i y => f (i + 1) y) (fun i y => g (i + 1) y)
+          (fun j y hj => h (j + 1) y (by
+            have hlen : (x :: xs).length = xs.length + 1 := rfl
+            omega))
+
+/-- The canonical index list of the mask `S` over the window
+`[off, off + n)`: the selected positions, increasing. -/
+def selectedFrom (S : Nat → Bool) (off : Nat) : Nat → List Nat
+  | 0 => []
+  | n + 1 => if S off then off :: selectedFrom S (off + 1) n else selectedFrom S (off + 1) n
+
+/-- **`selectedCount = selFrom` (the P1 tie).** The canonical index list
+of the mask has exactly `selFrom S off n` elements — only existing
+records (positions inside the window) are counted. -/
+theorem selectedFrom_length (S : Nat → Bool) (off : Nat) :
+    ∀ n, (selectedFrom S off n).length = selFrom S off n := by
+  intro n
+  induction n generalizing off with
+  | zero => rfl
+  | succ m ih =>
+      by_cases hs : S off = true
+      · rw [selectedFrom, if_pos hs, List.length_cons, selFrom_succ, if_pos hs, ih (off + 1)]
+        omega
+      · rw [selectedFrom, if_neg hs, selFrom_succ, if_neg hs, ih (off + 1)]
+        omega
+
+/-- Every element of the canonical index list lies in the window
+`[off, off + n)` — at offset 0, exactly the `Fin d.length` range bound. -/
+theorem selectedFrom_bound (S : Nat → Bool) (off : Nat) :
+    ∀ n x, x ∈ selectedFrom S off n → off ≤ x ∧ x < off + n := by
+  intro n
+  induction n generalizing off with
+  | zero => intro x h; simp [selectedFrom] at h
+  | succ m ih =>
+      intro x h
+      by_cases hs : S off = true
+      · rw [selectedFrom, if_pos hs, List.mem_cons] at h
+        rcases h with rfl | h2
+        · omega
+        · have h3 := ih (off + 1) x h2
+          omega
+      · rw [selectedFrom, if_neg hs] at h
+        have h3 := ih (off + 1) x h
+        omega
+
+/-- **Membership characterization.** `x` is in the canonical index list
+iff `x` is an in-window position the mask selects. -/
+theorem selectedFrom_mem (S : Nat → Bool) (off : Nat) :
+    ∀ n x, x ∈ selectedFrom S off n ↔ (off ≤ x ∧ x < off + n ∧ S x = true) := by
+  intro n
+  induction n generalizing off with
+  | zero =>
+      intro x
+      have hnil : ¬ (x ∈ selectedFrom S off 0) := by simp [selectedFrom]
+      constructor
+      · intro hmem; exact absurd hmem hnil
+      · intro h
+        have h1 := h.1
+        have h2 := h.2.1
+        omega
+  | succ m ih =>
+      intro x
+      by_cases hs : S off = true
+      · rw [selectedFrom, if_pos hs, List.mem_cons]
+        constructor
+        · rintro (rfl | h2)
+          · exact ⟨by omega, by omega, hs⟩
+          · have h3 := (ih (off + 1) x).mp h2
+            exact ⟨by omega, by omega, h3.2.2⟩
+        · rintro ⟨h1, h2, h3⟩
+          by_cases hxE : x = off
+          · subst hxE; exact Or.inl rfl
+          · exact Or.inr ((ih (off + 1) x).mpr ⟨by omega, by omega, h3⟩)
+      · rw [selectedFrom, if_neg hs]
+        rw [ih (off + 1) x]
+        constructor
+        · rintro ⟨h1, h2, h3⟩
+          exact ⟨by omega, by omega, h3⟩
+        · rintro ⟨h1, h2, h3⟩
+          have h3copy := h3
+          have hne : x ≠ off := by
+            intro heq
+            rw [heq] at h3copy
+            exact hs h3copy
+          exact ⟨by omega, by omega, h3⟩
+
+/-- The canonical index list is Nodup — each step's head `off` is below
+every element of the tail (which lives in `[off + 1, off + 1 + n)`). -/
+theorem selectedFrom_nodup (S : Nat → Bool) (off : Nat) :
+    ∀ n, (selectedFrom S off n).Nodup := by
+  intro n
+  induction n generalizing off with
+  | zero => simp [selectedFrom]
+  | succ m ih =>
+      by_cases hs : S off = true
+      · rw [selectedFrom, if_pos hs, List.nodup_cons]
+        refine ⟨fun hmem => ?_, ih (off + 1)⟩
+        have h3 := selectedFrom_bound S (off + 1) m off hmem
+        omega
+      · rw [selectedFrom, if_neg hs]
+        exact ih (off + 1)
+
+/-- The mask derived BACK from the canonical index list agrees with `S`
+at every in-window position (no information is lost on the window). -/
+theorem maskOf_selectedFrom (S : Nat → Bool) (off : Nat) :
+    ∀ (n j : Nat), off ≤ j → j < off + n → maskOf (selectedFrom S off n) j = S j := by
+  intro n j hLo hHi
+  have hmem : j ∈ selectedFrom S off n ↔ S j = true := by
+    rw [selectedFrom_mem]
+    exact ⟨fun h => h.2.2, fun h => ⟨hLo, hHi, h⟩⟩
+  unfold maskOf
+  by_cases hs : S j = true
+  · simp [hmem, hs]
+  · have hjf : S j = false := by
+      cases h : S j with
+      | true => exact absurd h hs
+      | false => rfl
+    simp [hmem, hjf]
+
+/-- **Transformation agreement (mask → list direction).** The flip over
+the canonical index list IS the certified flip — the mirror of
+`flipAtIndices_eq_flipFrom`, which goes list → mask. Stated at offset 0,
+the form the Python flip uses: `flipAtIndices` tests POSITION indices
+against the absolute-index list, and at offset 0 position = absolute. -/
+theorem flip_eq_flipAtIndices (S : Nat → Bool) (lose : VoteKind) (d : Division) :
+    flip d S lose = flipAtIndices d (selectedFrom S 0 (List.length d)) lose := by
+  have hflip : flip d S lose = flipFrom d S lose 0 := rfl
+  rw [hflip, flipFrom_eq_mapIdx, flipAtIndices]
+  apply mapIdx_congr_range
+  intro i r hi
+  have hmem : i ∈ selectedFrom S 0 (List.length d) ↔ S i = true := by
+    rw [selectedFrom_mem]
+    constructor
+    · rintro ⟨_, h2, h3⟩; exact h3
+    · intro h3; exact ⟨by omega, by have := hi; omega, h3⟩
+  by_cases hs : S i = true
+  · simp [hmem, hs]
+  · have hjf : S i = false := by
+      cases h : S i with
+      | true => exact absurd h hs
+      | false => rfl
+    simp [hmem, hjf]
+
+/-- **Count round-trip.** `selFrom` is invariant under the list → mask →
+list cycle: the canonical index list of any mask yields the same count.
+Together with `selFrom_maskOf_eq_length` (the mask-derived direction)
+this closes the count bridge in both directions. -/
+theorem selFrom_maskOf_selectedFrom (S : Nat → Bool) (n : Nat) :
+    selFrom (maskOf (selectedFrom S 0 n)) 0 n = selFrom S 0 n := by
+  have hnd := selectedFrom_nodup S 0 n
+  have hrange : ∀ i ∈ selectedFrom S 0 n, i < n := by
+    intro i hi
+    have h := selectedFrom_bound S 0 n i hi
+    omega
+  rw [selFrom_maskOf_eq_length _ n hnd hrange]
+  rw [selectedFrom_length]
 
 end Sejmbench
