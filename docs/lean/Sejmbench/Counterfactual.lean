@@ -12,8 +12,10 @@ specification (module `Sejmbench.SeedRule`, CODEBOOK §1–§3):
   `gt_perturbed == gt_original` for reorder items is an instance.
 * **pseudonymize** (P3): applying a label bijection leaves the ground truth
   unchanged — `pseudonymize_correspondence` (per-label counts and track
-  membership correspond through the bijection; the composite ground-truth
-  statement is the pipeline's per-item assertion). The ground truth depends
+  membership correspond through the bijection) and, composite,
+  `gt_unchanged_by_pseudonymize`: the relabeled division's seed totals,
+  tie flag, margin, winner, method and `n_active` are the original's.
+  The ground truth depends
   on the partition of records by club, never on the *names*: a model that
   changes its answer under pseudonymization is not reading the tally.
 * **flip** (P1): converting `k` winning-side records to the losing value
@@ -185,17 +187,86 @@ theorem isTrack_relabel (f g : String → String) (d : Division) (c : String)
 the original's transported through the bijection — for *every* label the
 per-club count and track membership correspond, so the seed totals, tie
 flag, margin and winner the frozen spec computes from `relabel f d` are
-those computed from `d`. The composite statement (all three totals at once,
-then the derived quantities) is asserted per item by the pipeline
-(`cf_build.py` checks `gt_perturbed == gt_original` with
-`seed_rule.compute_metric`); the pointwise facts above are the
-machine-checked core. A model whose answer depends on the *names* rather
+those computed from `d` (indeed the composite `gt_unchanged_by_pseudonymize`
+below proves the derived quantities are the original's). The pointwise facts
+are the machine-checked core; the pipeline additionally asserts
+`gt_perturbed == gt_original` with `seed_rule.compute_metric` per item. A model whose answer depends on the *names* rather
 than the tally fails the spike's P3 arm. -/
 theorem pseudonymize_correspondence (f g : String → String) (d : Division)
     (hgl : ∀ x, g (f x) = x) (hgr : ∀ x, f (g x) = x) (c : String) :
     recordCount (relabel f d) c = recordCount d (g c)
       ∧ isTrack (relabel f d) c = isTrack d (g c) := by
   exact ⟨recordCount_relabel f g d c hgl hgr, isTrack_relabel f g d c hgl hgr⟩
+
+/-! ## Pseudonymize (P3): the ground truth itself is unchanged -/
+
+/-- Filtering a mapped list by `q` counts the same records as filtering the
+original by `q ∘ m` (length form; bare-core route by induction). -/
+theorem filter_length_map (m : Record → Record) (q : Record → Bool) (d : Division) :
+    ((d.map m).filter q).length = (d.filter (fun y => q (m y))).length := by
+  induction d with
+  | nil => rfl
+  | cons r d ih =>
+    by_cases h : q (m r)
+    · simp [List.map_cons, h, ih]
+    · simp [List.map_cons, h, ih]
+
+/-- The tracked-`p` filter count is preserved by relabeling: the filter runs
+over `d.map (relabelF f)`, and pointwise the predicate at the image record
+`relabelF f y` reduces to the original's — track membership transports
+through the bijection (`isTrack_relabel`, the companion `g` pulls the image
+label back), kinds are untouched (`relabelF` changes only `club`). -/
+theorem seedP_relabel (f g : String → String) (d : Division)
+    (hgl : ∀ x, g (f x) = x) (hgr : ∀ x, f (g x) = x) (p : VoteKind → Bool) :
+    ((relabel f d).filter (fun x => isTrack (relabel f d) x.club && p x.kind)).length
+      = (d.filter (fun x => isTrack d x.club && p x.kind)).length := by
+  have key : ∀ y : Record,
+      (fun x => isTrack (relabel f d) x.club && p x.kind) (relabelF f y)
+        = (isTrack d y.club && p y.kind) := by
+    intro y
+    show (isTrack (relabel f d) (f y.club) && p y.kind) = (isTrack d y.club && p y.kind)
+    rw [isTrack_relabel f g d (f y.club) hgl hgr, hgl y.club]
+  calc ((relabel f d).filter (fun x => isTrack (relabel f d) x.club && p x.kind)).length
+      = ((d.map (relabelF f)).filter (fun x => isTrack (relabel f d) x.club && p x.kind)).length := rfl
+    _ = (d.filter (fun y =>
+          (fun x => isTrack (relabel f d) x.club && p x.kind) (relabelF f y))).length :=
+        filter_length_map (relabelF f) (fun x => isTrack (relabel f d) x.club && p x.kind) d
+    _ = (d.filter (fun x => isTrack d x.club && p x.kind)).length := by
+        exact congrArg (fun l : List Record => l.length)
+          (List.filter_congr (p := fun y =>
+            (fun x => isTrack (relabel f d) x.club && p x.kind) (relabelF f y))
+            (q := fun x => isTrack d x.club && p x.kind) (l := d)
+            (fun y _ => key y))
+
+/-- **Pseudonymization leaves the ground truth unchanged** — the composite
+completion of P3: the relabeled division's seed totals, tie flag, margin,
+winner, method and `n_active` are *the original's*, not merely transported.
+The seed filters move through the bijection (`seedP_relabel`); every derived
+quantity is a function of the totals. This is the machine-checked core
+behind the spike's per-item assertion `gt_perturbed == gt_original`: a model
+whose answer changes when club labels are renamed is not reading the tally. -/
+theorem gt_unchanged_by_pseudonymize (f g : String → String) (d : Division)
+    (hgl : ∀ x, g (f x) = x) (hgr : ∀ x, f (g x) = x) :
+    seedYes (relabel f d) = seedYes d
+      ∧ seedNo (relabel f d) = seedNo d
+      ∧ seedAbstain (relabel f d) = seedAbstain d
+      ∧ tieFlag (relabel f d) = tieFlag d
+      ∧ margin (relabel f d) = margin d
+      ∧ winner (relabel f d) = winner d
+      ∧ method (relabel f d) = method d
+      ∧ nActive (relabel f d) = nActive d := by
+  have hy : seedYes (relabel f d) = seedYes d := by
+    unfold seedYes; exact seedP_relabel f g d hgl hgr isYesKind
+  have hn : seedNo (relabel f d) = seedNo d := by
+    unfold seedNo; exact seedP_relabel f g d hgl hgr isNoKind
+  have hab : seedAbstain (relabel f d) = seedAbstain d := by
+    unfold seedAbstain; exact seedP_relabel f g d hgl hgr isAbstainKind
+  refine ⟨hy, hn, hab, ?_, ?_, ?_, ?_, ?_⟩
+  · simp only [tieFlag, hy, hn]
+  · simp only [margin, hy, hn]
+  · simp only [winner, hy, hn]
+  · simp only [method, hy, hn]
+  · simp only [nActive, hy, hn, hab]
 
 /-- **The flip threshold**: when `d`'s seed winner is `yes` and `d'` is `d`
 with `k` winning-side records converted to the losing value
