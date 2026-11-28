@@ -2359,4 +2359,270 @@ theorem balancedPerturbedAccuracy_agg (pool : List PoolItem) :
     · rw [ite_eq_right hY, ite_eq_right hY, ite_eq_left hN, ite_eq_left hN]
     · rw [ite_eq_right hY, ite_eq_right hY, ite_eq_right hN, ite_eq_right hN]
 
+/-! ## Filter/stratification invariance
+
+Item 3 of the review's ordering: the Σnᵢ/Σdᵢ aggregation does not
+depend on where the pool is cut. For any predicate `Q` on pool items (a
+filter or a stratum boundary), every raw aggregate counter over the pool
+is the SUM of the same counter over the `Q`-stratum and its complement,
+so re-aggregating the strata — Σ of the strata's numerators over Σ of
+the strata's denominators — reproduces exactly the pool-level fraction.
+Everything is stated and proved on raw counters; `none` semantics are
+handled only at the aggregate level, where definedness is inherited
+unchanged (no `none`-as-zero coercion). Iterating the two-way statement
+over a finite stratification is immediate: apply it per stratum. -/
+
+/-- Generic length partition: a list splits into the `Q`-selected part
+and its complement. -/
+theorem length_filter_partition {α : Type} (Q : α → Bool) (l : List α) :
+    (l.filter Q).length + (l.filter (fun x => !Q x)).length = l.length := by
+  induction l with
+  | nil => simp
+  | cons a l ih => by_cases h : Q a <;> simp [h] <;> omega
+
+/-- Generic count partition under a cut: the `g`-count of the `Q`-part
+plus the `g`-count of the complement is the `g`-count of the whole. -/
+theorem count_filter_partition {α : Type} (g Q : α → Bool) (l : List α) :
+    ((l.filter Q).filter g).length + ((l.filter (fun x => !Q x)).filter g).length
+      = (l.filter g).length := by
+  rw [filter_filter_comm g Q l, filter_filter_comm g (fun x => !Q x) l]
+  exact length_filter_partition Q (l.filter g)
+
+/-- `cellItems` of a filtered pool is the filtered `cellItems` — the cut
+commutes with all three cell filters. -/
+theorem cellItems_filter (Q : PoolItem → Bool) (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    cellItems (pool.filter Q) w b = (cellItems pool w b).filter Q := by
+  unfold cellItems
+  rw [filter_filter_comm (fun p => sameGT p.pair.perturbedGT w) Q pool,
+      filter_filter_comm (fun p => sameDir p.pair.direction (directionOf w)) Q
+        (pool.filter (fun p => sameGT p.pair.perturbedGT w)),
+      filter_filter_comm (fun p => sameBand p.band b) Q
+        ((pool.filter (fun p => sameGT p.pair.perturbedGT w)).filter
+          (fun p => sameDir p.pair.direction (directionOf w)))]
+
+/-- Per-cell stratification: any `g`-count over a cell of the `Q`-stratum
+plus the same over the complement cell is the `g`-count over the cell. -/
+theorem cellFilter_partition (g Q : PoolItem → Bool) (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    (List.filter g (cellItems (pool.filter Q) w b)).length
+      + (List.filter g (cellItems (pool.filter (fun x => !Q x)) w b)).length
+      = (List.filter g (cellItems pool w b)).length := by
+  rw [cellItems_filter, cellItems_filter]
+  exact count_filter_partition g Q (cellItems pool w b)
+
+/-- **Stratification invariance (six cells, N scale)**: any predicate
+count over the pool splits over any cut, cell by cell. -/
+theorem cellCount6_partition (g Q : PoolItem → Bool) (pool : List PoolItem) :
+    ((List.filter g (cellItems (pool.filter Q) Winner.no MarginBand.narrow)).length
+      + (List.filter g (cellItems (pool.filter Q) Winner.no MarginBand.close)).length
+      + (List.filter g (cellItems (pool.filter Q) Winner.no MarginBand.wide)).length
+      + (List.filter g (cellItems (pool.filter Q) Winner.yes MarginBand.narrow)).length
+      + (List.filter g (cellItems (pool.filter Q) Winner.yes MarginBand.close)).length
+      + (List.filter g (cellItems (pool.filter Q) Winner.yes MarginBand.wide)).length)
+      + ((List.filter g (cellItems (pool.filter (fun x => !Q x)) Winner.no MarginBand.narrow)).length
+      + (List.filter g (cellItems (pool.filter (fun x => !Q x)) Winner.no MarginBand.close)).length
+      + (List.filter g (cellItems (pool.filter (fun x => !Q x)) Winner.no MarginBand.wide)).length
+      + (List.filter g (cellItems (pool.filter (fun x => !Q x)) Winner.yes MarginBand.narrow)).length
+      + (List.filter g (cellItems (pool.filter (fun x => !Q x)) Winner.yes MarginBand.close)).length
+      + (List.filter g (cellItems (pool.filter (fun x => !Q x)) Winner.yes MarginBand.wide)).length)
+      = (List.filter g (cellItems pool Winner.no MarginBand.narrow)).length
+      + (List.filter g (cellItems pool Winner.no MarginBand.close)).length
+      + (List.filter g (cellItems pool Winner.no MarginBand.wide)).length
+      + (List.filter g (cellItems pool Winner.yes MarginBand.narrow)).length
+      + (List.filter g (cellItems pool Winner.yes MarginBand.close)).length
+      + (List.filter g (cellItems pool Winner.yes MarginBand.wide)).length := by
+  have h1 := cellFilter_partition g Q pool Winner.no MarginBand.narrow
+  have h2 := cellFilter_partition g Q pool Winner.no MarginBand.close
+  have h3 := cellFilter_partition g Q pool Winner.no MarginBand.wide
+  have h4 := cellFilter_partition g Q pool Winner.yes MarginBand.narrow
+  have h5 := cellFilter_partition g Q pool Winner.yes MarginBand.close
+  have h6 := cellFilter_partition g Q pool Winner.yes MarginBand.wide
+  omega
+
+/-- **Stratification invariance (N)**: the pool's pair count splits over
+any cut. -/
+theorem cellSumN_partition (Q : PoolItem → Bool) (pool : List PoolItem) :
+    cellSumN (pool.filter Q) + cellSumN (pool.filter (fun x => !Q x)) = cellSumN pool := by
+  rw [cellSumN_add, cellSumN_add, cellSumN_add]
+  exact length_filter_partition Q pool
+
+/-- The answer-slot Σ over the six cells is twice the pair-count Σ over
+the same cells (the two scales differ only by the constant factor 2). -/
+theorem cellSumAnswer_eq (pool : List PoolItem) : cellSumAnswer pool = 2 * cellSumN pool := by
+  unfold cellSumAnswer cellSumN
+  simp only [cellAnswerCount]
+  omega
+
+/-- **Stratification invariance (2N)**: the answer-slot denominator
+splits over any cut. -/
+theorem cellSumAnswer_partition (Q : PoolItem → Bool) (pool : List PoolItem) :
+    cellSumAnswer (pool.filter Q) + cellSumAnswer (pool.filter (fun x => !Q x))
+      = cellSumAnswer pool := by
+  rw [cellSumAnswer_eq, cellSumAnswer_eq, cellSumAnswer_eq]
+  have h := cellSumN_partition Q pool
+  omega
+
+/-- **Stratification invariance (accuracy numerator)**. -/
+theorem cellSumBothCorrect_partition (Q : PoolItem → Bool) (pool : List PoolItem) :
+    cellSumBothCorrect (pool.filter Q) + cellSumBothCorrect (pool.filter (fun x => !Q x))
+      = cellSumBothCorrect pool := by
+  unfold cellSumBothCorrect
+  simp only [cellBothCorrectNum_filter]
+  exact cellCount6_partition (fun p : PoolItem => p.pair.strictlyResponsive) Q pool
+
+/-- **Stratification invariance (conditional denominator)**. -/
+theorem cellSumOriginalCorrect_partition (Q : PoolItem → Bool) (pool : List PoolItem) :
+    cellSumOriginalCorrect (pool.filter Q) + cellSumOriginalCorrect (pool.filter (fun x => !Q x))
+      = cellSumOriginalCorrect pool := by
+  unfold cellSumOriginalCorrect
+  simp only [cellOriginalCorrectNum_filter]
+  exact cellCount6_partition (fun p : PoolItem => p.pair.originalCorrect) Q pool
+
+/-- **Stratification invariance (coverage numerator)** — both answer
+slots (`2N` scale) split over any cut. -/
+theorem cellSumCoverage_partition (Q : PoolItem → Bool) (pool : List PoolItem) :
+    cellSumCoverage (pool.filter Q) + cellSumCoverage (pool.filter (fun x => !Q x))
+      = cellSumCoverage pool := by
+  unfold cellSumCoverage
+  simp only [cellCoverageNum_filter]
+  have ho := cellCount6_partition
+    (fun p : PoolItem => ModelAnswer.decisive p.pair.originalAnswer) Q pool
+  have hp := cellCount6_partition
+    (fun p : PoolItem => ModelAnswer.decisive p.pair.perturbedAnswer) Q pool
+  omega
+
+/-- **Stratification invariance (abstain numerator)**. -/
+theorem cellSumAbstain_partition (Q : PoolItem → Bool) (pool : List PoolItem) :
+    cellSumAbstain (pool.filter Q) + cellSumAbstain (pool.filter (fun x => !Q x))
+      = cellSumAbstain pool := by
+  unfold cellSumAbstain
+  simp only [cellAbstainNum_filter]
+  have ho := cellCount6_partition
+    (fun p : PoolItem => ModelAnswer.isAbstain p.pair.originalAnswer) Q pool
+  have hp := cellCount6_partition
+    (fun p : PoolItem => ModelAnswer.isAbstain p.pair.perturbedAnswer) Q pool
+  omega
+
+/-- **Stratification invariance (refusal numerator)**. -/
+theorem cellSumRefusal_partition (Q : PoolItem → Bool) (pool : List PoolItem) :
+    cellSumRefusal (pool.filter Q) + cellSumRefusal (pool.filter (fun x => !Q x))
+      = cellSumRefusal pool := by
+  unfold cellSumRefusal
+  simp only [cellRefusalNum_filter]
+  have ho := cellCount6_partition
+    (fun p : PoolItem => ModelAnswer.isRefusal p.pair.originalAnswer) Q pool
+  have hp := cellCount6_partition
+    (fun p : PoolItem => ModelAnswer.isRefusal p.pair.perturbedAnswer) Q pool
+  omega
+
+/-- **Stratification invariance (unresolvable numerator)**. -/
+theorem cellSumUnresolvable_partition (Q : PoolItem → Bool) (pool : List PoolItem) :
+    cellSumUnresolvable (pool.filter Q) + cellSumUnresolvable (pool.filter (fun x => !Q x))
+      = cellSumUnresolvable pool := by
+  unfold cellSumUnresolvable
+  simp only [cellUnresolvableNum_filter]
+  have ho := cellCount6_partition
+    (fun p : PoolItem => ModelAnswer.isUnresolvable p.pair.originalAnswer) Q pool
+  have hp := cellCount6_partition
+    (fun p : PoolItem => ModelAnswer.isUnresolvable p.pair.perturbedAnswer) Q pool
+  omega
+
+/-- **Stratification invariance (class-`yes` denominator)**. -/
+theorem cellSumClassYesDen_partition (Q : PoolItem → Bool) (pool : List PoolItem) :
+    cellSumClassYesDen (pool.filter Q) + cellSumClassYesDen (pool.filter (fun x => !Q x))
+      = cellSumClassYesDen pool := by
+  unfold cellSumClassYesDen
+  simp only [cellClassYesDen_filter]
+  exact cellCount6_partition (fun p : PoolItem => isPertGTyes p.pair) Q pool
+
+/-- **Stratification invariance (class-`no` denominator)**. -/
+theorem cellSumClassNoDen_partition (Q : PoolItem → Bool) (pool : List PoolItem) :
+    cellSumClassNoDen (pool.filter Q) + cellSumClassNoDen (pool.filter (fun x => !Q x))
+      = cellSumClassNoDen pool := by
+  unfold cellSumClassNoDen
+  simp only [cellClassNoDen_filter]
+  exact cellCount6_partition (fun p : PoolItem => isPertGTno p.pair) Q pool
+
+/-- **Stratification invariance (class-`yes` numerator)**. -/
+theorem cellSumClassYesNum_partition (Q : PoolItem → Bool) (pool : List PoolItem) :
+    cellSumClassYesNum (pool.filter Q) + cellSumClassYesNum (pool.filter (fun x => !Q x))
+      = cellSumClassYesNum pool := by
+  unfold cellSumClassYesNum
+  simp only [cellClassYesNum_filter]
+  exact cellCount6_partition
+    (fun p : PoolItem => p.pair.perturbedCorrect && isPertGTyes p.pair) Q pool
+
+/-- **Stratification invariance (class-`no` numerator)**. -/
+theorem cellSumClassNoNum_partition (Q : PoolItem → Bool) (pool : List PoolItem) :
+    cellSumClassNoNum (pool.filter Q) + cellSumClassNoNum (pool.filter (fun x => !Q x))
+      = cellSumClassNoNum pool := by
+  unfold cellSumClassNoNum
+  simp only [cellClassNoNum_filter]
+  exact cellCount6_partition
+    (fun p : PoolItem => p.pair.perturbedCorrect && isPertGTno p.pair) Q pool
+
+/-- The contingency count of a filtered pool is the cut applied to the
+full-table list (the cut commutes with all three cell filters). -/
+theorem contingencyCount_filter (Q : PoolItem → Bool) (pool : List PoolItem) (d : Direction) (a b : ModelAnswer) :
+    contingencyCount (pool.filter Q) d a b
+      = (List.filter Q
+          (((pool.filter (fun p => sameDir p.pair.direction d)).filter (poolOrig a)).filter
+            (poolPert b))).length := by
+  unfold contingencyCount
+  rw [filter_filter_comm (fun p => sameDir p.pair.direction d) Q pool,
+      filter_filter_comm (poolOrig a) Q (pool.filter (fun p => sameDir p.pair.direction d)),
+      filter_filter_comm (poolPert b) Q
+        ((pool.filter (fun p => sameDir p.pair.direction d)).filter (poolOrig a))]
+
+/-- **Stratification invariance (contingency table)**: every one of the
+50 cells' counts splits over any cut. -/
+theorem contingencyCount_partition (Q : PoolItem → Bool) (pool : List PoolItem) (d : Direction) (a b : ModelAnswer) :
+    contingencyCount (pool.filter Q) d a b
+      + contingencyCount (pool.filter (fun x => !Q x)) d a b
+      = contingencyCount pool d a b := by
+  rw [contingencyCount_filter, contingencyCount_filter]
+  exact length_filter_partition Q
+    (((pool.filter (fun p => sameDir p.pair.direction d)).filter (poolOrig a)).filter
+      (poolPert b))
+
+/-- **Stratification invariance (accuracy)**: the pooled Σnᵢ/Σdᵢ
+aggregate IS the Σ of the strata's numerators over the Σ of the strata's
+denominators, for ANY cut `Q` — the pool-level rate does not depend on
+where the pool is split. Definedness is inherited: the fraction is
+`some` exactly when the pool is nonempty. -/
+theorem accuracyAgg_stratified (Q : PoolItem → Bool) (pool : List PoolItem) (hN : cellSumN pool ≠ 0) :
+    accuracyAgg pool
+      = some { num := cellSumBothCorrect (pool.filter Q)
+                 + cellSumBothCorrect (pool.filter (fun x => !Q x)),
+               den := cellSumN (pool.filter Q) + cellSumN (pool.filter (fun x => !Q x)) } := by
+  unfold accuracyAgg
+  rw [cellSumBothCorrect_partition, cellSumN_partition]
+  split
+  · omega
+  · rfl
+
+/-- **Stratification invariance (coverage)** — total `Rate` form. -/
+theorem coverageAgg_stratified (Q : PoolItem → Bool) (pool : List PoolItem) :
+    coverageAgg pool
+      = { num := cellSumCoverage (pool.filter Q) + cellSumCoverage (pool.filter (fun x => !Q x)),
+          den := cellSumAnswer (pool.filter Q) + cellSumAnswer (pool.filter (fun x => !Q x)) } := by
+  unfold coverageAgg
+  rw [cellSumCoverage_partition, cellSumAnswer_partition]
+
+/-- **Stratification invariance (conditional)** — the
+`originalCorrectNum`-denominator aggregate over the two strata;
+definedness inherited (`some` iff the pool has an original-correct
+pair). -/
+theorem strictConditionalAgg_stratified (Q : PoolItem → Bool) (pool : List PoolItem)
+    (hd : cellSumOriginalCorrect pool ≠ 0) :
+    strictConditionalAgg pool
+      = some { num := cellSumBothCorrect (pool.filter Q)
+                 + cellSumBothCorrect (pool.filter (fun x => !Q x)),
+               den := cellSumOriginalCorrect (pool.filter Q)
+                 + cellSumOriginalCorrect (pool.filter (fun x => !Q x)) } := by
+  unfold strictConditionalAgg
+  rw [cellSumBothCorrect_partition, cellSumOriginalCorrect_partition]
+  split
+  · omega
+  · rfl
+
 end Sejmbench
