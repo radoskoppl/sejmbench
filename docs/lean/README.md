@@ -50,6 +50,30 @@ types and their ground-truth effect are machine-checked:
 | `winner_yes_of_shift` | mirror: the winner flips to `yes` exactly when `2·k ≥ seedNo − seedYes` — the boundary is inclusive because the exact-boundary case is a TIE and the frozen tie convention resolves it to the `YES` seed |
 | `flip_quota_sufficient` | the spike's quota `k = ⌊margin/2⌋ + 1` meets the strict inequality |
 
+Mask bridge (`Sejmbench/MaskBridge.lean`) — the Python index list
+(`cf_build.py`: `flipped_record_indices`, sorted, sampled without
+replacement, in-range) and the abstract mask `S : Nat → Bool` are linked
+in both directions:
+
+| Theorem (in `Sejmbench/MaskBridge.lean`) | Claim |
+|---|---|
+| `flipAtIndices_eq_flipFrom` | the in-place Python flip over an index list IS the certified `flipFrom d (maskOf idxs) lose 0` — transformation agreement |
+| `eligibleFlip_of_indices` | if every listed index points at an eligible record, the derived mask satisfies the `EligibleFlip` certificate (the Python invariant `flipped_idx ⊆ eligible` enters as a hypothesis) |
+| `selFrom_maskOf_eq_length` | for a Nodup in-range index list, the shift amount `k = selFrom (maskOf idxs) 0 n` equals `idxs.length` — the count never drifts from the sampled list |
+| `selectedFrom_length` / `selectedFrom_nodup` / `selectedFrom_bound` / `selectedFrom_mem` | the canonical index list of any mask: its length IS `selFrom` (selectedCount = selFrom), it is Nodup, in-window, and its members are exactly the selected positions |
+| `maskOf_selectedFrom` | the mask derived back from the canonical index list agrees with `S` at every in-window position — no information lost on the window |
+| `flip_eq_flipAtIndices` | the abstract flip over any mask equals the Python-style flip over its canonical index list (both directions closed) |
+| `selFrom_maskOf_selectedFrom` | count round-trip: `selFrom` is invariant under the list → mask → list cycle |
+
+Seed shifts land directly from the certificate layer
+(`Sejmbench/SeedCount.lean`): `seedYes_dec_of_eligible` /
+`seedNo_inc_of_eligible` (YES → NO), `seedNo_dec_of_eligible` /
+`seedYes_inc_of_eligible` (NO → YES), the ABSTAIN invariants
+`seedAbstain_flip_*_of_eligible`, and the `nActive_flip_*_of_eligible`
+capstones — composed with the thresholds by
+`winner_no_of_eligible_flip` / `winner_yes_of_eligible_flip` (with iff
+wrappers and the inclusive `2k = margin` boundary family).
+
 Scope note: as with `SeedRule`, these are properties of the
 *specification*; the Python pipeline (`scripts/cf_build.py`) realizes the
 constructions on concrete records and validates each item's ground truth
@@ -79,6 +103,35 @@ Open conditions stay explicit predicates on the pool: `poolWellFormed`
 (unique `itemId`s), `poolLeakageGate` (the best constant perturbed-class
 predictor stays below 0.55) and `minCellSize` (minimum cell occupancy,
 independent of the gate). No unweighted-mean claim is made anywhere.
+
+## Proof audit (L1 closure)
+
+Final sweep over the complete library (`lake build` clean, zero warnings;
+grep for `sorry`/`admit` clean):
+
+* **Axiom check:** `#print axioms` executed on **all 427 declarations**
+  (`defs`, `theorem`s and structures across `SeedRule`, `Counterfactual`,
+  `FlipRecord`, `SeedCount`, `MaskBridge`, `FlipPair`, `EvaluationMetrics`,
+  `Pool`). Every declaration's axiom set is a subset of
+  `[propext, Classical.choice, Quot.sound]`; zero `sorryAx`; no
+  `EligibleFlip.rec` or other new axioms anywhere.
+* **Closed properties** (machine-checked, all of the tables above): the
+  seed-rule contract (§3 winner/tie/method/margin, abstention semantics,
+  activity counting, polarization integer core), the counterfactual
+  transformations (reorder/pseudonymize/flip with record- and
+  kind-level exactness), the eligibility contract (`selected_must_be_*`,
+  `selected_all_*`, contrapositives), the seed shifts from the
+  `EligibleFlip` certificate in both directions, the threshold
+  compositions (`winner_*_of_shift`, boundary family), and the Python
+  indices ↔ mask bridge in both directions with the count round-trip.
+* **Still open / deliberately outside the model:** monotonicity of
+  `|YES−NO|/n` in the abstain count stays in prose (nonlinear; noted at
+  `abs_lt_n_when_abstain`); `n = 0` polarization is an implementation
+  convention, not the formula; the Python pipeline realizes the
+  constructions on concrete records without a machine-checked semantic
+  equivalence to the Lean spec (fixed-sample differential testing only);
+  statistical-independence-flavored claims are never formalized — the
+  stratification contract is exact per-counter bookkeeping.
 
 ## Scope — read before citing
 

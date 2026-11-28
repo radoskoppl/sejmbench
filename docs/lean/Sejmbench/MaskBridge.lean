@@ -388,11 +388,11 @@ theorem selectedFrom_nodup (S : Nat → Bool) (off : Nat) :
   | zero => simp [selectedFrom]
   | succ m ih =>
       by_cases hs : S off = true
-      · rw [selectedFrom, if_pos hs, List.nodup_cons]
+      · rw [selectedFrom, ite_eq_left hs, List.nodup_cons]
         refine ⟨fun hmem => ?_, ih (off + 1)⟩
         have h3 := selectedFrom_bound S (off + 1) m off hmem
         omega
-      · rw [selectedFrom, if_neg hs]
+      · rw [selectedFrom, ite_eq_right hs]
         exact ih (off + 1)
 
 /-- The mask derived BACK from the canonical index list agrees with `S`
