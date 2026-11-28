@@ -849,6 +849,78 @@ theorem contingency_total_sum (pool : List PoolItem) :
   rw [hEq] at h
   omega
 
+/-- **The full 50-cell contingency table sums to the pool length**: all
+`2 × 5 × 5` cells `(direction, originalAnswer, perturbedAnswer)`
+partition the pool — the ten row sums collapse to the two slice sums
+and the two slices are the pool (`contingency_total_sum`). -/
+theorem contingency_all_sum (pool : List PoolItem) :
+    -- the `yesToNo` slice: five original-answer rows …
+    ((contingencyCount pool Direction.yesToNo ModelAnswer.yes ModelAnswer.yes
+        + contingencyCount pool Direction.yesToNo ModelAnswer.yes ModelAnswer.no
+        + contingencyCount pool Direction.yesToNo ModelAnswer.yes ModelAnswer.abstain
+        + contingencyCount pool Direction.yesToNo ModelAnswer.yes ModelAnswer.refusal
+        + contingencyCount pool Direction.yesToNo ModelAnswer.yes ModelAnswer.unresolvable)
+      + (contingencyCount pool Direction.yesToNo ModelAnswer.no ModelAnswer.yes
+        + contingencyCount pool Direction.yesToNo ModelAnswer.no ModelAnswer.no
+        + contingencyCount pool Direction.yesToNo ModelAnswer.no ModelAnswer.abstain
+        + contingencyCount pool Direction.yesToNo ModelAnswer.no ModelAnswer.refusal
+        + contingencyCount pool Direction.yesToNo ModelAnswer.no ModelAnswer.unresolvable)
+      + (contingencyCount pool Direction.yesToNo ModelAnswer.abstain ModelAnswer.yes
+        + contingencyCount pool Direction.yesToNo ModelAnswer.abstain ModelAnswer.no
+        + contingencyCount pool Direction.yesToNo ModelAnswer.abstain ModelAnswer.abstain
+        + contingencyCount pool Direction.yesToNo ModelAnswer.abstain ModelAnswer.refusal
+        + contingencyCount pool Direction.yesToNo ModelAnswer.abstain ModelAnswer.unresolvable)
+      + (contingencyCount pool Direction.yesToNo ModelAnswer.refusal ModelAnswer.yes
+        + contingencyCount pool Direction.yesToNo ModelAnswer.refusal ModelAnswer.no
+        + contingencyCount pool Direction.yesToNo ModelAnswer.refusal ModelAnswer.abstain
+        + contingencyCount pool Direction.yesToNo ModelAnswer.refusal ModelAnswer.refusal
+        + contingencyCount pool Direction.yesToNo ModelAnswer.refusal ModelAnswer.unresolvable)
+      + (contingencyCount pool Direction.yesToNo ModelAnswer.unresolvable ModelAnswer.yes
+        + contingencyCount pool Direction.yesToNo ModelAnswer.unresolvable ModelAnswer.no
+        + contingencyCount pool Direction.yesToNo ModelAnswer.unresolvable ModelAnswer.abstain
+        + contingencyCount pool Direction.yesToNo ModelAnswer.unresolvable ModelAnswer.refusal
+        + contingencyCount pool Direction.yesToNo ModelAnswer.unresolvable ModelAnswer.unresolvable))
+    -- the `noToYes` slice: five original-answer rows …
+      + ((contingencyCount pool Direction.noToYes ModelAnswer.yes ModelAnswer.yes
+        + contingencyCount pool Direction.noToYes ModelAnswer.yes ModelAnswer.no
+        + contingencyCount pool Direction.noToYes ModelAnswer.yes ModelAnswer.abstain
+        + contingencyCount pool Direction.noToYes ModelAnswer.yes ModelAnswer.refusal
+        + contingencyCount pool Direction.noToYes ModelAnswer.yes ModelAnswer.unresolvable)
+      + (contingencyCount pool Direction.noToYes ModelAnswer.no ModelAnswer.yes
+        + contingencyCount pool Direction.noToYes ModelAnswer.no ModelAnswer.no
+        + contingencyCount pool Direction.noToYes ModelAnswer.no ModelAnswer.abstain
+        + contingencyCount pool Direction.noToYes ModelAnswer.no ModelAnswer.refusal
+        + contingencyCount pool Direction.noToYes ModelAnswer.no ModelAnswer.unresolvable)
+      + (contingencyCount pool Direction.noToYes ModelAnswer.abstain ModelAnswer.yes
+        + contingencyCount pool Direction.noToYes ModelAnswer.abstain ModelAnswer.no
+        + contingencyCount pool Direction.noToYes ModelAnswer.abstain ModelAnswer.abstain
+        + contingencyCount pool Direction.noToYes ModelAnswer.abstain ModelAnswer.refusal
+        + contingencyCount pool Direction.noToYes ModelAnswer.abstain ModelAnswer.unresolvable)
+      + (contingencyCount pool Direction.noToYes ModelAnswer.refusal ModelAnswer.yes
+        + contingencyCount pool Direction.noToYes ModelAnswer.refusal ModelAnswer.no
+        + contingencyCount pool Direction.noToYes ModelAnswer.refusal ModelAnswer.abstain
+        + contingencyCount pool Direction.noToYes ModelAnswer.refusal ModelAnswer.refusal
+        + contingencyCount pool Direction.noToYes ModelAnswer.refusal ModelAnswer.unresolvable)
+      + (contingencyCount pool Direction.noToYes ModelAnswer.unresolvable ModelAnswer.yes
+        + contingencyCount pool Direction.noToYes ModelAnswer.unresolvable ModelAnswer.no
+        + contingencyCount pool Direction.noToYes ModelAnswer.unresolvable ModelAnswer.abstain
+        + contingencyCount pool Direction.noToYes ModelAnswer.unresolvable ModelAnswer.refusal
+        + contingencyCount pool Direction.noToYes ModelAnswer.unresolvable ModelAnswer.unresolvable))
+      = pool.length := by
+  rw [contingency_row_sum pool Direction.yesToNo ModelAnswer.yes,
+      contingency_row_sum pool Direction.yesToNo ModelAnswer.no,
+      contingency_row_sum pool Direction.yesToNo ModelAnswer.abstain,
+      contingency_row_sum pool Direction.yesToNo ModelAnswer.refusal,
+      contingency_row_sum pool Direction.yesToNo ModelAnswer.unresolvable,
+      contingency_row_sum pool Direction.noToYes ModelAnswer.yes,
+      contingency_row_sum pool Direction.noToYes ModelAnswer.no,
+      contingency_row_sum pool Direction.noToYes ModelAnswer.abstain,
+      contingency_row_sum pool Direction.noToYes ModelAnswer.refusal,
+      contingency_row_sum pool Direction.noToYes ModelAnswer.unresolvable,
+      contingency_slice_sum pool Direction.yesToNo,
+      contingency_slice_sum pool Direction.noToYes]
+  exact contingency_total_sum pool
+
 /-! ## Counters as directional decompositions (aggregation layer) -/
 
 /-- Is the pair in the sticky mode: correct on the original, then the
@@ -1809,6 +1881,168 @@ theorem coverage_agg (pool : List PoolItem) :
     ResponseSet.coverage (PoolItem.toResponseSet pool) = coverageAgg pool := by
   unfold ResponseSet.coverage coverageAgg
   rw [cellSumCoverage_add, cellSumAnswer_add]
+  have h2 : (PoolItem.toResponseSet pool).nAnswers = 2 * pool.length := by
+    simp [ResponseSet.nAnswers, PoolItem.toResponseSet]
+  rw [h2]
+
+/-! ### The invalid-response rates: Σnᵢ/Σdᵢ over the six cells
+
+The three `/2N` rates share the coverage denominator (`nAnswers`, the
+`2N` scale), so all three aggregate through one template: raw per-cell
+numerators via `countAnswers_map`, Σ-additivity via
+`cellOrigCount_add` / `cellPertCount_add`, denominator via
+`cellAnswerCount_add`. -/
+
+/-- Raw per-cell abstain numerator (no `Option` wrapper). -/
+def cellAbstainNum (pool : List PoolItem) (w : Winner) (b : MarginBand) : Nat :=
+  ResponseSet.abstainNum (cellImage pool w b)
+
+/-- The per-cell abstain numerator in the two-side filter form. -/
+theorem cellAbstainNum_filter (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    cellAbstainNum pool w b
+      = ((cellItems pool w b).filter
+          (fun p : PoolItem => ModelAnswer.isAbstain p.pair.originalAnswer)).length
+        + ((cellItems pool w b).filter
+          (fun p : PoolItem => ModelAnswer.isAbstain p.pair.perturbedAnswer)).length :=
+  countAnswers_map ModelAnswer.isAbstain (cellItems pool w b)
+
+/-- Σ of the six cells' raw abstain numerators. -/
+def cellSumAbstain (pool : List PoolItem) : Nat :=
+  cellAbstainNum pool Winner.no MarginBand.narrow
+    + cellAbstainNum pool Winner.no MarginBand.close
+    + cellAbstainNum pool Winner.no MarginBand.wide
+    + cellAbstainNum pool Winner.yes MarginBand.narrow
+    + cellAbstainNum pool Winner.yes MarginBand.close
+    + cellAbstainNum pool Winner.yes MarginBand.wide
+
+theorem cellSumAbstain_add (pool : List PoolItem) :
+    cellSumAbstain pool = ResponseSet.abstainNum (PoolItem.toResponseSet pool) := by
+  unfold cellSumAbstain
+  rw [cellAbstainNum_filter, cellAbstainNum_filter, cellAbstainNum_filter,
+      cellAbstainNum_filter, cellAbstainNum_filter, cellAbstainNum_filter]
+  have hrhs : ResponseSet.abstainNum (PoolItem.toResponseSet pool)
+      = (pool.filter (fun p : PoolItem => ModelAnswer.isAbstain p.pair.originalAnswer)).length
+        + (pool.filter (fun p : PoolItem => ModelAnswer.isAbstain p.pair.perturbedAnswer)).length :=
+    countAnswers_map ModelAnswer.isAbstain pool
+  rw [hrhs]
+  have ho := cellOrigCount_add ModelAnswer.isAbstain pool
+  have hp := cellPertCount_add ModelAnswer.isAbstain pool
+  omega
+
+/-- **The Σnᵢ/Σdᵢ aggregate of the per-cell abstain counters** (raw). -/
+def abstainRateAgg (pool : List PoolItem) : Rate :=
+  { num := cellSumAbstain pool, den := cellSumAnswer pool }
+
+/-- **Aggregation (abstainRate)**: the pool-level invalid-response rate
+IS the Σnᵢ/Σdᵢ fraction of the raw per-cell counters (denominator the
+`2N` scale, via `cellAnswerCount_add`). -/
+theorem abstainRate_agg (pool : List PoolItem) :
+    ResponseSet.abstainRate (PoolItem.toResponseSet pool) = abstainRateAgg pool := by
+  unfold ResponseSet.abstainRate abstainRateAgg
+  rw [cellSumAbstain_add, cellSumAnswer_add]
+  have h2 : (PoolItem.toResponseSet pool).nAnswers = 2 * pool.length := by
+    simp [ResponseSet.nAnswers, PoolItem.toResponseSet]
+  rw [h2]
+
+/-- Raw per-cell refusal numerator (no `Option` wrapper). -/
+def cellRefusalNum (pool : List PoolItem) (w : Winner) (b : MarginBand) : Nat :=
+  ResponseSet.refusalNum (cellImage pool w b)
+
+/-- The per-cell refusal numerator in the two-side filter form. -/
+theorem cellRefusalNum_filter (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    cellRefusalNum pool w b
+      = ((cellItems pool w b).filter
+          (fun p : PoolItem => ModelAnswer.isRefusal p.pair.originalAnswer)).length
+        + ((cellItems pool w b).filter
+          (fun p : PoolItem => ModelAnswer.isRefusal p.pair.perturbedAnswer)).length :=
+  countAnswers_map ModelAnswer.isRefusal (cellItems pool w b)
+
+/-- Σ of the six cells' raw refusal numerators. -/
+def cellSumRefusal (pool : List PoolItem) : Nat :=
+  cellRefusalNum pool Winner.no MarginBand.narrow
+    + cellRefusalNum pool Winner.no MarginBand.close
+    + cellRefusalNum pool Winner.no MarginBand.wide
+    + cellRefusalNum pool Winner.yes MarginBand.narrow
+    + cellRefusalNum pool Winner.yes MarginBand.close
+    + cellRefusalNum pool Winner.yes MarginBand.wide
+
+theorem cellSumRefusal_add (pool : List PoolItem) :
+    cellSumRefusal pool = ResponseSet.refusalNum (PoolItem.toResponseSet pool) := by
+  unfold cellSumRefusal
+  rw [cellRefusalNum_filter, cellRefusalNum_filter, cellRefusalNum_filter,
+      cellRefusalNum_filter, cellRefusalNum_filter, cellRefusalNum_filter]
+  have hrhs : ResponseSet.refusalNum (PoolItem.toResponseSet pool)
+      = (pool.filter (fun p : PoolItem => ModelAnswer.isRefusal p.pair.originalAnswer)).length
+        + (pool.filter (fun p : PoolItem => ModelAnswer.isRefusal p.pair.perturbedAnswer)).length :=
+    countAnswers_map ModelAnswer.isRefusal pool
+  rw [hrhs]
+  have ho := cellOrigCount_add ModelAnswer.isRefusal pool
+  have hp := cellPertCount_add ModelAnswer.isRefusal pool
+  omega
+
+/-- **The Σnᵢ/Σdᵢ aggregate of the per-cell refusal counters** (raw). -/
+def refusalRateAgg (pool : List PoolItem) : Rate :=
+  { num := cellSumRefusal pool, den := cellSumAnswer pool }
+
+/-- **Aggregation (refusalRate)**: the pool-level invalid-response rate
+IS the Σnᵢ/Σdᵢ fraction of the raw per-cell counters (denominator the
+`2N` scale, via `cellAnswerCount_add`). -/
+theorem refusalRate_agg (pool : List PoolItem) :
+    ResponseSet.refusalRate (PoolItem.toResponseSet pool) = refusalRateAgg pool := by
+  unfold ResponseSet.refusalRate refusalRateAgg
+  rw [cellSumRefusal_add, cellSumAnswer_add]
+  have h2 : (PoolItem.toResponseSet pool).nAnswers = 2 * pool.length := by
+    simp [ResponseSet.nAnswers, PoolItem.toResponseSet]
+  rw [h2]
+
+/-- Raw per-cell unresolvable numerator (no `Option` wrapper). -/
+def cellUnresolvableNum (pool : List PoolItem) (w : Winner) (b : MarginBand) : Nat :=
+  ResponseSet.unresolvableNum (cellImage pool w b)
+
+/-- The per-cell unresolvable numerator in the two-side filter form. -/
+theorem cellUnresolvableNum_filter (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    cellUnresolvableNum pool w b
+      = ((cellItems pool w b).filter
+          (fun p : PoolItem => ModelAnswer.isUnresolvable p.pair.originalAnswer)).length
+        + ((cellItems pool w b).filter
+          (fun p : PoolItem => ModelAnswer.isUnresolvable p.pair.perturbedAnswer)).length :=
+  countAnswers_map ModelAnswer.isUnresolvable (cellItems pool w b)
+
+/-- Σ of the six cells' raw unresolvable numerators. -/
+def cellSumUnresolvable (pool : List PoolItem) : Nat :=
+  cellUnresolvableNum pool Winner.no MarginBand.narrow
+    + cellUnresolvableNum pool Winner.no MarginBand.close
+    + cellUnresolvableNum pool Winner.no MarginBand.wide
+    + cellUnresolvableNum pool Winner.yes MarginBand.narrow
+    + cellUnresolvableNum pool Winner.yes MarginBand.close
+    + cellUnresolvableNum pool Winner.yes MarginBand.wide
+
+theorem cellSumUnresolvable_add (pool : List PoolItem) :
+    cellSumUnresolvable pool = ResponseSet.unresolvableNum (PoolItem.toResponseSet pool) := by
+  unfold cellSumUnresolvable
+  rw [cellUnresolvableNum_filter, cellUnresolvableNum_filter, cellUnresolvableNum_filter,
+      cellUnresolvableNum_filter, cellUnresolvableNum_filter, cellUnresolvableNum_filter]
+  have hrhs : ResponseSet.unresolvableNum (PoolItem.toResponseSet pool)
+      = (pool.filter (fun p : PoolItem => ModelAnswer.isUnresolvable p.pair.originalAnswer)).length
+        + (pool.filter (fun p : PoolItem => ModelAnswer.isUnresolvable p.pair.perturbedAnswer)).length :=
+    countAnswers_map ModelAnswer.isUnresolvable pool
+  rw [hrhs]
+  have ho := cellOrigCount_add ModelAnswer.isUnresolvable pool
+  have hp := cellPertCount_add ModelAnswer.isUnresolvable pool
+  omega
+
+/-- **The Σnᵢ/Σdᵢ aggregate of the per-cell unresolvable counters**
+(raw). -/
+def unresolvableRateAgg (pool : List PoolItem) : Rate :=
+  { num := cellSumUnresolvable pool, den := cellSumAnswer pool }
+
+/-- **Aggregation (unresolvableRate)**: the pool-level invalid-response
+rate IS the Σnᵢ/Σdᵢ fraction of the raw per-cell counters (denominator
+the `2N` scale, via `cellAnswerCount_add`). -/
+theorem unresolvableRate_agg (pool : List PoolItem) :
+    ResponseSet.unresolvableRate (PoolItem.toResponseSet pool) = unresolvableRateAgg pool := by
+  unfold ResponseSet.unresolvableRate unresolvableRateAgg
+  rw [cellSumUnresolvable_add, cellSumAnswer_add]
   have h2 : (PoolItem.toResponseSet pool).nAnswers = 2 * pool.length := by
     simp [ResponseSet.nAnswers, PoolItem.toResponseSet]
   rw [h2]
