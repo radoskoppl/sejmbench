@@ -1813,4 +1813,316 @@ theorem coverage_agg (pool : List PoolItem) :
     simp [ResponseSet.nAnswers, PoolItem.toResponseSet]
   rw [h2]
 
+/-! ## Weighted aggregation: class-specific denominators
+
+Item 2 of the review's ordering — the two metrics whose denominator is
+NOT the cell's pair count.
+
+* `strictConditional` — same Σnᵢ/Σdᵢ shape as accuracy, but the
+  denominator is the `originalCorrectNum` scale (additivity via
+  `originalCorrectNum_add`).
+* `balancedPerturbedAccuracy` — a mean of two per-class recall fractions
+  (the `perturbedGT` classes), so the pool-level aggregate is the SAME
+  cross-multiplied fraction with the per-cell class numerators and
+  denominators summed — NOT Σnᵢ/Σdᵢ of per-cell balanced fractions
+  (a mean of means is not the pooled mean). The class denominators are
+  the `perturbedGT` class counts (`gtCount`); both aggregate on raw
+  counters, never on `Option Rate` values, and `none` is preserved as
+  undefinedness (a class with no pairs keeps the metric undefined). -/
+
+/-- The perturbed-GT class predicates on a pair, in the exact match-form
+the `balancedPerturbedAccuracy` definition filters with. -/
+def isPertGTyes (r : ModelResponsePair) : Bool :=
+  match r.perturbedGT with | .yes => true | .no => false
+
+def isPertGTno (r : ModelResponsePair) : Bool :=
+  match r.perturbedGT with | .no => true | .yes => false
+
+/-- The match-form class predicate IS `sameGT … Winner.yes` pointwise
+(the bridge consumed by the class-count aggregation). -/
+theorem isPertGTyes_eq_sameGT (p : PoolItem) :
+    (match p.pair.perturbedGT with | .yes => true | .no => false)
+      = sameGT p.pair.perturbedGT Winner.yes := by
+  cases hp : p.pair.perturbedGT <;> rfl
+
+theorem isPertGTno_eq_sameGT (p : PoolItem) :
+    (match p.pair.perturbedGT with | .no => true | .yes => false)
+      = sameGT p.pair.perturbedGT Winner.no := by
+  cases hp : p.pair.perturbedGT <;> rfl
+
+-- The `Winner` match-aux constants (the metric's, and the one the
+-- textual match-forms in this file elaborate to) are the same polymorphic
+-- matcher; `reducible` locally so tactic matching at instances
+-- transparency can see through the different aux names.
+set_option allowUnsafeReducibility true in
+attribute [local reducible] ModelResponsePair.direction.match_1
+  minCellSize.match_1
+  ResponseSet.balancedPairSuccess.match_1
+  ResponseSet.balancedPairSuccess.match_3
+  ResponseSet.balancedPairSuccess.match_5
+
+/-! ### (a) Conditional responsiveness — denominator `originalCorrectNum` -/
+
+/-- **Raw per-cell conditional denominator** — the cell's originalCorrect
+count (no `Option` wrapper; aggregation never coerces `none`). -/
+def cellOriginalCorrectNum (pool : List PoolItem) (w : Winner) (b : MarginBand) : Nat :=
+  ResponseSet.originalCorrectNum (cellImage pool w b)
+
+/-- The per-cell conditional denominator in the filter form consumed by
+`cellPairCount_add`. -/
+theorem cellOriginalCorrectNum_filter (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    cellOriginalCorrectNum pool w b
+      = (List.filter (fun p : PoolItem => p.pair.originalCorrect)
+          (cellItems pool w b)).length :=
+  countPairs_map ModelResponsePair.originalCorrect (cellItems pool w b)
+
+/-- Σ of the six cells' raw conditional denominators. -/
+def cellSumOriginalCorrect (pool : List PoolItem) : Nat :=
+  cellOriginalCorrectNum pool Winner.no MarginBand.narrow
+    + cellOriginalCorrectNum pool Winner.no MarginBand.close
+    + cellOriginalCorrectNum pool Winner.no MarginBand.wide
+    + cellOriginalCorrectNum pool Winner.yes MarginBand.narrow
+    + cellOriginalCorrectNum pool Winner.yes MarginBand.close
+    + cellOriginalCorrectNum pool Winner.yes MarginBand.wide
+
+theorem cellSumOriginalCorrect_add (pool : List PoolItem) :
+    cellSumOriginalCorrect pool
+      = ResponseSet.originalCorrectNum (PoolItem.toResponseSet pool) := by
+  unfold cellSumOriginalCorrect
+  rw [cellOriginalCorrectNum_filter, cellOriginalCorrectNum_filter,
+      cellOriginalCorrectNum_filter, cellOriginalCorrectNum_filter,
+      cellOriginalCorrectNum_filter, cellOriginalCorrectNum_filter]
+  exact (cellPairCount_add (fun p : PoolItem => p.pair.originalCorrect) pool).trans
+    (originalCorrectNum_eq_responseSet pool)
+
+/-- **The Σnᵢ/Σdᵢ aggregate of the conditional rates**: numerator the Σ
+of the cells' strict counters (the same raw counter as accuracy, via the
+`bothCorrectNum ≡ strictNum` bridge), denominator the Σ of the cells'
+`originalCorrectNum` counts. `none` iff the pool has no original-correct
+pair — the same undefinedness as the pool-level metric. -/
+def strictConditionalAgg (pool : List PoolItem) : Option Rate :=
+  if cellSumOriginalCorrect pool = 0 then none
+  else some { num := cellSumBothCorrect pool, den := cellSumOriginalCorrect pool }
+
+/-- **Aggregation (strictConditional)**: the pool-level conditional
+responsiveness IS the Σnᵢ/Σdᵢ fraction of the raw per-cell counters,
+with the class-specific denominator `originalCorrectNum` (not `N`). -/
+theorem strictConditional_agg (pool : List PoolItem) :
+    ResponseSet.strictConditional (PoolItem.toResponseSet pool)
+      = strictConditionalAgg pool := by
+  unfold ResponseSet.strictConditional strictConditionalAgg
+  simp only [cellSumOriginalCorrect_add, cellSumBothCorrect_add]
+
+/-! ### (b) Balanced perturbed accuracy — per-class denominators -/
+
+/-- **Raw per-cell class-`yes` denominator**: pairs in the cell whose
+perturbed GT is `yes` (the whole cell when the cell's GT is `yes`,
+empty otherwise — no special-casing needed, the filter does it). -/
+def cellClassYesDen (pool : List PoolItem) (w : Winner) (b : MarginBand) : Nat :=
+  ((cellImage pool w b).filter isPertGTyes).length
+
+/-- **Raw per-cell class-`no` denominator.** -/
+def cellClassNoDen (pool : List PoolItem) (w : Winner) (b : MarginBand) : Nat :=
+  ((cellImage pool w b).filter isPertGTno).length
+
+/-- **Raw per-cell class-`yes` numerator** (perturbedCorrect within the
+cell's `yes` class). -/
+def cellClassYesNum (pool : List PoolItem) (w : Winner) (b : MarginBand) : Nat :=
+  countPairs ((cellImage pool w b).filter isPertGTyes) (fun r => r.perturbedCorrect)
+
+/-- **Raw per-cell class-`no` numerator.** -/
+def cellClassNoNum (pool : List PoolItem) (w : Winner) (b : MarginBand) : Nat :=
+  countPairs ((cellImage pool w b).filter isPertGTno) (fun r => r.perturbedCorrect)
+
+/-- The per-cell class-`yes` denominator in the filter form consumed by
+`cellPairCount_add`. -/
+theorem cellClassYesDen_filter (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    cellClassYesDen pool w b
+      = (List.filter (fun p : PoolItem => isPertGTyes p.pair)
+          (cellItems pool w b)).length := by
+  simp only [cellClassYesDen, cellImage, PoolItem.toResponseSet,
+    filter_map_pair, List.length_map]
+
+theorem cellClassNoDen_filter (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    cellClassNoDen pool w b
+      = (List.filter (fun p : PoolItem => isPertGTno p.pair)
+          (cellItems pool w b)).length := by
+  unfold cellClassNoDen cellImage PoolItem.toResponseSet
+  rw [filter_map_pair, List.length_map]
+
+/-- The per-cell class-`yes` numerator in the filter form (the
+two-step filter collapsed into one compound predicate). -/
+theorem cellClassYesNum_filter (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    cellClassYesNum pool w b
+      = (List.filter (fun p : PoolItem => p.pair.perturbedCorrect && isPertGTyes p.pair)
+          (cellItems pool w b)).length := by
+  unfold cellClassYesNum cellImage PoolItem.toResponseSet countPairs
+  rw [List.filter_filter, filter_map_pair, List.length_map]
+
+theorem cellClassNoNum_filter (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    cellClassNoNum pool w b
+      = (List.filter (fun p : PoolItem => p.pair.perturbedCorrect && isPertGTno p.pair)
+          (cellItems pool w b)).length := by
+  unfold cellClassNoNum cellImage PoolItem.toResponseSet countPairs
+  rw [List.filter_filter, filter_map_pair, List.length_map]
+
+/-- Σ of the six cells' raw class-`yes` denominators. -/
+def cellSumClassYesDen (pool : List PoolItem) : Nat :=
+  cellClassYesDen pool Winner.no MarginBand.narrow
+    + cellClassYesDen pool Winner.no MarginBand.close
+    + cellClassYesDen pool Winner.no MarginBand.wide
+    + cellClassYesDen pool Winner.yes MarginBand.narrow
+    + cellClassYesDen pool Winner.yes MarginBand.close
+    + cellClassYesDen pool Winner.yes MarginBand.wide
+
+/-- Σ of the six cells' raw class-`no` denominators. -/
+def cellSumClassNoDen (pool : List PoolItem) : Nat :=
+  cellClassNoDen pool Winner.no MarginBand.narrow
+    + cellClassNoDen pool Winner.no MarginBand.close
+    + cellClassNoDen pool Winner.no MarginBand.wide
+    + cellClassNoDen pool Winner.yes MarginBand.narrow
+    + cellClassNoDen pool Winner.yes MarginBand.close
+    + cellClassNoDen pool Winner.yes MarginBand.wide
+
+/-- Σ of the six cells' raw class-`yes` numerators. -/
+def cellSumClassYesNum (pool : List PoolItem) : Nat :=
+  cellClassYesNum pool Winner.no MarginBand.narrow
+    + cellClassYesNum pool Winner.no MarginBand.close
+    + cellClassYesNum pool Winner.no MarginBand.wide
+    + cellClassYesNum pool Winner.yes MarginBand.narrow
+    + cellClassYesNum pool Winner.yes MarginBand.close
+    + cellClassYesNum pool Winner.yes MarginBand.wide
+
+/-- Σ of the six cells' raw class-`no` numerators. -/
+def cellSumClassNoNum (pool : List PoolItem) : Nat :=
+  cellClassNoNum pool Winner.no MarginBand.narrow
+    + cellClassNoNum pool Winner.no MarginBand.close
+    + cellClassNoNum pool Winner.no MarginBand.wide
+    + cellClassNoNum pool Winner.yes MarginBand.narrow
+    + cellClassNoNum pool Winner.yes MarginBand.close
+    + cellClassNoNum pool Winner.yes MarginBand.wide
+
+/-- **Additivity of the class-`yes` denominator**: the Σ over the six
+cells IS the pool's `perturbedGT = yes` class count (`gtCount`). -/
+theorem cellSumClassYesDen_add (pool : List PoolItem) :
+    cellSumClassYesDen pool = gtCount pool Winner.yes := by
+  unfold cellSumClassYesDen
+  rw [cellClassYesDen_filter, cellClassYesDen_filter, cellClassYesDen_filter,
+      cellClassYesDen_filter, cellClassYesDen_filter, cellClassYesDen_filter]
+  have h := cellPairCount_add (fun p : PoolItem => isPertGTyes p.pair) pool
+  rw [h]
+  simp only [gtCount, isPertGTyes, isPertGTyes_eq_sameGT]
+
+/-- **Additivity of the class-`no` denominator.** -/
+theorem cellSumClassNoDen_add (pool : List PoolItem) :
+    cellSumClassNoDen pool = gtCount pool Winner.no := by
+  unfold cellSumClassNoDen
+  rw [cellClassNoDen_filter, cellClassNoDen_filter, cellClassNoDen_filter,
+      cellClassNoDen_filter, cellClassNoDen_filter, cellClassNoDen_filter]
+  have h := cellPairCount_add (fun p : PoolItem => isPertGTno p.pair) pool
+  rw [h]
+  simp only [gtCount, isPertGTno, isPertGTno_eq_sameGT]
+
+/-- **Additivity of the class-`yes` numerator.** -/
+theorem cellSumClassYesNum_add (pool : List PoolItem) :
+    cellSumClassYesNum pool
+      = (pool.filter (fun p : PoolItem => p.pair.perturbedCorrect
+          && sameGT p.pair.perturbedGT Winner.yes)).length := by
+  unfold cellSumClassYesNum
+  rw [cellClassYesNum_filter, cellClassYesNum_filter, cellClassYesNum_filter,
+      cellClassYesNum_filter, cellClassYesNum_filter, cellClassYesNum_filter]
+  have h := cellPairCount_add
+    (fun p : PoolItem => p.pair.perturbedCorrect && isPertGTyes p.pair) pool
+  rw [h]
+  simp only [isPertGTyes, isPertGTyes_eq_sameGT]
+
+/-- **Additivity of the class-`no` numerator.** -/
+theorem cellSumClassNoNum_add (pool : List PoolItem) :
+    cellSumClassNoNum pool
+      = (pool.filter (fun p : PoolItem => p.pair.perturbedCorrect
+          && sameGT p.pair.perturbedGT Winner.no)).length := by
+  unfold cellSumClassNoNum
+  rw [cellClassNoNum_filter, cellClassNoNum_filter, cellClassNoNum_filter,
+      cellClassNoNum_filter, cellClassNoNum_filter, cellClassNoNum_filter]
+  have h := cellPairCount_add
+    (fun p : PoolItem => p.pair.perturbedCorrect && isPertGTno p.pair) pool
+  rw [h]
+  simp only [isPertGTno, isPertGTno_eq_sameGT]
+
+/-- The pool-level class-`yes` denominator (the metric's `yesPairs`
+length) IS `gtCount pool Winner.yes`. Stated over the map-form (the
+`ResponseSet` alias is semireducible; the metric unfolds to this form). -/
+theorem classYesDen_map (pool : List PoolItem) :
+    (List.filter (fun r : ModelResponsePair => match r.perturbedGT with
+        | .yes => true | .no => false)
+        (pool.map PoolItem.pair)).length
+      = gtCount pool Winner.yes := by
+  rw [filter_map_pair, List.length_map]
+  simp only [gtCount, isPertGTyes_eq_sameGT]
+
+/-- The pool-level class-`no` denominator IS `gtCount pool Winner.no`. -/
+theorem classNoDen_map (pool : List PoolItem) :
+    (List.filter (fun r : ModelResponsePair => match r.perturbedGT with
+        | .no => true | .yes => false)
+        (pool.map PoolItem.pair)).length
+      = gtCount pool Winner.no := by
+  rw [filter_map_pair, List.length_map]
+  simp only [gtCount, isPertGTno_eq_sameGT]
+
+/-- The pool-level class-`yes` numerator (the metric's `recYes` counter)
+in the sameGT filter form. -/
+theorem classYesNum_map (pool : List PoolItem) :
+    countPairs (List.filter (fun r : ModelResponsePair => match r.perturbedGT with
+        | .yes => true | .no => false)
+        (pool.map PoolItem.pair)) (fun r => r.perturbedCorrect)
+      = (pool.filter (fun p : PoolItem => p.pair.perturbedCorrect
+          && sameGT p.pair.perturbedGT Winner.yes)).length := by
+  unfold countPairs
+  rw [List.filter_filter, filter_map_pair, List.length_map]
+  simp only [isPertGTyes_eq_sameGT]
+
+/-- The pool-level class-`no` numerator (the metric's `recNo` counter)
+in the sameGT filter form. -/
+theorem classNoNum_map (pool : List PoolItem) :
+    countPairs (List.filter (fun r : ModelResponsePair => match r.perturbedGT with
+        | .no => true | .yes => false)
+        (pool.map PoolItem.pair)) (fun r => r.perturbedCorrect)
+      = (pool.filter (fun p : PoolItem => p.pair.perturbedCorrect
+          && sameGT p.pair.perturbedGT Winner.no)).length := by
+  unfold countPairs
+  rw [List.filter_filter, filter_map_pair, List.length_map]
+  simp only [isPertGTno_eq_sameGT]
+
+/-- **The aggregate of the balanced perturbed accuracy**: the SAME
+cross-multiplied fraction the pool metric builds from its two per-class
+recall rates, with the class numerators/denominators replaced by their
+Σ over the six cells. `none` iff either perturbed-GT class is empty in
+the pool — the same undefinedness as the pool-level metric (no
+`none`-as-zero coercion). -/
+def balancedPerturbedAccuracyAgg (pool : List PoolItem) : Option Rate :=
+  if cellSumClassYesDen pool = 0 then none
+  else if cellSumClassNoDen pool = 0 then none
+  else some (Rate.mk
+    (cellSumClassYesNum pool * cellSumClassNoDen pool
+      + cellSumClassNoNum pool * cellSumClassYesDen pool)
+    (2 * cellSumClassYesDen pool * cellSumClassNoDen pool))
+
+/-- **Aggregation (balancedPerturbedAccuracy)**: the pool-level balanced
+perturbed accuracy IS the cross-multiplied aggregate of the raw per-cell
+class counters, with the class denominators the `perturbedGT` class
+counts (`gtCount`, additivity via `cellSumClass*Den_add`). -/
+theorem balancedPerturbedAccuracy_agg (pool : List PoolItem) :
+    ResponseSet.balancedPerturbedAccuracy (PoolItem.toResponseSet pool)
+      = balancedPerturbedAccuracyAgg pool := by
+  unfold ResponseSet.balancedPerturbedAccuracy balancedPerturbedAccuracyAgg
+  simp only [PoolItem.toResponseSet, classYesDen_map, classNoDen_map,
+    classYesNum_map, classNoNum_map,
+    cellSumClassYesDen_add, cellSumClassNoDen_add, cellSumClassYesNum_add,
+    cellSumClassNoNum_add]
+  by_cases hY : gtCount pool Winner.yes = 0
+  · rw [ite_eq_left hY, ite_eq_left hY]
+  · by_cases hN : gtCount pool Winner.no = 0
+    · rw [ite_eq_right hY, ite_eq_right hY, ite_eq_left hN, ite_eq_left hN]
+    · rw [ite_eq_right hY, ite_eq_right hY, ite_eq_right hN, ite_eq_right hN]
+
 end Sejmbench
