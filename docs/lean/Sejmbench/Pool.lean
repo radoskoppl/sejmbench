@@ -2682,6 +2682,26 @@ theorem cellSumClassNoNum_partition (Q : PoolItem → Bool) (pool : List PoolIte
   exact cellCount6_partition
     (fun p : PoolItem => p.pair.perturbedCorrect && isPertGTno p.pair) Q pool
 
+/-- **Stratification invariance (perturbed-correct numerator)** — the
+`perturbedAccuracy` numerator splits over any cut. -/
+theorem cellSumPerturbedCorrect_partition (Q : PoolItem → Bool) (pool : List PoolItem) :
+    cellSumPerturbedCorrect (pool.filter Q)
+      + cellSumPerturbedCorrect (pool.filter (fun x => !Q x))
+      = cellSumPerturbedCorrect pool := by
+  unfold cellSumPerturbedCorrect
+  simp only [cellPerturbedCorrectNum_filter]
+  exact cellCount6_partition
+    (fun p : PoolItem => p.pair.perturbedCorrect) Q pool
+
+/-- **Stratification invariance (incidental numerator)**. -/
+theorem cellSumIncidental_partition (Q : PoolItem → Bool) (pool : List PoolItem) :
+    cellSumIncidental (pool.filter Q) + cellSumIncidental (pool.filter (fun x => !Q x))
+      = cellSumIncidental pool := by
+  unfold cellSumIncidental
+  simp only [cellIncidentalNum_filter]
+  exact cellCount6_partition
+    (fun p : PoolItem => p.pair.incidentallyCorrect) Q pool
+
 /-- The contingency count of a filtered pool is the cut applied to the
 full-table list (the cut commutes with all three cell filters). -/
 theorem contingencyCount_filter (Q : PoolItem → Bool) (pool : List PoolItem) (d : Direction) (a b : ModelAnswer) :
@@ -2746,6 +2766,99 @@ theorem strictConditionalAgg_stratified (Q : PoolItem → Bool) (pool : List Poo
   split
   · omega
   · rfl
+
+/-- **Stratification invariance (the three `/2N` invalid-response
+rates)** — total-`Rate` form: the pool-level rate is the two strata
+recombined at the raw-counter level, on the shared coverage
+denominator (`cellSumAnswer`, the `2N` scale). -/
+theorem abstainRateAgg_stratified (Q : PoolItem → Bool) (pool : List PoolItem) :
+    abstainRateAgg pool
+      = { num := cellSumAbstain (pool.filter Q)
+            + cellSumAbstain (pool.filter (fun x => !Q x)),
+          den := cellSumAnswer (pool.filter Q) + cellSumAnswer (pool.filter (fun x => !Q x)) } := by
+  unfold abstainRateAgg
+  rw [cellSumAbstain_partition, cellSumAnswer_partition]
+
+/-- **Stratification invariance (refusalRate)**. -/
+theorem refusalRateAgg_stratified (Q : PoolItem → Bool) (pool : List PoolItem) :
+    refusalRateAgg pool
+      = { num := cellSumRefusal (pool.filter Q)
+            + cellSumRefusal (pool.filter (fun x => !Q x)),
+          den := cellSumAnswer (pool.filter Q) + cellSumAnswer (pool.filter (fun x => !Q x)) } := by
+  unfold refusalRateAgg
+  rw [cellSumRefusal_partition, cellSumAnswer_partition]
+
+/-- **Stratification invariance (unresolvableRate)**. -/
+theorem unresolvableRateAgg_stratified (Q : PoolItem → Bool) (pool : List PoolItem) :
+    unresolvableRateAgg pool
+      = { num := cellSumUnresolvable (pool.filter Q)
+            + cellSumUnresolvable (pool.filter (fun x => !Q x)),
+          den := cellSumAnswer (pool.filter Q) + cellSumAnswer (pool.filter (fun x => !Q x)) } := by
+  unfold unresolvableRateAgg
+  rw [cellSumUnresolvable_partition, cellSumAnswer_partition]
+
+/-- **Stratification invariance (perturbedAccuracy)**: definedness is
+inherited — the fraction is `some` exactly when the whole pool is
+nonempty, for ANY cut. -/
+theorem perturbedAccuracyAgg_stratified (Q : PoolItem → Bool) (pool : List PoolItem)
+    (hN : cellSumN pool ≠ 0) :
+    perturbedAccuracyAgg pool
+      = some { num := cellSumPerturbedCorrect (pool.filter Q)
+                 + cellSumPerturbedCorrect (pool.filter (fun x => !Q x)),
+               den := cellSumN (pool.filter Q) + cellSumN (pool.filter (fun x => !Q x)) } := by
+  unfold perturbedAccuracyAgg
+  rw [cellSumPerturbedCorrect_partition, cellSumN_partition]
+  split
+  · omega
+  · rfl
+
+/-- **Stratification invariance (strictUnconditional)** — the same raw
+counters as accuracy, per the documented `strictNum`/`bothCorrectNum`
+coincidence, so the invariance statement is the accuracy one. -/
+theorem strictUnconditionalAgg_stratified (Q : PoolItem → Bool) (pool : List PoolItem)
+    (hN : cellSumN pool ≠ 0) :
+    strictUnconditionalAgg pool
+      = some { num := cellSumBothCorrect (pool.filter Q)
+                 + cellSumBothCorrect (pool.filter (fun x => !Q x)),
+               den := cellSumN (pool.filter Q) + cellSumN (pool.filter (fun x => !Q x)) } := by
+  unfold strictUnconditionalAgg
+  rw [cellSumBothCorrect_partition, cellSumN_partition]
+  split
+  · omega
+  · rfl
+
+/-- **Stratification invariance (incidental)**: definedness inherited
+(`some` iff the whole pool is nonempty), for ANY cut. -/
+theorem incidentalAgg_stratified (Q : PoolItem → Bool) (pool : List PoolItem)
+    (hN : cellSumN pool ≠ 0) :
+    incidentalAgg pool
+      = some { num := cellSumIncidental (pool.filter Q)
+                 + cellSumIncidental (pool.filter (fun x => !Q x)),
+               den := cellSumN (pool.filter Q) + cellSumN (pool.filter (fun x => !Q x)) } := by
+  unfold incidentalAgg
+  rw [cellSumIncidental_partition, cellSumN_partition]
+  split
+  · omega
+  · rfl
+
+/-- **Stratification invariance (balancedPerturbedAccuracy)**: the
+cross-multiplied aggregate of the two strata's class counters reproduces
+the pool-level balanced rate, for ANY cut. Definedness is inherited from
+the WHOLE pool: both class denominators nonempty (`none` semantics are
+handled only here, never by coercing a `none` stratum to zero). -/
+theorem balancedPerturbedAccuracyAgg_stratified (Q : PoolItem → Bool) (pool : List PoolItem)
+    (hY : cellSumClassYesDen pool ≠ 0) (hNo : cellSumClassNoDen pool ≠ 0) :
+    balancedPerturbedAccuracyAgg pool = some (Rate.mk
+      ((cellSumClassYesNum (pool.filter Q) + cellSumClassYesNum (pool.filter (fun x => !Q x)))
+        * (cellSumClassNoDen (pool.filter Q) + cellSumClassNoDen (pool.filter (fun x => !Q x)))
+        + (cellSumClassNoNum (pool.filter Q) + cellSumClassNoNum (pool.filter (fun x => !Q x)))
+        * (cellSumClassYesDen (pool.filter Q) + cellSumClassYesDen (pool.filter (fun x => !Q x))))
+      (2 * (cellSumClassYesDen (pool.filter Q) + cellSumClassYesDen (pool.filter (fun x => !Q x)))
+        * (cellSumClassNoDen (pool.filter Q) + cellSumClassNoDen (pool.filter (fun x => !Q x))))) := by
+  unfold balancedPerturbedAccuracyAgg
+  rw [cellSumClassYesNum_partition, cellSumClassNoNum_partition,
+      cellSumClassNoDen_partition, cellSumClassYesDen_partition,
+      ite_eq_right hY, ite_eq_right hNo]
 
 /-! ## Manifest conformance: the itemId-bound stored form -/
 
