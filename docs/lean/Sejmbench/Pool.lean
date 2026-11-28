@@ -2625,4 +2625,87 @@ theorem strictConditionalAgg_stratified (Q : PoolItem → Bool) (pool : List Poo
   · omega
   · rfl
 
+/-! ## Manifest conformance: the itemId-bound stored form -/
+
+/-- The stored-manifest form of a pool item: the fields a storage layer
+(e.g. the Python-side item manifest) holds alongside the id. -/
+structure ManifestEntry where
+  /-- The item identifier (the manifest's key). -/
+  itemId : Nat
+  /-- Stored perturbed ground truth. -/
+  gt : Winner
+  /-- Stored direction. -/
+  dir : Direction
+  /-- Stored original-margin band. -/
+  band : MarginBand
+
+/-- The canonical serialization of a pool item: the manifest entry a
+storage layer must hold for the item.
+Every attribute is *computed* from the pair — the stored form carries no
+independent metadata, so a stored entry can only agree or disagree with a
+recomputation, never tell a different story. -/
+def ManifestEntry.ofItem (p : PoolItem) : ManifestEntry :=
+  { itemId := p.itemId, gt := p.pair.perturbedGT,
+    dir := p.pair.direction, band := p.band }
+
+/-- The canonical manifest of a pool: one entry per item, in pool order. -/
+def manifestOf (pool : List PoolItem) : List ManifestEntry :=
+  pool.map ManifestEntry.ofItem
+
+/-- Conformance: the stored entry IS the item's canonical serialization. -/
+def ManifestEntry.conforms (m : ManifestEntry) (p : PoolItem) : Prop :=
+  m = ManifestEntry.ofItem p
+
+/-- The canonical entry conforms to its item (by construction). -/
+theorem ofItem_conforms (p : PoolItem) : (ManifestEntry.ofItem p).conforms p := rfl
+
+/-- Every item of the pool has a conforming entry in the canonical
+manifest. -/
+theorem manifestOf_conforms (pool : List PoolItem) (p : PoolItem) (hp : p ∈ pool) :
+    ∃ m, m ∈ manifestOf pool ∧ m.conforms p :=
+  ⟨ManifestEntry.ofItem p, List.mem_map.mpr ⟨p, hp, rfl⟩, rfl⟩
+
+/-- The item identifier is part of the agreement: a conforming entry
+carries the item's id, so id drift is detectable by recomputation. -/
+theorem conforms_itemId {m : ManifestEntry} {p : PoolItem} (hc : m.conforms p) :
+    m.itemId = p.itemId := by
+  unfold ManifestEntry.conforms at hc
+  exact congrArg ManifestEntry.itemId hc
+
+/-- The canonical manifest preserves the id list — with `poolWellFormed`
+the manifest is equally well-formed (the id contract survives
+serialization). -/
+theorem manifestOf_itemIds (pool : List PoolItem) :
+    (manifestOf pool).map (·.itemId) = pool.map (·.itemId) := by
+  simp [manifestOf, ManifestEntry.ofItem]
+
+/-- In a well-formed pool, no two items share an identifier. -/
+theorem itemId_unique (pool : List PoolItem) (h : poolWellFormed pool)
+    {p q : PoolItem} (hp : p ∈ pool) (hq : q ∈ pool)
+    (hid : p.itemId = q.itemId) : p = q := by
+  unfold poolWellFormed at h
+  induction pool with
+  | nil => cases hp
+  | cons a rest ih =>
+    rw [List.map_cons, List.nodup_cons] at h
+    rcases List.mem_cons.1 hp with he | hm
+    · subst he
+      rcases List.mem_cons.1 hq with he2 | hm2
+      · rw [he2]
+      · exact absurd (List.mem_map.mpr ⟨q, hm2, hid.symm⟩) h.1
+    · rcases List.mem_cons.1 hq with he2 | hm2
+      · subst he2
+        exact absurd (List.mem_map.mpr ⟨p, hm, hid⟩) h.1
+      · exact ih h.2 hm hm2
+
+/-- **The id contract**: a stored entry conforms to at most one item of a
+well-formed pool — conformance is itemId-bound, so a manifest entry
+identifies its item unambiguously and any disagreement with the item's
+computed attributes is a detected defect, not an ambiguity. -/
+theorem conforms_unique (pool : List PoolItem) (h : poolWellFormed pool)
+    (m : ManifestEntry) {p q : PoolItem} (hp : p ∈ pool) (hq : q ∈ pool)
+    (hcp : m.conforms p) (hcq : m.conforms q) : p = q :=
+  itemId_unique pool h hp hq
+    ((conforms_itemId hcp).symm.trans (conforms_itemId hcq))
+
 end Sejmbench
