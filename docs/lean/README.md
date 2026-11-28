@@ -55,6 +55,30 @@ constructions on concrete records and validates each item's ground truth
 with `seed_rule.compute_metric`. There is no machine-checked equivalence
 between the two.
 
+## Pool & stratification (issue #24) — `Sejmbench.Pool`
+
+The pool layer over `ModelResponsePair`s: each `PoolItem` stores only
+`itemId` and the candidate pair — the cell key
+`(perturbedGT, direction, originalMarginBand)` is *computed* from the pair,
+not stored (design frozen by the round-4 review of `49401d2`). The
+aggregation contract is Σnᵢ/Σdᵢ on raw counters; machine-checked:
+
+| Theorem (in `Sejmbench/Pool.lean`) | Claim |
+|---|---|
+| `cellCount6_sum` / `cellCount_sum` | the 6 cells of `(perturbedGT, direction, band)` partition the pool — total cell occupancy = `pool.length` |
+| `cellN_add` / `cellAnswerCount_add` / `cellAnswerCount_eq` | every per-cell counter is additive over any split of the pool; a cell's answer-level denominator is exactly `2·N` |
+| `contingency_all_sum` | the full contingency table (2 directions × 5×5 answer pairs = 50 entries) sums to `pool.length` |
+| `PoolItem.toResponseSet` + `stickyNum_eq_responseSet` / `originalCorrectNum_eq_responseSet` / `strictNum_eq_responseSet` / `incidentalNum_eq_responseSet` | the pool projection onto the #22 `ResponseSet` contract counts identically — pool-level and response-set-level numbers coincide |
+| `accuracy_agg` / `coverage_agg` / `abstainRate_agg` / `refusalRate_agg` / `unresolvableRate_agg` | pool-level rates are exactly the `ResponseSet` rates computed from *summed per-cell counters* (Σnᵢ/Σdᵢ); aggregation never averages `Option Rate` values |
+| `strictConditional_agg` / `balancedPerturbedAccuracy_agg` | the same Σnᵢ/Σdᵢ contract for the weighted rates — denominators `originalCorrectNum` resp. the per-class perturbed-GT band counts |
+| `accuracyAgg_stratified` / `coverageAgg_stratified` / `strictConditionalAgg_stratified` | stratification invariance: `aggregate pool` = the two strata `pool.filter Q` / `pool.filter (¬Q)` recombined at the counter level; definedness is inherited (`none` iff the whole pool lacks the numerator) |
+| `manifestOf_itemIds` / `itemId_unique` / `conforms_unique` | manifest conformance: every item has a canonically matching `ManifestEntry`, `itemId`s are unique under `poolWellFormed`, and an entry matches at most one item — non-conformance is a defect, never an ambiguity |
+
+Open conditions stay explicit predicates on the pool: `poolWellFormed`
+(unique `itemId`s), `poolLeakageGate` (the best constant perturbed-class
+predictor stays below 0.55) and `minCellSize` (minimum cell occupancy,
+independent of the gate). No unweighted-mean claim is made anywhere.
+
 ## Scope — read before citing
 
 * This is a spec artifact: it proves properties of the **specification**.
