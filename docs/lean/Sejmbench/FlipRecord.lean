@@ -32,9 +32,16 @@ amounts into `selFrom S off d.length` under `EligibleFlip (isTrack d) S
 isYesKind VoteKind.no d off` (`selCount_{yes,no,all,abstain}_of_cert`),
 giving **`seed_shifts_of_cert`** (the exact hypothesis shape
 `nActive_of_seed_shifts` consumes) and **`nActive_flipFrom_of_cert`**.
-Still open (tracked in #24): the `flipped_record_indices ↔ S` bridge and the
-NO→YES specialization (the direction-generic `EligibleFlip` makes the latter
-a specialization of the same workhorses with `lose := .yes`).
+Both directions are closed: the NO→YES specialization reuses the same
+workhorses with `lose := .yes`, and the `flipped_record_indices ↔ S` mask
+bridge is proved in `MaskBridge.lean`. **The negative eligibility tests**
+(round-6/7 P-list) are proved here: `selected_must_be_source_kind` /
+`selected_must_be_track` (a mask-selected position must carry a source-kind,
+tracked record — inversion at the selected head), their contrapositives
+`no_cert_of_wrong_kind` / `no_cert_of_off_track` (a bad mask admits no
+certificate), and the general-position forms `selected_all_source_kind` /
+`selected_all_track` (EVERY mask-selected position of the certified slice —
+the per-item invariant the Python-side mask checks implement).
 
 Split of responsibility: the transformation's *effect* is proved here; the
 *GT recomputation* of the modified division is
@@ -159,6 +166,111 @@ theorem nActive_of_seed_shifts (S : Nat → Bool) (d : Division) (off : Nat)
     nActive (flipFrom d S VoteKind.no off) = nActive d := by
   unfold nActive
   omega
+
+/-! ## Negative eligibility tests (round-6/7 P-list)
+
+The certificate is the only way a mask-selected position enters the flip, so
+the selection predicates are *testable*: any mask that selects an off-track
+or wrong-kind record admits no certificate. The head-position inversions are
+the named tests; the general-position forms are the per-item invariant the
+Python-side mask checks implement. -/
+
+/-- **`selected_must_be_source_kind`**: if a certificate processes `r :: rest`
+and the mask selects position `off`, the head record is of the source kind. -/
+theorem selected_must_be_source_kind {P : String → Bool} {S : Nat → Bool}
+    {srcKind : VoteKind → Bool} {lose : VoteKind} {r : Record} {rest : Division} {off : Nat}
+    (hcert : EligibleFlip P S srcKind lose (r :: rest) off) (hS : S off = true) :
+    srcKind r.kind = true := by
+  cases hcert with
+  | keep _ _ _ hs _ => exact absurd hS hs
+  | sel _ _ _ _ _ hsrc _ => exact hsrc
+
+/-- **`selected_must_be_track`**: if a certificate processes `r :: rest` and
+the mask selects position `off`, the head record is on the track. -/
+theorem selected_must_be_track {P : String → Bool} {S : Nat → Bool}
+    {srcKind : VoteKind → Bool} {lose : VoteKind} {r : Record} {rest : Division} {off : Nat}
+    (hcert : EligibleFlip P S srcKind lose (r :: rest) off) (hS : S off = true) :
+    P r.club = true := by
+  cases hcert with
+  | keep _ _ _ hs _ => exact absurd hS hs
+  | sel _ _ _ _ hp _ _ => exact hp
+
+/-- Contrapositive, source-kind form: a mask selecting a wrong-kind record
+admits no certificate. -/
+theorem no_cert_of_wrong_kind {P : String → Bool} {S : Nat → Bool}
+    {srcKind : VoteKind → Bool} {lose : VoteKind} {r : Record} {rest : Division} {off : Nat}
+    (hS : S off = true) (hbad : srcKind r.kind = false) :
+    ¬ EligibleFlip P S srcKind lose (r :: rest) off := by
+  intro hcert
+  have h := selected_must_be_source_kind hcert hS
+  simp [hbad] at h
+
+/-- Contrapositive, track form: a mask selecting an off-track record admits
+no certificate. -/
+theorem no_cert_of_off_track {P : String → Bool} {S : Nat → Bool}
+    {srcKind : VoteKind → Bool} {lose : VoteKind} {r : Record} {rest : Division} {off : Nat}
+    (hS : S off = true) (hbad : P r.club = false) :
+    ¬ EligibleFlip P S srcKind lose (r :: rest) off := by
+  intro hcert
+  have h := selected_must_be_track hcert hS
+  simp [hbad] at h
+
+/-- **General position form, source kind**: under a certificate, EVERY
+mask-selected position of the certified slice holds a source-kind record —
+position `i` of the list sits at global mask position `off + i`. -/
+theorem selected_all_source_kind {P : String → Bool} {S : Nat → Bool}
+    {srcKind : VoteKind → Bool} {lose : VoteKind} {d : Division} {off : Nat}
+    (hcert : EligibleFlip P S srcKind lose d off)
+    (i : Nat) (hi : i < List.length d) (hS : S (off + i) = true) :
+    srcKind (d[i]).kind = true := by
+  induction hcert generalizing i with
+  | nil off => simp at hi
+  | keep r rest off hs hrest ih =>
+      cases i with
+      | zero =>
+          rw [List.getElem_cons_zero]
+          exact absurd (by simpa using hS) hs
+      | succ j =>
+          have hshift : off + (j + 1) = off + 1 + j := by omega
+          rw [hshift] at hS
+          rw [List.getElem_cons_succ]
+          exact ih j (by have hc : List.length (r :: rest) = List.length rest + 1 := List.length_cons; omega) hS
+  | sel r rest off hs hp hsrc hrest ih =>
+      cases i with
+      | zero => rw [List.getElem_cons_zero]; exact hsrc
+      | succ j =>
+          have hshift : off + (j + 1) = off + 1 + j := by omega
+          rw [hshift] at hS
+          rw [List.getElem_cons_succ]
+          exact ih j (by have hc : List.length (r :: rest) = List.length rest + 1 := List.length_cons; omega) hS
+
+/-- **General position form, track**: under a certificate, EVERY
+mask-selected position of the certified slice is on the track. -/
+theorem selected_all_track {P : String → Bool} {S : Nat → Bool}
+    {srcKind : VoteKind → Bool} {lose : VoteKind} {d : Division} {off : Nat}
+    (hcert : EligibleFlip P S srcKind lose d off)
+    (i : Nat) (hi : i < List.length d) (hS : S (off + i) = true) :
+    P (d[i]).club = true := by
+  induction hcert generalizing i with
+  | nil off => simp at hi
+  | keep r rest off hs hrest ih =>
+      cases i with
+      | zero =>
+          rw [List.getElem_cons_zero]
+          exact absurd (by simpa using hS) hs
+      | succ j =>
+          have hshift : off + (j + 1) = off + 1 + j := by omega
+          rw [hshift] at hS
+          rw [List.getElem_cons_succ]
+          exact ih j (by have hc : List.length (r :: rest) = List.length rest + 1 := List.length_cons; omega) hS
+  | sel r rest off hs hp hsrc hrest ih =>
+      cases i with
+      | zero => rw [List.getElem_cons_zero]; exact hp
+      | succ j =>
+          have hshift : off + (j + 1) = off + 1 + j := by omega
+          rw [hshift] at hS
+          rw [List.getElem_cons_succ]
+          exact ih j (by have hc : List.length (r :: rest) = List.length rest + 1 := List.length_cons; omega) hS
 
 /-! ## Seed shifts derived from the certificate (P0 of the round-4/5 P-list)
 
