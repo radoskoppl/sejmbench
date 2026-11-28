@@ -2147,6 +2147,128 @@ theorem strictConditional_agg (pool : List PoolItem) :
   unfold ResponseSet.strictConditional strictConditionalAgg
   simp only [cellSumOriginalCorrect_add, cellSumBothCorrect_add]
 
+/-! ### (a') The remaining `N`-denominator aggregates — perturbedAccuracy,
+strictUnconditional, incidental -/
+
+/-- **Raw per-cell perturbed-correct counter** (the `perturbedAccuracy`
+numerator; no `Option` wrapper — aggregation never coerces `none`). -/
+def cellPerturbedCorrectNum (pool : List PoolItem) (w : Winner) (b : MarginBand) : Nat :=
+  countPairs (cellImage pool w b) ModelResponsePair.perturbedCorrect
+
+/-- The per-cell perturbed-correct counter in the filter form consumed by
+`perturbedCorrectNum_add`. -/
+theorem cellPerturbedCorrectNum_filter (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    cellPerturbedCorrectNum pool w b
+      = (List.filter (fun p : PoolItem => p.pair.perturbedCorrect)
+          (cellItems pool w b)).length :=
+  countPairs_map ModelResponsePair.perturbedCorrect (cellItems pool w b)
+
+/-- Σ of the six cells' raw perturbed-correct counters. -/
+def cellSumPerturbedCorrect (pool : List PoolItem) : Nat :=
+  cellPerturbedCorrectNum pool Winner.no MarginBand.narrow
+    + cellPerturbedCorrectNum pool Winner.no MarginBand.close
+    + cellPerturbedCorrectNum pool Winner.no MarginBand.wide
+    + cellPerturbedCorrectNum pool Winner.yes MarginBand.narrow
+    + cellPerturbedCorrectNum pool Winner.yes MarginBand.close
+    + cellPerturbedCorrectNum pool Winner.yes MarginBand.wide
+
+theorem cellSumPerturbedCorrect_add (pool : List PoolItem) :
+    cellSumPerturbedCorrect pool
+      = countPairs (PoolItem.toResponseSet pool)
+          ModelResponsePair.perturbedCorrect := by
+  unfold cellSumPerturbedCorrect
+  rw [cellPerturbedCorrectNum_filter, cellPerturbedCorrectNum_filter,
+      cellPerturbedCorrectNum_filter, cellPerturbedCorrectNum_filter,
+      cellPerturbedCorrectNum_filter, cellPerturbedCorrectNum_filter]
+  exact (perturbedCorrectNum_add pool).trans
+    (countPairs_map ModelResponsePair.perturbedCorrect pool).symm
+
+/-- **The Σnᵢ/Σdᵢ aggregate of the per-cell perturbed-accuracy counters**,
+built on raw counters. `none` iff the pool is empty — the same
+undefinedness as the pool-level metric, no coercion. -/
+def perturbedAccuracyAgg (pool : List PoolItem) : Option Rate :=
+  if cellSumN pool = 0 then none
+  else some { num := cellSumPerturbedCorrect pool, den := cellSumN pool }
+
+/-- **Aggregation (perturbedAccuracy)**: the pool-level perturbed accuracy
+IS the Σnᵢ/Σdᵢ fraction of the raw per-cell counters. -/
+theorem perturbedAccuracy_agg (pool : List PoolItem) :
+    ResponseSet.perturbedAccuracy (PoolItem.toResponseSet pool)
+      = perturbedAccuracyAgg pool := by
+  unfold ResponseSet.perturbedAccuracy perturbedAccuracyAgg
+  rw [cellSumPerturbedCorrect_add, cellSumN_add]
+  have hN : (PoolItem.toResponseSet pool).N = pool.length := by
+    simp [ResponseSet.N, PoolItem.toResponseSet]
+  rw [hN]
+
+/-- **Raw Σnᵢ/Σdᵢ aggregate of the unconditional-responsiveness counters**:
+the same raw counters as accuracy — `strictNum` carries `bothCorrectNum`'s
+predicate by construction (the coincidence recorded on
+`ResponseSet.accuracy`), and the same denominator `N`. -/
+def strictUnconditionalAgg (pool : List PoolItem) : Option Rate :=
+  if cellSumN pool = 0 then none
+  else some { num := cellSumBothCorrect pool, den := cellSumN pool }
+
+/-- **Aggregation (strictUnconditional)**: the pool-level unconditional
+responsiveness IS the Σnᵢ/Σdᵢ fraction of the raw per-cell counters —
+the same aggregate as accuracy, per the documented coincidence. -/
+theorem strictUnconditional_agg (pool : List PoolItem) :
+    ResponseSet.strictUnconditional (PoolItem.toResponseSet pool)
+      = strictUnconditionalAgg pool := by
+  unfold ResponseSet.strictUnconditional strictUnconditionalAgg
+  rw [cellSumBothCorrect_add, cellSumN_add]
+  have hN : (PoolItem.toResponseSet pool).N = pool.length := by
+    simp [ResponseSet.N, PoolItem.toResponseSet]
+  rw [hN]
+
+/-- **Raw per-cell incidental counter** (no `Option` wrapper). -/
+def cellIncidentalNum (pool : List PoolItem) (w : Winner) (b : MarginBand) : Nat :=
+  ResponseSet.incidentalNum (cellImage pool w b)
+
+/-- The per-cell incidental counter in the filter form consumed by
+`incidentalNum_add`. -/
+theorem cellIncidentalNum_filter (pool : List PoolItem) (w : Winner) (b : MarginBand) :
+    cellIncidentalNum pool w b
+      = (List.filter (fun p : PoolItem => p.pair.incidentallyCorrect)
+          (cellItems pool w b)).length :=
+  countPairs_map ModelResponsePair.incidentallyCorrect (cellItems pool w b)
+
+/-- Σ of the six cells' raw incidental counters. -/
+def cellSumIncidental (pool : List PoolItem) : Nat :=
+  cellIncidentalNum pool Winner.no MarginBand.narrow
+    + cellIncidentalNum pool Winner.no MarginBand.close
+    + cellIncidentalNum pool Winner.no MarginBand.wide
+    + cellIncidentalNum pool Winner.yes MarginBand.narrow
+    + cellIncidentalNum pool Winner.yes MarginBand.close
+    + cellIncidentalNum pool Winner.yes MarginBand.wide
+
+theorem cellSumIncidental_add (pool : List PoolItem) :
+    cellSumIncidental pool
+      = ResponseSet.incidentalNum (PoolItem.toResponseSet pool) := by
+  unfold cellSumIncidental
+  rw [cellIncidentalNum_filter, cellIncidentalNum_filter, cellIncidentalNum_filter,
+      cellIncidentalNum_filter, cellIncidentalNum_filter, cellIncidentalNum_filter]
+  exact (cellPairCount_add (fun p : PoolItem => p.pair.incidentallyCorrect) pool).trans
+    (incidentalNum_eq_responseSet pool)
+
+/-- **The Σnᵢ/Σdᵢ aggregate of the per-cell incidental counters**, built
+on raw counters. `none` iff the pool is empty — the same undefinedness as
+the pool-level metric, no coercion. -/
+def incidentalAgg (pool : List PoolItem) : Option Rate :=
+  if cellSumN pool = 0 then none
+  else some { num := cellSumIncidental pool, den := cellSumN pool }
+
+/-- **Aggregation (incidental)**: the pool-level incidental rate IS the
+Σnᵢ/Σdᵢ fraction of the raw per-cell counters. -/
+theorem incidental_agg (pool : List PoolItem) :
+    ResponseSet.incidental (PoolItem.toResponseSet pool)
+      = incidentalAgg pool := by
+  unfold ResponseSet.incidental incidentalAgg
+  rw [cellSumIncidental_add, cellSumN_add]
+  have hN : (PoolItem.toResponseSet pool).N = pool.length := by
+    simp [ResponseSet.N, PoolItem.toResponseSet]
+  rw [hN]
+
 /-! ### (b) Balanced perturbed accuracy — per-class denominators -/
 
 /-- **Raw per-cell class-`yes` denominator**: pairs in the cell whose
